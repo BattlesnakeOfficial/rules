@@ -13,6 +13,7 @@ const (
 	BOARD_SIZE_LARGE  = 19
 	FOOD_SPAWN_CHANCE = 0.1
 	SNAKE_MAX_HEALTH  = 100
+
 	// bvanvugt - TODO: Just return formatted strings instead of codes?
 	ELIMINATED_COLLISION      = "snake-collision"
 	ELIMINATED_SELF_COLLISION = "snake-self-collision"
