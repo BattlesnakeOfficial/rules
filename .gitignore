@@ -1,0 +1,7 @@
+# Editors
+.cmd
+.vscode
+.idea
+
+# General
+.DS_Store
