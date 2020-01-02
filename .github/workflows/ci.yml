@@ -33,6 +33,7 @@ jobs:
   test:
     name: Test (go test)
     runs-on: ubuntu-latest
+    needs: [lint]
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-go@master
