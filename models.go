@@ -1,23 +1,11 @@
 package rulesets
 
-// NOTE: IMMUTABLE THINGS HERE //
-
-const MOVE_UP = "up"
-const MOVE_DOWN = "down"
-const MOVE_RIGHT = "right"
-const MOVE_LEFT = "left"
-
-type Game struct {
-	Height int32
-	Width  int32
-}
-
-type SnakeMove struct {
-	Snake *Snake
-	Move  string
-}
-
-// NOTE: MUTABLE THINGS HERE //
+const (
+	MOVE_UP    = "up"
+	MOVE_DOWN  = "down"
+	MOVE_RIGHT = "right"
+	MOVE_LEFT  = "left"
+)
 
 type Point struct {
 	X int32
@@ -31,13 +19,19 @@ type Snake struct {
 	EliminatedCause string
 }
 
-type GameState struct {
+type BoardState struct {
+	Height int32
+	Width  int32
 	Food   []*Point
 	Snakes []*Snake
 }
 
-// RULESET API //
+type SnakeMove struct {
+	Snake *Snake
+	Move  string
+}
 
 type Ruleset interface {
-	ResolveMoves(*Game, *GameState, []*SnakeMove) (*GameState, error)
+	CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error)
+	ResolveMoves(prevState *BoardState, moves []*SnakeMove) (*BoardState, error)
 }
