@@ -1,10 +1,10 @@
 package rulesets
 
 const (
-	MOVE_UP    = "up"
-	MOVE_DOWN  = "down"
-	MOVE_RIGHT = "right"
-	MOVE_LEFT  = "left"
+	MoveUp    = "up"
+	MoveDown  = "down"
+	MoveRight = "right"
+	MoveLeft  = "left"
 )
 
 type Point struct {
@@ -14,7 +14,7 @@ type Point struct {
 
 type Snake struct {
 	ID              string
-	Body            []*Point
+	Body            []Point
 	Health          int32
 	EliminatedCause string
 }
@@ -22,16 +22,16 @@ type Snake struct {
 type BoardState struct {
 	Height int32
 	Width  int32
-	Food   []*Point
-	Snakes []*Snake
+	Food   []Point
+	Snakes []Snake
 }
 
 type SnakeMove struct {
-	Snake *Snake
-	Move  string
+	ID   string
+	Move string
 }
 
 type Ruleset interface {
 	CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error)
-	ResolveMoves(prevState *BoardState, moves []*SnakeMove) (*BoardState, error)
+	ResolveMoves(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 }

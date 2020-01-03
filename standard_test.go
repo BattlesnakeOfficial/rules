@@ -1,6 +1,7 @@
 package rulesets
 
 import (
+	"errors"
 	"math"
 	"math/rand"
 	"testing"
@@ -10,26 +11,172 @@ import (
 
 func TestSanity(t *testing.T) {
 	r := StandardRuleset{}
+
+	state, err := r.CreateInitialBoardState(0, 0, []string{})
+	require.NoError(t, err)
+	require.NotNil(t, state)
+	require.Equal(t, int32(0), state.Width)
+	require.Equal(t, int32(0), state.Height)
+	require.Len(t, state.Food, 0)
+	require.Len(t, state.Snakes, 0)
+
 	next, err := r.ResolveMoves(
 		&BoardState{},
-		[]*SnakeMove{},
+		[]SnakeMove{},
 	)
-
 	require.NoError(t, err)
 	require.NotNil(t, next)
+	require.Equal(t, int32(0), state.Width)
+	require.Equal(t, int32(0), state.Height)
+	require.Len(t, state.Snakes, 0)
+}
+
+// Create Board
+// placeSnakes
+// placeFood
+// knownBoardSize
+// REsolveMoves
+// eliminateSnakes
+// --> related subs
+// move, reduce, feed, need to consider dead snakes
+
+func TestCreateInitialBoardState(t *testing.T) {
+	// TODO
+}
+
+func TestPlaceSnakes(t *testing.T) {
+	// Because placement is random, we only test to ensure
+	// that snake bodies are populated correctly
+	tests := []struct {
+		BoardState *BoardState
+		Err        error
+	}{
+		{
+			&BoardState{
+				Width:  1,
+				Height: 1,
+				Snakes: make([]Snake, 1),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  1,
+				Height: 1,
+				Snakes: make([]Snake, 2),
+			},
+			errors.New("not enough empty squares to place snakes"),
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 5,
+				Snakes: make([]Snake, 49),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  5,
+				Height: 10,
+				Snakes: make([]Snake, 50),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  25,
+				Height: 2,
+				Snakes: make([]Snake, 51),
+			},
+			errors.New("not enough empty squares to place snakes"),
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeSmall,
+				Height: BoardSizeSmall,
+				Snakes: make([]Snake, 1),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeSmall,
+				Height: BoardSizeSmall,
+				Snakes: make([]Snake, 8),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeSmall,
+				Height: BoardSizeSmall,
+				Snakes: make([]Snake, 9),
+			},
+			errors.New("too many snakes for fixed start positions"),
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeMedium,
+				Height: BoardSizeMedium,
+				Snakes: make([]Snake, 8),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeMedium,
+				Height: BoardSizeMedium,
+				Snakes: make([]Snake, 9),
+			},
+			errors.New("too many snakes for fixed start positions"),
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeLarge,
+				Height: BoardSizeLarge,
+				Snakes: make([]Snake, 8),
+			},
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeLarge,
+				Height: BoardSizeLarge,
+				Snakes: make([]Snake, 9),
+			},
+			errors.New("too many snakes for fixed start positions"),
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		require.Equal(t, test.BoardState.Width*test.BoardState.Height, int32(len(r.getUnoccupiedPoints(test.BoardState))))
+		err := r.placeSnakes(test.BoardState)
+		require.Equal(t, test.Err, err, "Snakes: %d", len(test.BoardState.Snakes))
+		if err == nil {
+			for i := 0; i < len(test.BoardState.Snakes); i++ {
+				require.Len(t, test.BoardState.Snakes[i].Body, 3)
+			}
+		}
+	}
+}
+
+func TestResolveMoves(t *testing.T) {
+	// TODO
 }
 
 func TestMoveSnakes(t *testing.T) {
 	b := &BoardState{
-		Snakes: []*Snake{
+		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []*Point{{10, 110}, {11, 110}},
+				Body:   []Point{{10, 110}, {11, 110}},
 				Health: 111111,
 			},
 			{
 				ID:     "two",
-				Body:   []*Point{{23, 220}, {22, 220}, {21, 220}, {20, 220}},
+				Body:   []Point{{23, 220}, {22, 220}, {21, 220}, {20, 220}},
 				Health: 222222,
 			},
 		},
@@ -37,47 +184,37 @@ func TestMoveSnakes(t *testing.T) {
 
 	tests := []struct {
 		MoveOne     string
-		ExpectedOne []*Point
+		ExpectedOne []Point
 		MoveTwo     string
-		ExpectedTwo []*Point
+		ExpectedTwo []Point
 	}{
 		{
-			MOVE_UP,
-			[]*Point{{10, 109}, {10, 110}},
-			MOVE_DOWN,
-			[]*Point{{23, 221}, {23, 220}, {22, 220}, {21, 220}},
+			MoveUp, []Point{{10, 109}, {10, 110}},
+			MoveDown, []Point{{23, 221}, {23, 220}, {22, 220}, {21, 220}},
 		},
 		{
-			MOVE_RIGHT,
-			[]*Point{{11, 109}, {10, 109}},
-			MOVE_LEFT,
-			[]*Point{{22, 221}, {23, 221}, {23, 220}, {22, 220}},
+			MoveRight, []Point{{11, 109}, {10, 109}},
+			MoveLeft, []Point{{22, 221}, {23, 221}, {23, 220}, {22, 220}},
 		},
 		{
-			MOVE_RIGHT,
-			[]*Point{{12, 109}, {11, 109}},
-			MOVE_LEFT,
-			[]*Point{{21, 221}, {22, 221}, {23, 221}, {23, 220}},
+			MoveRight, []Point{{12, 109}, {11, 109}},
+			MoveLeft, []Point{{21, 221}, {22, 221}, {23, 221}, {23, 220}},
 		},
 		{
-			MOVE_RIGHT,
-			[]*Point{{13, 109}, {12, 109}},
-			MOVE_LEFT,
-			[]*Point{{20, 221}, {21, 221}, {22, 221}, {23, 221}},
+			MoveRight, []Point{{13, 109}, {12, 109}},
+			MoveLeft, []Point{{20, 221}, {21, 221}, {22, 221}, {23, 221}},
 		},
 		{
-			MOVE_UP,
-			[]*Point{{13, 108}, {13, 109}},
-			MOVE_DOWN,
-			[]*Point{{20, 222}, {20, 221}, {21, 221}, {22, 221}},
+			MoveUp, []Point{{13, 108}, {13, 109}},
+			MoveDown, []Point{{20, 222}, {20, 221}, {21, 221}, {22, 221}},
 		},
 	}
 
 	r := StandardRuleset{}
 	for _, test := range tests {
-		moves := []*SnakeMove{
-			{Snake: b.Snakes[0], Move: test.MoveOne},
-			{Snake: b.Snakes[1], Move: test.MoveTwo},
+		moves := []SnakeMove{
+			{ID: "one", Move: test.MoveOne},
+			{ID: "two", Move: test.MoveTwo},
 		}
 		err := r.moveSnakes(b, moves)
 
@@ -90,61 +227,61 @@ func TestMoveSnakes(t *testing.T) {
 
 		require.Equal(t, len(b.Snakes[0].Body), len(test.ExpectedOne))
 		for i, e := range test.ExpectedOne {
-			require.Equal(t, *e, *b.Snakes[0].Body[i])
+			require.Equal(t, e, b.Snakes[0].Body[i])
 		}
 		require.Equal(t, len(b.Snakes[1].Body), len(test.ExpectedTwo))
 		for i, e := range test.ExpectedTwo {
-			require.Equal(t, *e, *b.Snakes[1].Body[i])
+			require.Equal(t, e, b.Snakes[1].Body[i])
 		}
 	}
 }
 
 func TestMoveSnakesDefault(t *testing.T) {
 	tests := []struct {
-		Body     []*Point
+		Body     []Point
 		Move     string
-		Expected []*Point
+		Expected []Point
 	}{
 		{
-			Body:     []*Point{{0, 0}},
+			Body:     []Point{{0, 0}},
 			Move:     "asdf",
-			Expected: []*Point{{0, -1}},
+			Expected: []Point{{0, -1}},
 		},
 		{
-			Body:     []*Point{{5, 5}, {5, 5}},
+			Body:     []Point{{5, 5}, {5, 5}},
 			Move:     "",
-			Expected: []*Point{{5, 4}, {5, 5}},
+			Expected: []Point{{5, 4}, {5, 5}},
 		},
 		{
-			Body:     []*Point{{5, 5}, {5, 4}},
-			Expected: []*Point{{5, 6}, {5, 5}},
+			Body:     []Point{{5, 5}, {5, 4}},
+			Expected: []Point{{5, 6}, {5, 5}},
 		},
 		{
-			Body:     []*Point{{5, 4}, {5, 5}},
-			Expected: []*Point{{5, 3}, {5, 4}},
+			Body:     []Point{{5, 4}, {5, 5}},
+			Expected: []Point{{5, 3}, {5, 4}},
 		},
 		{
-			Body:     []*Point{{5, 4}, {5, 5}},
-			Expected: []*Point{{5, 3}, {5, 4}},
+			Body:     []Point{{5, 4}, {5, 5}},
+			Expected: []Point{{5, 3}, {5, 4}},
 		},
 		{
-			Body:     []*Point{{4, 5}, {5, 5}},
-			Expected: []*Point{{3, 5}, {4, 5}},
+			Body:     []Point{{4, 5}, {5, 5}},
+			Expected: []Point{{3, 5}, {4, 5}},
 		},
 		{
-			Body:     []*Point{{5, 5}, {4, 5}},
-			Expected: []*Point{{6, 5}, {5, 5}},
+			Body:     []Point{{5, 5}, {4, 5}},
+			Expected: []Point{{6, 5}, {5, 5}},
 		},
 	}
 
 	r := StandardRuleset{}
 	for _, test := range tests {
 		b := &BoardState{
-			Snakes: []*Snake{
-				{Body: test.Body},
+			Snakes: []Snake{
+				{ID: "one", Body: test.Body},
 			},
 		}
-		moves := []*SnakeMove{{Snake: b.Snakes[0], Move: test.Move}}
+		moves := []SnakeMove{{ID: "one", Move: test.Move}}
 
 		err := r.moveSnakes(b, moves)
 		require.NoError(t, err)
@@ -152,28 +289,27 @@ func TestMoveSnakesDefault(t *testing.T) {
 		require.Equal(t, len(test.Body), len(b.Snakes[0].Body))
 		require.Equal(t, len(test.Expected), len(b.Snakes[0].Body))
 		for i, e := range test.Expected {
-			require.Equal(t, *e, *b.Snakes[0].Body[i])
+			require.Equal(t, e, b.Snakes[0].Body[i])
 		}
 	}
 }
 
 func TestReduceSnakeHealth(t *testing.T) {
-	var err error
-	r := StandardRuleset{}
 	b := &BoardState{
-		Snakes: []*Snake{
-			&Snake{
-				Body:   []*Point{{0, 0}, {0, 1}},
+		Snakes: []Snake{
+			{
+				Body:   []Point{{0, 0}, {0, 1}},
 				Health: 99,
 			},
-			&Snake{
-				Body:   []*Point{{5, 8}, {6, 8}, {7, 8}},
+			{
+				Body:   []Point{{5, 8}, {6, 8}, {7, 8}},
 				Health: 2,
 			},
 		},
 	}
 
-	err = r.reduceSnakeHealth(b)
+	r := StandardRuleset{}
+	err := r.reduceSnakeHealth(b)
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(98))
 	require.Equal(t, b.Snakes[1].Health, int32(1))
@@ -218,8 +354,8 @@ func TestSnakeHasStarved(t *testing.T) {
 }
 
 func TestSnakeIsOutOfBounds(t *testing.T) {
-	var boardWidth int32 = 10
-	var boardHeight int32 = 100
+	boardWidth := int32(10)
+	boardHeight := int32(100)
 
 	tests := []struct {
 		Point    Point
@@ -252,172 +388,166 @@ func TestSnakeIsOutOfBounds(t *testing.T) {
 		{Point{X: math.MaxInt32, Y: math.MaxInt32}, true},
 	}
 
-	var s *Snake
 	r := StandardRuleset{}
 	for _, test := range tests {
 		// Test with point as head
-		s = &Snake{Body: []*Point{&test.Point}}
-		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(s, boardWidth, boardHeight), "Head%+v", test.Point)
+		s := Snake{Body: []Point{test.Point}}
+		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Head%+v", test.Point)
 		// Test with point as body
-		s = &Snake{Body: []*Point{&Point{0, 0}, &Point{0, 0}, &test.Point}}
-		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(s, boardWidth, boardHeight), "Body%+v", test.Point)
+		s = Snake{Body: []Point{Point{0, 0}, Point{0, 0}, test.Point}}
+		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Body%+v", test.Point)
 	}
 }
 
 func TestSnakeHasBodyCollidedSelf(t *testing.T) {
 	tests := []struct {
-		Body     []*Point
+		Body     []Point
 		Expected bool
 	}{
-		{[]*Point{{1, 1}}, false},
+		{[]Point{{1, 1}}, false},
 		// Self stacks should self collide
 		// (we rely on snakes moving before we check self-collision on turn one)
-		{[]*Point{{2, 2}, {2, 2}}, true},
-		{[]*Point{{3, 3}, {3, 3}, {3, 3}}, true},
-		{[]*Point{{5, 5}, {5, 5}, {5, 5}, {5, 5}, {5, 5}}, true},
+		{[]Point{{2, 2}, {2, 2}}, true},
+		{[]Point{{3, 3}, {3, 3}, {3, 3}}, true},
+		{[]Point{{5, 5}, {5, 5}, {5, 5}, {5, 5}, {5, 5}}, true},
 		// Non-collision cases
-		{[]*Point{{0, 0}, {1, 0}, {1, 0}}, false},
-		{[]*Point{{0, 0}, {1, 0}, {2, 0}}, false},
-		{[]*Point{{0, 0}, {1, 0}, {2, 0}, {2, 0}, {2, 0}}, false},
-		{[]*Point{{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}}, false},
-		{[]*Point{{0, 0}, {0, 1}, {0, 2}}, false},
-		{[]*Point{{0, 0}, {0, 1}, {0, 2}, {0, 2}, {0, 2}}, false},
-		{[]*Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}}, false},
+		{[]Point{{0, 0}, {1, 0}, {1, 0}}, false},
+		{[]Point{{0, 0}, {1, 0}, {2, 0}}, false},
+		{[]Point{{0, 0}, {1, 0}, {2, 0}, {2, 0}, {2, 0}}, false},
+		{[]Point{{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}}, false},
+		{[]Point{{0, 0}, {0, 1}, {0, 2}}, false},
+		{[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 2}, {0, 2}}, false},
+		{[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}}, false},
 		// Collision cases
-		{[]*Point{{0, 0}, {1, 0}, {0, 0}}, true},
-		{[]*Point{{0, 0}, {0, 0}, {1, 0}}, true},
-		{[]*Point{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}, true},
-		{[]*Point{{4, 4}, {3, 4}, {3, 3}, {4, 4}, {4, 4}}, true},
-		{[]*Point{{3, 3}, {3, 4}, {3, 3}, {4, 4}, {4, 5}}, true},
+		{[]Point{{0, 0}, {1, 0}, {0, 0}}, true},
+		{[]Point{{0, 0}, {0, 0}, {1, 0}}, true},
+		{[]Point{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}, true},
+		{[]Point{{4, 4}, {3, 4}, {3, 3}, {4, 4}, {4, 4}}, true},
+		{[]Point{{3, 3}, {3, 4}, {3, 3}, {4, 4}, {4, 5}}, true},
 	}
 
-	var s *Snake
 	r := StandardRuleset{}
 	for _, test := range tests {
-		s = &Snake{Body: test.Body}
-		require.Equal(t, test.Expected, r.snakeHasBodyCollided(s, s), "Body%q", s.Body)
+		s := Snake{Body: test.Body}
+		require.Equal(t, test.Expected, r.snakeHasBodyCollided(&s, &s), "Body%q", s.Body)
 	}
 }
 
 func TestSnakeHasBodyCollidedOther(t *testing.T) {
 	tests := []struct {
-		SnakeBody []*Point
-		OtherBody []*Point
+		SnakeBody []Point
+		OtherBody []Point
 		Expected  bool
 	}{
 		{
 			// Just heads
-			[]*Point{{0, 0}},
-			[]*Point{{1, 1}},
+			[]Point{{0, 0}},
+			[]Point{{1, 1}},
 			false,
 		},
 		{
 			// Head-to-heads are not considered in body collisions
-			[]*Point{{0, 0}},
-			[]*Point{{0, 0}},
+			[]Point{{0, 0}},
+			[]Point{{0, 0}},
 			false,
 		},
 		{
 			// Stacked bodies
-			[]*Point{{0, 0}},
-			[]*Point{{0, 0}, {0, 0}},
+			[]Point{{0, 0}},
+			[]Point{{0, 0}, {0, 0}},
 			true,
 		},
 		{
 			// Separate stacked bodies
-			[]*Point{{0, 0}, {0, 0}, {0, 0}},
-			[]*Point{{1, 1}, {1, 1}, {1, 1}},
+			[]Point{{0, 0}, {0, 0}, {0, 0}},
+			[]Point{{1, 1}, {1, 1}, {1, 1}},
 			false,
 		},
 		{
 			// Stacked bodies, separated heads
-			[]*Point{{0, 0}, {1, 0}, {1, 0}},
-			[]*Point{{2, 0}, {1, 0}, {1, 0}},
+			[]Point{{0, 0}, {1, 0}, {1, 0}},
+			[]Point{{2, 0}, {1, 0}, {1, 0}},
 			false,
 		},
 		{
 			// Mid-snake collision
-			[]*Point{{1, 1}},
-			[]*Point{{0, 1}, {1, 1}, {2, 1}},
+			[]Point{{1, 1}},
+			[]Point{{0, 1}, {1, 1}, {2, 1}},
 			true,
 		},
 	}
 
-	var s *Snake
-	var o *Snake
 	r := StandardRuleset{}
 	for _, test := range tests {
-		s = &Snake{Body: test.SnakeBody}
-		o = &Snake{Body: test.OtherBody}
+		s := &Snake{Body: test.SnakeBody}
+		o := &Snake{Body: test.OtherBody}
 		require.Equal(t, test.Expected, r.snakeHasBodyCollided(s, o), "Snake%q Other%q", s.Body, o.Body)
 	}
 }
 
 func TestSnakeHasLostHeadToHead(t *testing.T) {
 	tests := []struct {
-		SnakeBody        []*Point
-		OtherBody        []*Point
+		SnakeBody        []Point
+		OtherBody        []Point
 		Expected         bool
 		ExpectedOpposite bool
 	}{
 		{
 			// Just heads
-			[]*Point{{0, 0}},
-			[]*Point{{1, 1}},
+			[]Point{{0, 0}},
+			[]Point{{1, 1}},
 			false, false,
 		},
 		{
 			// Just heads colliding
-			[]*Point{{0, 0}},
-			[]*Point{{0, 0}},
+			[]Point{{0, 0}},
+			[]Point{{0, 0}},
 			true, true,
 		},
 		{
 			// One snake larger
-			[]*Point{{0, 0}, {1, 0}, {2, 0}},
-			[]*Point{{0, 0}},
+			[]Point{{0, 0}, {1, 0}, {2, 0}},
+			[]Point{{0, 0}},
 			false, true,
 		},
 		{
 			// Other snake equal
-			[]*Point{{0, 0}, {1, 0}, {2, 0}},
-			[]*Point{{0, 0}, {0, 1}, {0, 2}},
+			[]Point{{0, 0}, {1, 0}, {2, 0}},
+			[]Point{{0, 0}, {0, 1}, {0, 2}},
 			true, true,
 		},
 		{
 			// Other snake longer
-			[]*Point{{0, 0}, {1, 0}, {2, 0}},
-			[]*Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+			[]Point{{0, 0}, {1, 0}, {2, 0}},
+			[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
 			true, false,
 		},
 		{
 			// Body collision
-			[]*Point{{0, 1}, {1, 1}, {2, 1}},
-			[]*Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+			[]Point{{0, 1}, {1, 1}, {2, 1}},
+			[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
 			false, false,
 		},
 		{
 			// Separate stacked bodies, head collision
-			[]*Point{{3, 10}, {2, 10}, {2, 10}},
-			[]*Point{{3, 10}, {4, 10}, {4, 10}},
+			[]Point{{3, 10}, {2, 10}, {2, 10}},
+			[]Point{{3, 10}, {4, 10}, {4, 10}},
 			true, true,
 		},
 		{
 			// Separate stacked bodies, head collision
-			[]*Point{{10, 3}, {10, 2}, {10, 1}, {10, 0}},
-			[]*Point{{10, 3}, {10, 4}, {10, 5}},
+			[]Point{{10, 3}, {10, 2}, {10, 1}, {10, 0}},
+			[]Point{{10, 3}, {10, 4}, {10, 5}},
 			false, true,
 		},
 	}
 
-	var s *Snake
-	var o *Snake
 	r := StandardRuleset{}
 	for _, test := range tests {
-		s = &Snake{Body: test.SnakeBody}
-		o = &Snake{Body: test.OtherBody}
-		require.Equal(t, test.Expected, r.snakeHasLostHeadToHead(s, o), "Snake%q Other%q", s.Body, o.Body)
-		require.Equal(t, test.ExpectedOpposite, r.snakeHasLostHeadToHead(o, s), "Snake%q Other%q", s.Body, o.Body)
+		s := Snake{Body: test.SnakeBody}
+		o := Snake{Body: test.OtherBody}
+		require.Equal(t, test.Expected, r.snakeHasLostHeadToHead(&s, &o), "Snake%q Other%q", s.Body, o.Body)
+		require.Equal(t, test.ExpectedOpposite, r.snakeHasLostHeadToHead(&o, &s), "Snake%q Other%q", s.Body, o.Body)
 	}
 
 }
@@ -425,14 +555,10 @@ func TestSnakeHasLostHeadToHead(t *testing.T) {
 func TestFeedSnakes(t *testing.T) {
 	r := StandardRuleset{}
 	b := &BoardState{
-		Snakes: []*Snake{
-			{Body: []*Point{
-				{2, 1}, {1, 1}, {1, 2}, {2, 2},
-			}},
+		Snakes: []Snake{
+			{Body: []Point{{2, 1}, {1, 1}, {1, 2}, {2, 2}}},
 		},
-		Food: []*Point{
-			{2, 1},
-		},
+		Food: []Point{{2, 1}},
 	}
 
 	err := r.feedSnakes(b)
@@ -444,77 +570,77 @@ func TestFeedSnakes(t *testing.T) {
 func TestGetUnoccupiedPoints(t *testing.T) {
 	tests := []struct {
 		Board    *BoardState
-		Expected []*Point
+		Expected []Point
 	}{
 		{
 			&BoardState{
 				Height: 1,
 				Width:  1,
 			},
-			[]*Point{{0, 0}},
+			[]Point{{0, 0}},
 		},
 		{
 			&BoardState{
 				Height: 1,
 				Width:  2,
 			},
-			[]*Point{{0, 0}, {1, 0}},
+			[]Point{{0, 0}, {1, 0}},
 		},
 		{
 			&BoardState{
 				Height: 1,
 				Width:  1,
-				Food:   []*Point{{0, 0}, {101, 202}, {-4, -5}},
+				Food:   []Point{{0, 0}, {101, 202}, {-4, -5}},
 			},
-			[]*Point{},
+			[]Point{},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  2,
-				Food:   []*Point{{0, 0}, {1, 0}},
+				Food:   []Point{{0, 0}, {1, 0}},
 			},
-			[]*Point{{0, 1}, {1, 1}},
+			[]Point{{0, 1}, {1, 1}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  2,
-				Food:   []*Point{{0, 0}, {0, 1}, {1, 0}, {1, 1}},
+				Food:   []Point{{0, 0}, {0, 1}, {1, 0}, {1, 1}},
 			},
-			[]*Point{},
+			[]Point{},
 		},
 		{
 			&BoardState{
 				Height: 4,
 				Width:  1,
-				Snakes: []*Snake{
-					{Body: []*Point{{0, 0}}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}}},
 				},
 			},
-			[]*Point{{0, 1}, {0, 2}, {0, 3}},
+			[]Point{{0, 1}, {0, 2}, {0, 3}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
-				Snakes: []*Snake{
-					{Body: []*Point{{0, 0}, {1, 0}, {1, 1}}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
 				},
 			},
-			[]*Point{{0, 1}, {2, 0}, {2, 1}},
+			[]Point{{0, 1}, {2, 0}, {2, 1}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
-				Food:   []*Point{{0, 0}, {1, 0}, {1, 1}, {2, 0}},
-				Snakes: []*Snake{
-					{Body: []*Point{{0, 0}, {1, 0}, {1, 1}}},
-					{Body: []*Point{{0, 1}}},
+				Food:   []Point{{0, 0}, {1, 0}, {1, 1}, {2, 0}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{0, 1}}},
 				},
 			},
-			[]*Point{{2, 1}},
+			[]Point{{2, 1}},
 		},
 	}
 
@@ -523,7 +649,7 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 		unoccupiedPoints := r.getUnoccupiedPoints(test.Board)
 		require.Equal(t, len(test.Expected), len(unoccupiedPoints))
 		for i, e := range test.Expected {
-			require.Equal(t, *e, *unoccupiedPoints[i])
+			require.Equal(t, e, unoccupiedPoints[i])
 		}
 	}
 }
@@ -531,15 +657,15 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 func TestMaybeSpawnFood(t *testing.T) {
 	tests := []struct {
 		Seed         int64
-		ExpectedFood []*Point
+		ExpectedFood []Point
 	}{
 		// Use pre-tested seeds and results
-		{123, []*Point{}},
-		{456, []*Point{}},
-		{789, []*Point{}},
-		{1024, []*Point{{2, 1}}},
-		{511, []*Point{{2, 0}}},
-		{165, []*Point{{3, 1}}},
+		{123, []Point{}},
+		{456, []Point{}},
+		{789, []Point{}},
+		{1024, []Point{{2, 1}}},
+		{511, []Point{{2, 0}}},
+		{165, []Point{{3, 1}}},
 	}
 
 	r := StandardRuleset{}
@@ -547,9 +673,9 @@ func TestMaybeSpawnFood(t *testing.T) {
 		b := &BoardState{
 			Height: 4,
 			Width:  5,
-			Snakes: []*Snake{
-				{Body: []*Point{{1, 0}, {1, 1}}},
-				{Body: []*Point{{0, 1}, {0, 2}, {0, 3}}},
+			Snakes: []Snake{
+				{Body: []Point{{1, 0}, {1, 1}}},
+				{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
 			},
 		}
 
@@ -558,7 +684,7 @@ func TestMaybeSpawnFood(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, len(test.ExpectedFood), len(b.Food), "Seed %d", test.Seed)
 		for i, e := range test.ExpectedFood {
-			require.Equal(t, *e, *b.Food[i], "Seed %d", test.Seed)
+			require.Equal(t, e, b.Food[i], "Seed %d", test.Seed)
 		}
 	}
 }
