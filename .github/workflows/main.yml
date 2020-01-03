@@ -41,6 +41,7 @@ jobs:
     - name: go test
       run: go test -race -coverprofile=coverage.txt ./...
     - name: upload to codecov
+      if: github.event_name == 'push'
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
