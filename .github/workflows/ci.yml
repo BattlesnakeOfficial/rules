@@ -28,7 +28,7 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.22.2
           ./bin/golangci-lint run -v ./...
-  
+
   test:
     name: Test (go test)
     runs-on: ubuntu-latest
@@ -39,4 +39,10 @@ jobs:
       with:
         go-version: '1.13'
     - name: go test
-      run: go test ./...
+      run: go test -race -coverprofile=coverage.txt ./...
+    - name: upload to codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.txt
+        fail_ci_if_error: true
