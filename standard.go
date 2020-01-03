@@ -22,6 +22,8 @@ const (
 	EliminatedByStarvation          = "starvation"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
+
+	// TODO - Error consts
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -95,8 +97,8 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := r.getUnoccupiedPoints(b)
-		if len(unoccupiedPoints) < len(b.Snakes)-i {
-			return errors.New("not enough empty squares to place snakes")
+		if len(unoccupiedPoints) <= 0 {
+			return errors.New("not enough space to place snake")
 		}
 		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 		for j := 0; j < SnakeStartSize; j++ {
@@ -107,8 +109,7 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 }
 
 func (r *StandardRuleset) placeFood(b *BoardState) error {
-	r.spawnFood(b, len(b.Snakes))
-	return nil
+	return r.spawnFood(b, len(b.Snakes))
 }
 
 func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
@@ -188,6 +189,11 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 
+		// Do not move eliminated snakes
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
+
 		var newHead = Point{}
 		switch move.Move {
 		case MoveDown:
@@ -227,7 +233,9 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 
 func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
-		b.Snakes[i].Health = b.Snakes[i].Health - 1
+		if b.Snakes[i].EliminatedCause == NotEliminated {
+			b.Snakes[i].Health = b.Snakes[i].Health - 1
+		}
 	}
 	return nil
 }
@@ -313,18 +321,22 @@ func (r *StandardRuleset) snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 }
 
 func (r *StandardRuleset) feedSnakes(b *BoardState) error {
-	var newFood []Point
-	var tail Point
-
+	newFood := []Point{}
 	for _, food := range b.Food {
 		foodHasBeenEaten := false
-		for _, snake := range b.Snakes {
+		for i := 0; i < len(b.Snakes); i++ {
+			snake := &b.Snakes[i]
+
+			// Ignore eliminated and zero-length snakes, they can't eat.
+			if snake.EliminatedCause != NotEliminated || len(snake.Body) == 0 {
+				continue
+			}
+
 			if snake.Body[0].X == food.X && snake.Body[0].Y == food.Y {
 				foodHasBeenEaten = true
 				// Update snake
+				snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
 				snake.Health = SnakeMaxHealth
-				tail = snake.Body[len(snake.Body)-1]
-				snake.Body = append(snake.Body, tail)
 			}
 		}
 		// Persist food to next BoardState if not eaten
@@ -339,12 +351,12 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState, n int) error {
 	if rand.Float32() <= FoodSpawnChance {
-		r.spawnFood(b, n)
+		return r.spawnFood(b, n)
 	}
 	return nil
 }
 
-func (r *StandardRuleset) spawnFood(b *BoardState, n int) {
+func (r *StandardRuleset) spawnFood(b *BoardState, n int) error {
 	for i := 0; i < n; i++ {
 		unoccupiedPoints := r.getUnoccupiedPoints(b)
 		if len(unoccupiedPoints) > 0 {
@@ -352,6 +364,7 @@ func (r *StandardRuleset) spawnFood(b *BoardState, n int) {
 			b.Food = append(b.Food, newFood)
 		}
 	}
+	return nil
 }
 
 func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
