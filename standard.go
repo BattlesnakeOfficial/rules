@@ -16,8 +16,9 @@ const (
 	SnakeStartSize  = 3
 
 	// bvanvugt - TODO: Just return formatted strings instead of codes?
-	EliminatedByColliision          = "snake-collision"
-	EliminatedBySelfColliision      = "snake-self-collision"
+	NotEliminated                   = ""
+	EliminatedByCollision           = "snake-collision"
+	EliminatedBySelfCollision       = "snake-self-collision"
 	EliminatedByStarvation          = "starvation"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
@@ -42,7 +43,7 @@ func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, sna
 		return nil, err
 	}
 
-	err = r.placeInitialFood(initialBoardState)
+	err = r.placeFood(initialBoardState)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +106,11 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 	return nil
 }
 
+func (r *StandardRuleset) placeFood(b *BoardState) error {
+	r.spawnFood(b, len(b.Snakes))
+	return nil
+}
+
 func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
 	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
 		return true
@@ -116,11 +122,6 @@ func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
 		return true
 	}
 	return false
-}
-
-func (r *StandardRuleset) placeInitialFood(b *BoardState) error {
-	r.spawnFood(b, len(b.Snakes))
-	return nil
 }
 
 func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
@@ -232,24 +233,44 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 }
 
 func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
-	for _, snake := range b.Snakes {
-		if r.snakeHasStarved(&snake) {
+	for i := 0; i < len(b.Snakes); i++ {
+		snake := &b.Snakes[i]
+		if len(snake.Body) <= 0 {
+			return errors.New("snake is length zero")
+		}
+
+		if r.snakeHasStarved(snake) {
 			snake.EliminatedCause = EliminatedByStarvation
-		} else if r.snakeIsOutOfBounds(&snake, b.Width, b.Height) {
+			continue
+		}
+
+		if r.snakeIsOutOfBounds(snake, b.Width, b.Height) {
 			snake.EliminatedCause = EliminatedByOutOfBounds
-		} else {
-			for _, other := range b.Snakes {
-				if r.snakeHasBodyCollided(&snake, &other) {
-					if snake.ID == other.ID {
-						snake.EliminatedCause = EliminatedBySelfColliision
-					} else {
-						snake.EliminatedCause = EliminatedByColliision
-					}
-					break
-				} else if r.snakeHasLostHeadToHead(&snake, &other) {
-					snake.EliminatedCause = EliminatedByHeadToHeadCollision
-					break
+			continue
+		}
+
+		// Always check body collisions before head-to-heads
+		for j := 0; j < len(b.Snakes); j++ {
+			other := &b.Snakes[j]
+			if r.snakeHasBodyCollided(snake, other) {
+				if snake.ID == other.ID {
+					snake.EliminatedCause = EliminatedBySelfCollision
+				} else {
+					snake.EliminatedCause = EliminatedByCollision
 				}
+				break
+			}
+		}
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
+
+		// Always check body collisions before head-to-heads
+		for j := 0; j < len(b.Snakes); j++ {
+			other := &b.Snakes[j]
+			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
+				snake.EliminatedCause = EliminatedByHeadToHeadCollision
+				break
 			}
 		}
 	}
