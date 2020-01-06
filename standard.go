@@ -181,12 +181,22 @@ func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove)
 }
 
 func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+	if len(moves) < len(b.Snakes) {
+		return errors.New("not enough snake moves")
+	}
+	if len(moves) > len(b.Snakes) {
+		return errors.New("too many snake moves")
+	}
+
 	for _, move := range moves {
 		var snake *Snake
 		for i := 0; i < len(b.Snakes); i++ {
 			if b.Snakes[i].ID == move.ID {
 				snake = &b.Snakes[i]
 			}
+		}
+		if snake == nil {
+			return errors.New("snake not found for move")
 		}
 
 		// Do not move eliminated snakes

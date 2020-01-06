@@ -340,6 +340,77 @@ func TestMoveSnakes(t *testing.T) {
 	}
 }
 
+func TestMoveSnakesWrongID(t *testing.T) {
+	b := &BoardState{
+		Snakes: []Snake{
+			{
+				ID:   "one",
+				Body: []Point{{1, 1}},
+			},
+		},
+	}
+	moves := []SnakeMove{
+		{
+			ID:   "not found",
+			Move: MoveUp,
+		},
+	}
+
+	r := StandardRuleset{}
+	err := r.moveSnakes(b, moves)
+	require.Equal(t, err, errors.New("snake not found"))
+}
+
+func TestMoveSnakesNotEnoughMoves(t *testing.T) {
+	b := &BoardState{
+		Snakes: []Snake{
+			{
+				ID:   "one",
+				Body: []Point{{1, 1}},
+			},
+			{
+				ID:   "two",
+				Body: []Point{{2, 2}},
+			},
+		},
+	}
+	moves := []SnakeMove{
+		{
+			ID:   "two",
+			Move: MoveUp,
+		},
+	}
+
+	r := StandardRuleset{}
+	err := r.moveSnakes(b, moves)
+	require.Equal(t, err, errors.New("not enough snake moves"))
+}
+
+func TestMoveSnakesTooManyMoves(t *testing.T) {
+	b := &BoardState{
+		Snakes: []Snake{
+			{
+				ID:   "one",
+				Body: []Point{{1, 1}},
+			},
+		},
+	}
+	moves := []SnakeMove{
+		{
+			ID:   "one",
+			Move: MoveUp,
+		},
+		{
+			ID:   "two",
+			Move: MoveUp,
+		},
+	}
+
+	r := StandardRuleset{}
+	err := r.moveSnakes(b, moves)
+	require.Equal(t, err, errors.New("too many snake moves"))
+}
+
 func TestIsKnownBoardSize(t *testing.T) {
 	tests := []struct {
 		Width    int32
