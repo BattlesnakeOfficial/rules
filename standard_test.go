@@ -358,7 +358,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, err, errors.New("snake not found"))
+	require.Equal(t, err, errors.New("snake not found for move"))
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {
