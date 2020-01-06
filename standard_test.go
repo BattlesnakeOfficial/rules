@@ -1,4 +1,4 @@
-package rulesets
+package rules
 
 import (
 	"errors"
