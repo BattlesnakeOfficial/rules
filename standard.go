@@ -11,9 +11,11 @@ const (
 	BoardSizeSmall  = 7
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
+
 	FoodSpawnChance = 0.1
-	SnakeMaxHealth  = 100
-	SnakeStartSize  = 3
+
+	SnakeMaxHealth = 100
+	SnakeStartSize = 3
 
 	// bvanvugt - TODO: Just return formatted strings instead of codes?
 	NotEliminated                   = ""
