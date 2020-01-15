@@ -12,7 +12,7 @@ const (
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
 
-	FoodSpawnChance = 0.1
+	FoodSpawnChance = 0.25
 
 	SnakeMaxHealth = 100
 	SnakeStartSize = 3
