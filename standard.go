@@ -174,7 +174,7 @@ func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove)
 	}
 
 	// TODO: LOG?
-	err = r.maybeSpawnFood(nextState, 1)
+	err = r.maybeSpawnFood(nextState)
 	if err != nil {
 		return nil, err
 	}
@@ -361,9 +361,9 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 	return nil
 }
 
-func (r *StandardRuleset) maybeSpawnFood(b *BoardState, n int) error {
-	if rand.Float32() <= FoodSpawnChance {
-		return r.spawnFood(b, n)
+func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
+	if len(b.Food) == 0 || rand.Float32() <= FoodSpawnChance {
+		return r.spawnFood(b, 1)
 	}
 	return nil
 }

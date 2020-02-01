@@ -1091,15 +1091,16 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 func TestMaybeSpawnFood(t *testing.T) {
 	tests := []struct {
 		Seed         int64
+		Food         []Point
 		ExpectedFood []Point
 	}{
 		// Use pre-tested seeds and results
-		{123, []Point{}},
-		{456, []Point{}},
-		{789, []Point{}},
-		{1024, []Point{{2, 1}}},
-		{511, []Point{{2, 0}}},
-		{165, []Point{{3, 1}}},
+		{123, []Point{}, []Point{{2, 2}}},
+		{456, []Point{{4, 4}}, []Point{{4, 4}}},
+		{789, []Point{{4, 4}}, []Point{{4, 4}}},
+		{1024, []Point{}, []Point{{4, 1}}},
+		{511, []Point{{4, 4}}, []Point{{4, 4}, {2, 0}}},
+		{165, []Point{{4, 4}}, []Point{{4, 4}, {3, 1}}},
 	}
 
 	r := StandardRuleset{}
@@ -1111,10 +1112,11 @@ func TestMaybeSpawnFood(t *testing.T) {
 				{Body: []Point{{1, 0}, {1, 1}}},
 				{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
 			},
+			Food: test.Food,
 		}
 
 		rand.Seed(test.Seed)
-		err := r.maybeSpawnFood(b, 1)
+		err := r.maybeSpawnFood(b)
 		require.NoError(t, err)
 		require.Equal(t, len(test.ExpectedFood), len(b.Food), "Seed %d", test.Seed)
 		for i, e := range test.ExpectedFood {
