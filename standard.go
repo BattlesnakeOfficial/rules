@@ -278,6 +278,7 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 				} else {
 					snake.EliminatedCause = EliminatedByCollision
 				}
+				snake.EliminatedBy = other.ID
 				break
 			}
 		}
@@ -290,6 +291,7 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 			other := &b.Snakes[j]
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
 				snake.EliminatedCause = EliminatedByHeadToHeadCollision
+				snake.EliminatedBy = other.ID
 				break
 			}
 		}
