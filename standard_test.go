@@ -763,18 +763,21 @@ func TestSnakeHasLostHeadToHead(t *testing.T) {
 
 func TestEliminateSnakes(t *testing.T) {
 	tests := []struct {
+		Name                     string
 		Snakes                   []Snake
 		ExpectedEliminatedCauses []string
 		ExpectedEliminatedBy     []string
 		Err                      error
 	}{
 		{
+			"Empty",
 			[]Snake{},
 			[]string{},
 			[]string{},
 			nil,
 		},
 		{
+			"Zero Snake",
 			[]Snake{
 				Snake{},
 			},
@@ -783,6 +786,7 @@ func TestEliminateSnakes(t *testing.T) {
 			errors.New("snake is length zero"),
 		},
 		{
+			"Single Starvation",
 			[]Snake{
 				Snake{ID: "1", Body: []Point{{1, 1}}},
 			},
@@ -791,6 +795,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"Not Eliminated",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}}},
 			},
@@ -799,6 +804,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"Out of Bounds",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{-1, 1}}},
 			},
@@ -807,6 +813,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"Self Collision",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
 			},
@@ -815,6 +822,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"Multiple Separate Deaths",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{-1, 1}}},
@@ -826,6 +834,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"Other Collision",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{0, 2}, {0, 3}, {0, 4}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
@@ -837,6 +846,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"All Eliminated Head 2 Head",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{1, 1}}},
@@ -851,6 +861,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"One Snake wins Head 2 Head",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}, {0, 1}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{1, 1}, {1, 2}, {1, 3}}},
@@ -861,10 +872,11 @@ func TestEliminateSnakes(t *testing.T) {
 				NotEliminated,
 				EliminatedByHeadToHeadCollision,
 			},
-			[]string{"2", "", "1"},
+			[]string{"2", "", "2"},
 			nil,
 		},
 		{
+			"All Snakes Body Eliminated",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {3, 3}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{3, 3}, {2, 2}}},
@@ -883,6 +895,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"All Snakes Eliminated Head 2 Head",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
@@ -899,6 +912,7 @@ func TestEliminateSnakes(t *testing.T) {
 			nil,
 		},
 		{
+			"4 Snakes Head 2 Head",
 			[]Snake{
 				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
 				Snake{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
@@ -911,24 +925,26 @@ func TestEliminateSnakes(t *testing.T) {
 				NotEliminated,
 				EliminatedByHeadToHeadCollision,
 			},
-			[]string{"2", "1", "", "1"},
+			[]string{"3", "3", "", "3"},
 			nil,
 		},
 	}
 
 	r := StandardRuleset{}
 	for _, test := range tests {
-		b := &BoardState{
-			Width:  10,
-			Height: 10,
-			Snakes: test.Snakes,
-		}
-		err := r.eliminateSnakes(b)
-		require.Equal(t, test.Err, err)
-		for i, snake := range b.Snakes {
-			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
-			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy)
-		}
+		t.Run(test.Name, func(t *testing.T) {
+			b := &BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: test.Snakes,
+			}
+			err := r.eliminateSnakes(b)
+			require.Equal(t, test.Err, err)
+			for i, snake := range b.Snakes {
+				require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
+				require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy)
+			}
+		})
 	}
 }
 

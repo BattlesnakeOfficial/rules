@@ -3,6 +3,7 @@ package rules
 import (
 	"errors"
 	"math/rand"
+	"sort"
 )
 
 type StandardRuleset struct{}
@@ -252,7 +253,19 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 	return nil
 }
 
+type snakeList []Snake
+
 func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
+	boardSnakes := []*Snake{}
+	for _, snake := range b.Snakes {
+		// make sure to get a local closure so we can get the pointers of all snakes
+		local := snake
+		boardSnakes = append(boardSnakes, &local)
+	}
+	sort.Slice(boardSnakes, func(i, j int) bool {
+		return len(boardSnakes[i].Body) > len(boardSnakes[j].Body)
+	})
+	// this needs to be an for loop without a range, since a range will pass the values of the array by value
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if len(snake.Body) <= 0 {
@@ -270,8 +283,7 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 		}
 
 		// Always check body collisions before head-to-heads
-		for j := 0; j < len(b.Snakes); j++ {
-			other := &b.Snakes[j]
+		for _, other := range boardSnakes {
 			if r.snakeHasBodyCollided(snake, other) {
 				if snake.ID == other.ID {
 					snake.EliminatedCause = EliminatedBySelfCollision
@@ -287,8 +299,7 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 		}
 
 		// Always check body collisions before head-to-heads
-		for j := 0; j < len(b.Snakes); j++ {
-			other := &b.Snakes[j]
+		for _, other := range boardSnakes {
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
 				snake.EliminatedCause = EliminatedByHeadToHeadCollision
 				snake.EliminatedBy = other.ID
