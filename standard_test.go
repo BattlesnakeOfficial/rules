@@ -765,10 +765,12 @@ func TestEliminateSnakes(t *testing.T) {
 	tests := []struct {
 		Snakes                   []Snake
 		ExpectedEliminatedCauses []string
+		ExpectedEliminatedBy     []string
 		Err                      error
 	}{
 		{
 			[]Snake{},
+			[]string{},
 			[]string{},
 			nil,
 		},
@@ -777,44 +779,50 @@ func TestEliminateSnakes(t *testing.T) {
 				Snake{},
 			},
 			[]string{NotEliminated},
+			[]string{""},
 			errors.New("snake is length zero"),
 		},
 		{
 			[]Snake{
-				Snake{Body: []Point{{1, 1}}},
+				Snake{ID: "1", Body: []Point{{1, 1}}},
 			},
 			[]string{EliminatedByStarvation},
+			[]string{""},
 			nil,
 		},
 		{
 			[]Snake{
-				Snake{Health: 1, Body: []Point{{1, 1}}},
+				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}}},
 			},
 			[]string{NotEliminated},
+			[]string{""},
 			nil,
 		},
 		{
 			[]Snake{
-				Snake{Health: 1, Body: []Point{{-1, 1}}},
+				Snake{ID: "1", Health: 1, Body: []Point{{-1, 1}}},
 			},
 			[]string{EliminatedByOutOfBounds},
+			[]string{""},
 			nil,
 		},
 		{
 			[]Snake{
-				Snake{Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
+				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
 			},
 			[]string{EliminatedBySelfCollision},
+			[]string{"1"},
 			nil,
 		},
 		{
 			[]Snake{
-				Snake{Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
-				Snake{Health: 1, Body: []Point{{-1, 1}}},
+				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
+				Snake{ID: "2", Health: 1, Body: []Point{{-1, 1}}},
 			},
 			[]string{
 				EliminatedBySelfCollision,
 				EliminatedByOutOfBounds},
+			[]string{"1", ""},
 			nil,
 		},
 		{
@@ -825,6 +833,7 @@ func TestEliminateSnakes(t *testing.T) {
 			[]string{
 				EliminatedByCollision,
 				NotEliminated},
+			[]string{"2", ""},
 			nil,
 		},
 		{
@@ -838,6 +847,7 @@ func TestEliminateSnakes(t *testing.T) {
 				EliminatedByHeadToHeadCollision,
 				EliminatedByHeadToHeadCollision,
 			},
+			[]string{"2", "1", "1"},
 			nil,
 		},
 		{
@@ -851,6 +861,7 @@ func TestEliminateSnakes(t *testing.T) {
 				NotEliminated,
 				EliminatedByHeadToHeadCollision,
 			},
+			[]string{"2", "", "1"},
 			nil,
 		},
 		{
@@ -868,6 +879,7 @@ func TestEliminateSnakes(t *testing.T) {
 				EliminatedByCollision,
 				EliminatedByCollision,
 			},
+			[]string{"4", "1", "2", "3", "4"},
 			nil,
 		},
 		{
@@ -883,6 +895,7 @@ func TestEliminateSnakes(t *testing.T) {
 				EliminatedByHeadToHeadCollision,
 				EliminatedByHeadToHeadCollision,
 			},
+			[]string{"2", "1", "1", "1"},
 			nil,
 		},
 		{
@@ -898,6 +911,7 @@ func TestEliminateSnakes(t *testing.T) {
 				NotEliminated,
 				EliminatedByHeadToHeadCollision,
 			},
+			[]string{"2", "1", "", "1"},
 			nil,
 		},
 	}
@@ -911,8 +925,9 @@ func TestEliminateSnakes(t *testing.T) {
 		}
 		err := r.eliminateSnakes(b)
 		require.Equal(t, test.Err, err)
-		for i := 0; i < len(b.Snakes); i++ {
-			require.Equal(t, test.ExpectedEliminatedCauses[i], b.Snakes[i].EliminatedCause)
+		for i, snake := range b.Snakes {
+			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
+			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy)
 		}
 	}
 }
