@@ -253,8 +253,6 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 	return nil
 }
 
-type snakeList []Snake
-
 func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 	boardSnakes := []*Snake{}
 	for _, snake := range b.Snakes {
