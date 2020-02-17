@@ -1,5 +1,7 @@
 package rules
 
+import "fmt"
+
 const (
 	MoveUp    = "up"
 	MoveDown  = "down"
@@ -10,6 +12,10 @@ const (
 type Point struct {
 	X int32
 	Y int32
+}
+
+func (p Point) String() string {
+	return fmt.Sprintf("{X: %d, Y: %d}", p.X, p.Y)
 }
 
 type Snake struct {

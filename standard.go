@@ -358,8 +358,7 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 			if snake.Body[0].X == food.X && snake.Body[0].Y == food.Y {
 				foodHasBeenEaten = true
 				// Update snake
-				snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
-				snake.Health = SnakeMaxHealth
+				r.feedSnake(snake)
 			}
 		}
 		// Persist food to next BoardState if not eaten
@@ -370,6 +369,11 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 
 	b.Food = newFood
 	return nil
+}
+
+func (r *StandardRuleset) feedSnake(snake *Snake) {
+	snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
+	snake.Health = SnakeMaxHealth
 }
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
