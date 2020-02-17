@@ -3,10 +3,11 @@ package rules
 type TeamRuleset struct {
 	StandardRuleset
 
-	bodyPassthrough bool
-	sharedStats     bool
-	sharedDeath     bool
-	teams           map[string][]string
+	BodyPassthrough bool
+	SharedStats     bool
+	SharedDeath     bool
+
+	teams map[string][]string
 }
 
 type teamInfo struct {
@@ -79,7 +80,7 @@ func (r *TeamRuleset) feedSnakes(b *BoardState) error {
 		return err
 	}
 
-	if !r.sharedStats {
+	if !r.SharedStats {
 		return nil
 	}
 
@@ -140,7 +141,7 @@ func (r *TeamRuleset) eliminateSnakes(b *BoardState) error {
 }
 
 func (r *TeamRuleset) handleSharedDeath(b *BoardState) {
-	if !r.sharedDeath {
+	if !r.SharedDeath {
 		return
 	}
 
@@ -159,7 +160,7 @@ func (r *TeamRuleset) handleSharedDeath(b *BoardState) {
 }
 
 func (r *TeamRuleset) handleBodyPassthrough(b *BoardState) {
-	if !r.bodyPassthrough {
+	if !r.BodyPassthrough {
 		return
 	}
 
