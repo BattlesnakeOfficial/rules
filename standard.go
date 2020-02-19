@@ -95,6 +95,9 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 }
 
 func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
+
+	// TODO: Always place on all black or all white squares
+
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := r.getUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
