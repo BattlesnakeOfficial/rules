@@ -3,6 +3,7 @@ package rules
 import (
 	"errors"
 	"math/rand"
+	"sort"
 )
 
 type StandardRuleset struct{}
@@ -256,6 +257,19 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 }
 
 func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
+	// First order snake indices by length.
+	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
+	snakeIndicesByLength := make([]int, len(b.Snakes))
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeIndicesByLength[i] = i
+	}
+	sort.Slice(snakeIndicesByLength, func(i int, j int) bool {
+		lenI := len(b.Snakes[snakeIndicesByLength[i]].Body)
+		lenJ := len(b.Snakes[snakeIndicesByLength[j]].Body)
+		return lenI > lenJ
+	})
+
+	// Iterate through snakes checking for eliminations.
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if len(snake.Body) <= 0 {
@@ -273,14 +287,15 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 		}
 
 		// Always check body collisions before head-to-heads
-		for j := 0; j < len(b.Snakes); j++ {
-			other := &b.Snakes[j]
+		for _, otherIndex := range snakeIndicesByLength {
+			other := &b.Snakes[otherIndex]
 			if r.snakeHasBodyCollided(snake, other) {
 				if snake.ID == other.ID {
 					snake.EliminatedCause = EliminatedBySelfCollision
 				} else {
 					snake.EliminatedCause = EliminatedByCollision
 				}
+				snake.EliminatedBy = other.ID
 				break
 			}
 		}
@@ -288,11 +303,12 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 			continue
 		}
 
-		// Always check body collisions before head-to-heads
-		for j := 0; j < len(b.Snakes); j++ {
-			other := &b.Snakes[j]
+		// Always check head-to-heads after body collisions
+		for _, otherIndex := range snakeIndicesByLength {
+			other := &b.Snakes[otherIndex]
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
 				snake.EliminatedCause = EliminatedByHeadToHeadCollision
+				snake.EliminatedBy = other.ID
 				break
 			}
 		}
