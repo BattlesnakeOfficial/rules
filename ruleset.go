@@ -17,6 +17,7 @@ type Snake struct {
 	Body            []Point
 	Health          int32
 	EliminatedCause string
+	EliminatedBy    string
 }
 
 type BoardState struct {
