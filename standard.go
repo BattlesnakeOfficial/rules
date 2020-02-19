@@ -257,16 +257,19 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 }
 
 func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
-	boardSnakes := []*Snake{}
-	for _, snake := range b.Snakes {
-		// make sure to get a local closure so we can get the pointers of all snakes
-		local := snake
-		boardSnakes = append(boardSnakes, &local)
+	// First order snake indices by length.
+	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
+	snakeIndicesByLength := make([]int, len(b.Snakes))
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeIndicesByLength[i] = i
 	}
-	sort.Slice(boardSnakes, func(i, j int) bool {
-		return len(boardSnakes[i].Body) > len(boardSnakes[j].Body)
+	sort.Slice(snakeIndicesByLength, func(i int, j int) bool {
+		lenI := len(b.Snakes[snakeIndicesByLength[i]].Body)
+		lenJ := len(b.Snakes[snakeIndicesByLength[j]].Body)
+		return lenI > lenJ
 	})
-	// this needs to be an for loop without a range, since a range will pass the values of the array by value
+
+	// Iterate through snakes checking for eliminations.
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if len(snake.Body) <= 0 {
@@ -284,7 +287,8 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 		}
 
 		// Always check body collisions before head-to-heads
-		for _, other := range boardSnakes {
+		for _, otherIndex := range snakeIndicesByLength {
+			other := &b.Snakes[otherIndex]
 			if r.snakeHasBodyCollided(snake, other) {
 				if snake.ID == other.ID {
 					snake.EliminatedCause = EliminatedBySelfCollision
@@ -299,8 +303,9 @@ func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
 			continue
 		}
 
-		// Always check body collisions before head-to-heads
-		for _, other := range boardSnakes {
+		// Always check head-to-heads after body collisions
+		for _, otherIndex := range snakeIndicesByLength {
+			other := &b.Snakes[otherIndex]
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
 				snake.EliminatedCause = EliminatedByHeadToHeadCollision
 				snake.EliminatedBy = other.ID
