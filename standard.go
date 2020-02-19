@@ -11,9 +11,11 @@ const (
 	BoardSizeSmall  = 7
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
-	FoodSpawnChance = 0.1
-	SnakeMaxHealth  = 100
-	SnakeStartSize  = 3
+
+	FoodSpawnChance = 0.15
+
+	SnakeMaxHealth = 100
+	SnakeStartSize = 3
 
 	// bvanvugt - TODO: Just return formatted strings instead of codes?
 	NotEliminated                   = ""
@@ -175,7 +177,7 @@ func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove)
 	}
 
 	// TODO: LOG?
-	err = r.maybeSpawnFood(nextState, 1)
+	err = r.maybeSpawnFood(nextState)
 	if err != nil {
 		return nil, err
 	}
@@ -362,9 +364,9 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 	return nil
 }
 
-func (r *StandardRuleset) maybeSpawnFood(b *BoardState, n int) error {
-	if rand.Float32() <= FoodSpawnChance {
-		return r.spawnFood(b, n)
+func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
+	if len(b.Food) == 0 || rand.Float32() <= FoodSpawnChance {
+		return r.spawnFood(b, 1)
 	}
 	return nil
 }
