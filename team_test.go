@@ -6,49 +6,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func TestBodyPassthrough(t *testing.T) {
-// 	r := TeamRuleset{
-// 		BodyPassthrough: true,
-// 		teams: map[string][]string{
-// 			"A": {"1", "2"},
-// 			"B": {"3"},
-// 		},
-// 	}
-// 	initialState := &BoardState{
-// 		Height: 10,
-// 		Width:  10,
-// 		Snakes: []Snake{
-// 			{ID: "1", Health: 100, Body: []Point{{X: 1, Y: 1}, {X: 2, Y: 1}, {X: 3, Y: 1}}},
-// 			{ID: "2", Health: 100, Body: []Point{{X: 2, Y: 2}, {X: 2, Y: 3}, {X: 2, Y: 4}}},
-// 			{ID: "3", Health: 100, Body: []Point{{X: 3, Y: 2}}},
-// 		},
-// 	}
-// 	moves := []SnakeMove{
-// 		{ID: "1", Move: "left"},
-// 		{ID: "2", Move: "up"},
-// 		{ID: "3", Move: "left"},
-// 	}
-// 	newState, err := r.CreateNextBoardState(initialState, moves)
-// 	require.NoError(t, err)
-// 	require.Equal(t, EliminatedByCollision, newState.Snakes[2].EliminatedCause)
-// 	require.Equal(t, "2", newState.Snakes[2].EliminatedBy)
-
-// 	require.Empty(t, newState.Snakes[1].EliminatedCause)
-// 	require.Empty(t, newState.Snakes[1].EliminatedBy)
-
-// 	r.BodyPassthrough = false
-
-// 	newState, err = r.CreateNextBoardState(initialState, moves)
-// 	require.NoError(t, err)
-
-// 	require.Equal(t, EliminatedByCollision, newState.Snakes[1].EliminatedCause)
-// 	require.Equal(t, "1", newState.Snakes[1].EliminatedBy)
-// }
-
 func TestCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := TeamRuleset{}
 	_, err := r.CreateNextBoardState(boardState, []SnakeMove{})
+	require.NoError(t, err)
+}
+
+func TestResurrectTeamBodyCollisionsSanity(t *testing.T) {
+	boardState := &BoardState{}
+	r := TeamRuleset{}
+	err := r.resurrectTeamBodyCollisions(boardState)
 	require.NoError(t, err)
 }
 
@@ -57,6 +25,86 @@ func TestSharedAttributesSanity(t *testing.T) {
 	r := TeamRuleset{}
 	err := r.shareTeamAttributes(boardState)
 	require.NoError(t, err)
+}
+
+func TestAllowBodyCollisions(t *testing.T) {
+	testSnakes := []struct {
+		SnakeID         string
+		TeamID          string
+		EliminatedCause string
+		EliminatedBy    string
+		ExpectedCause   string
+		ExpectedBy      string
+	}{
+		// Team Red
+		{"R1", "red", NotEliminated, "", NotEliminated, ""},
+		{"R2", "red", EliminatedByCollision, "R1", NotEliminated, ""},
+		// Team Blue
+		{"B1", "blue", EliminatedByCollision, "R1", EliminatedByCollision, "R1"},
+		{"B2", "blue", EliminatedBySelfCollision, "B1", EliminatedBySelfCollision, "B1"},
+		{"B4", "blue", EliminatedByOutOfBounds, "", EliminatedByOutOfBounds, ""},
+		{"B3", "blue", NotEliminated, "", NotEliminated, ""},
+		// More Team Red
+		{"R3", "red", NotEliminated, "", NotEliminated, ""},
+		{"R4", "red", EliminatedByCollision, "R4", EliminatedByCollision, "R4"}, // this is an error case but worth testing
+		{"R5", "red", EliminatedByCollision, "R4", NotEliminated, ""},
+		// // Team Green
+		{"G1", "green", EliminatedByStarvation, "x", EliminatedByStarvation, "x"},
+		// // Team Yellow
+		{"Y1", "yellow", EliminatedByCollision, "B4", EliminatedByCollision, "B4"},
+	}
+
+	boardState := &BoardState{}
+	teamMap := make(map[string]string)
+	for _, testSnake := range testSnakes {
+		boardState.Snakes = append(boardState.Snakes, Snake{
+			ID:              testSnake.SnakeID,
+			EliminatedCause: testSnake.EliminatedCause,
+			EliminatedBy:    testSnake.EliminatedBy,
+		})
+		teamMap[testSnake.SnakeID] = testSnake.TeamID
+	}
+	require.Equal(t, len(teamMap), len(boardState.Snakes), "team map is wrong size, error in test setup")
+
+	r := TeamRuleset{TeamMap: teamMap, AllowBodyCollisions: true}
+	err := r.resurrectTeamBodyCollisions(boardState)
+
+	require.NoError(t, err)
+	require.Equal(t, len(boardState.Snakes), len(testSnakes))
+	for i := 0; i < len(boardState.Snakes); i++ {
+		require.Equal(
+			t,
+			testSnakes[i].ExpectedCause,
+			boardState.Snakes[i].EliminatedCause,
+			"snake %s failed shared eliminated cause",
+			testSnakes[i].SnakeID,
+		)
+		require.Equal(
+			t,
+			testSnakes[i].ExpectedBy,
+			boardState.Snakes[i].EliminatedBy,
+			"snake %s failed shared eliminated by",
+			testSnakes[i].SnakeID,
+		)
+	}
+}
+
+func TestAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
+	boardState := &BoardState{
+		Snakes: []Snake{
+			Snake{ID: "1", EliminatedCause: EliminatedByCollision},
+			Snake{ID: "2"},
+		},
+	}
+	r := TeamRuleset{
+		AllowBodyCollisions: true,
+		TeamMap: map[string]string{
+			"1": "red",
+			"2": "red",
+		},
+	}
+	err := r.resurrectTeamBodyCollisions(boardState)
+	require.Error(t, err)
 }
 
 func TestShareTeamHealth(t *testing.T) {
@@ -217,4 +265,22 @@ func TestSharedElimination(t *testing.T) {
 			testSnakes[i].SnakeID,
 		)
 	}
+}
+
+func TestSharedAttributesErrorLengthZero(t *testing.T) {
+	boardState := &BoardState{
+		Snakes: []Snake{
+			Snake{ID: "1"},
+			Snake{ID: "2"},
+		},
+	}
+	r := TeamRuleset{
+		SharedLength: true,
+		TeamMap: map[string]string{
+			"1": "red",
+			"2": "red",
+		},
+	}
+	err := r.shareTeamAttributes(boardState)
+	require.Error(t, err)
 }

@@ -9,13 +9,14 @@ type TeamRuleset struct {
 
 	TeamMap map[string]string
 
+	// These are intentionally designed so that they default to a standard game.
 	AllowBodyCollisions bool
 	SharedElimination   bool
-	SharedLength        bool
 	SharedHealth        bool
+	SharedLength        bool
 }
 
-const EliminatedByTeam = "team-is-eliminated"
+const EliminatedByTeam = "team-eliminated"
 
 func (r *TeamRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
@@ -47,7 +48,7 @@ func (r *TeamRuleset) areSnakeIDsOnSameTeam(snakeID string, otherID string) bool
 }
 
 func (r *TeamRuleset) resurrectTeamBodyCollisions(b *BoardState) error {
-	if !(r.AllowBodyCollisions) {
+	if !r.AllowBodyCollisions {
 		return nil
 	}
 
@@ -100,8 +101,8 @@ func (r *TeamRuleset) shareTeamAttributes(b *BoardState) error {
 				if r.SharedElimination {
 					if snake.EliminatedCause == NotEliminated && other.EliminatedCause != NotEliminated {
 						snake.EliminatedCause = EliminatedByTeam
-						// We intentionally do not set snake.EliminatedBy to not place blame,
-						// especially when there might be multiple snakes eliminated
+						// We intentionally do not set snake.EliminatedBy because there might be multiple culprits.
+						snake.EliminatedBy = ""
 					}
 				}
 			}
