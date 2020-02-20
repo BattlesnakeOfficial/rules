@@ -82,13 +82,11 @@ func (r *TeamRuleset) shareTeamAttributes(b *BoardState) error {
 		for j := 0; j < len(b.Snakes); j++ {
 			other := &b.Snakes[j]
 			if r.areSnakesOnSameTeam(snake, other) {
-
 				if r.SharedHealth {
 					if snake.Health < other.Health {
 						snake.Health = other.Health
 					}
 				}
-
 				if r.SharedLength {
 					if len(snake.Body) == 0 || len(other.Body) == 0 {
 						return errors.New("found snake of zero length")
@@ -97,7 +95,6 @@ func (r *TeamRuleset) shareTeamAttributes(b *BoardState) error {
 						r.growSnake(snake)
 					}
 				}
-
 				if r.SharedElimination {
 					if snake.EliminatedCause == NotEliminated && other.EliminatedCause != NotEliminated {
 						snake.EliminatedCause = EliminatedByTeam
