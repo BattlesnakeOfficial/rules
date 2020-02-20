@@ -34,5 +34,5 @@ type SnakeMove struct {
 
 type Ruleset interface {
 	CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error)
-	ResolveMoves(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
+	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 }

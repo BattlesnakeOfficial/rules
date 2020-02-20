@@ -131,7 +131,7 @@ func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
 	return false
 }
 
-func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
+func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	// We specifically want to copy prevState, so as not to alter it directly.
 	nextState := &BoardState{
 		Height: prevState.Height,
@@ -160,7 +160,7 @@ func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove)
 	}
 
 	// TODO: LOG?
-	err = r.eliminateSnakes(nextState)
+	err = r.maybeEliminateSnakes(nextState)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (r *StandardRuleset) ResolveMoves(prevState *BoardState, moves []SnakeMove)
 	// of equal length actually show length + 1
 
 	// TODO: LOG?
-	err = r.feedSnakes(nextState)
+	err = r.maybeFeedSnakes(nextState)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 	return nil
 }
 
-func (r *StandardRuleset) eliminateSnakes(b *BoardState) error {
+func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 	// First order snake indices by length.
 	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
 	snakeIndicesByLength := make([]int, len(b.Snakes))
@@ -351,7 +351,7 @@ func (r *StandardRuleset) snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 	return false
 }
 
-func (r *StandardRuleset) feedSnakes(b *BoardState) error {
+func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
 	newFood := []Point{}
 	for _, food := range b.Food {
 		foodHasBeenEaten := false
@@ -364,10 +364,8 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 			}
 
 			if snake.Body[0].X == food.X && snake.Body[0].Y == food.Y {
+				r.feedSnake(snake)
 				foodHasBeenEaten = true
-				// Update snake
-				snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
-				snake.Health = SnakeMaxHealth
 			}
 		}
 		// Persist food to next BoardState if not eaten
@@ -378,6 +376,17 @@ func (r *StandardRuleset) feedSnakes(b *BoardState) error {
 
 	b.Food = newFood
 	return nil
+}
+
+func (r *StandardRuleset) feedSnake(snake *Snake) {
+	r.growSnake(snake)
+	snake.Health = SnakeMaxHealth
+}
+
+func (r *StandardRuleset) growSnake(snake *Snake) {
+	if len(snake.Body) > 0 {
+		snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
+	}
 }
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {

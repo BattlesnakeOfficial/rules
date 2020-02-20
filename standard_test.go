@@ -20,7 +20,7 @@ func TestSanity(t *testing.T) {
 	require.Len(t, state.Food, 0)
 	require.Len(t, state.Snakes, 0)
 
-	next, err := r.ResolveMoves(
+	next, err := r.CreateNextBoardState(
 		&BoardState{},
 		[]SnakeMove{},
 	)
@@ -244,7 +244,7 @@ func TestPlaceFood(t *testing.T) {
 	}
 }
 
-func TestResolveMoves(t *testing.T) {
+func TestCreateNextBoardState(t *testing.T) {
 	// TODO
 }
 
@@ -761,7 +761,7 @@ func TestSnakeHasLostHeadToHead(t *testing.T) {
 
 }
 
-func TestEliminateSnakes(t *testing.T) {
+func TestMaybeEliminateSnakes(t *testing.T) {
 	tests := []struct {
 		Name                     string
 		Snakes                   []Snake
@@ -938,7 +938,7 @@ func TestEliminateSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: test.Snakes,
 			}
-			err := r.eliminateSnakes(b)
+			err := r.maybeEliminateSnakes(b)
 			require.Equal(t, test.Err, err)
 			for i, snake := range b.Snakes {
 				require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
@@ -948,7 +948,7 @@ func TestEliminateSnakes(t *testing.T) {
 	}
 }
 
-func TestFeedSnakes(t *testing.T) {
+func TestMaybeFeedSnakes(t *testing.T) {
 	tests := []struct {
 		Name           string
 		Snakes         []Snake
@@ -1021,7 +1021,7 @@ func TestFeedSnakes(t *testing.T) {
 			Snakes: test.Snakes,
 			Food:   test.Food,
 		}
-		err := r.feedSnakes(b)
+		err := r.maybeFeedSnakes(b)
 		require.NoError(t, err, test.Name)
 		require.Equal(t, len(test.ExpectedSnakes), len(b.Snakes), test.Name)
 		for i := 0; i < len(b.Snakes); i++ {
