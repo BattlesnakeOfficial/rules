@@ -439,3 +439,13 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
 	}
 	return unoccupiedPoints
 }
+
+func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
+	numSnakesRemaining := 0
+	for i := 0; i < len(b.Snakes); i++ {
+		if b.Snakes[i].EliminatedCause == NotEliminated {
+			numSnakesRemaining++
+		}
+	}
+	return numSnakesRemaining <= 1, nil
+}

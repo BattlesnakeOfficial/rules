@@ -44,7 +44,7 @@ func (r *TeamRuleset) areSnakesOnSameTeam(snake *Snake, other *Snake) bool {
 }
 
 func (r *TeamRuleset) areSnakeIDsOnSameTeam(snakeID string, otherID string) bool {
-	return snakeID != otherID && r.TeamMap[snakeID] == r.TeamMap[otherID]
+	return r.TeamMap[snakeID] == r.TeamMap[otherID]
 }
 
 func (r *TeamRuleset) resurrectTeamBodyCollisions(b *BoardState) error {
@@ -58,7 +58,7 @@ func (r *TeamRuleset) resurrectTeamBodyCollisions(b *BoardState) error {
 			if snake.EliminatedBy == "" {
 				return errors.New("snake eliminated by collision and eliminatedby is not set")
 			}
-			if r.areSnakeIDsOnSameTeam(snake.ID, snake.EliminatedBy) {
+			if snake.ID != snake.EliminatedBy && r.areSnakeIDsOnSameTeam(snake.ID, snake.EliminatedBy) {
 				snake.EliminatedCause = NotEliminated
 				snake.EliminatedBy = ""
 			}
@@ -107,4 +107,22 @@ func (r *TeamRuleset) shareTeamAttributes(b *BoardState) error {
 	}
 
 	return nil
+}
+
+func (r *TeamRuleset) IsGameOver(b *BoardState) (bool, error) {
+	snakesRemaining := []*Snake{}
+	for i := 0; i < len(b.Snakes); i++ {
+		if b.Snakes[i].EliminatedCause == NotEliminated {
+			snakesRemaining = append(snakesRemaining, &b.Snakes[i])
+		}
+	}
+
+	for i := 0; i < len(snakesRemaining); i++ {
+		if !r.areSnakesOnSameTeam(snakesRemaining[i], snakesRemaining[0]) {
+			// There are multiple teams remaining
+			return false, nil
+		}
+	}
+	// no snakes or single team remaining
+	return true, nil
 }

@@ -1155,3 +1155,72 @@ func TestMaybeSpawnFood(t *testing.T) {
 		}
 	}
 }
+
+func TestIsGameOver(t *testing.T) {
+	tests := []struct {
+		Snakes   []Snake
+		Expected bool
+	}{
+		{[]Snake{}, true},
+		{[]Snake{{}}, true},
+		{[]Snake{{}, {}}, false},
+		{[]Snake{{}, {}, {}, {}, {}}, false},
+		{
+			[]Snake{
+				{EliminatedCause: EliminatedByCollision},
+				{EliminatedCause: NotEliminated},
+			},
+			true,
+		},
+		{
+			[]Snake{
+				{EliminatedCause: NotEliminated},
+				{EliminatedCause: EliminatedByCollision},
+				{EliminatedCause: NotEliminated},
+				{EliminatedCause: NotEliminated},
+			},
+			false,
+		},
+		{
+			[]Snake{
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+			},
+			true,
+		},
+		{
+			[]Snake{
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: NotEliminated},
+			},
+			true,
+		},
+		{
+			[]Snake{
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: EliminatedByOutOfBounds},
+				{EliminatedCause: NotEliminated},
+				{EliminatedCause: NotEliminated},
+			},
+			false,
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		b := &BoardState{
+			Height: 11,
+			Width:  11,
+			Snakes: test.Snakes,
+			Food:   []Point{},
+		}
+
+		actual, err := r.IsGameOver(b)
+		require.NoError(t, err)
+		require.Equal(t, test.Expected, actual)
+	}
+}

@@ -284,3 +284,53 @@ func TestSharedAttributesErrorLengthZero(t *testing.T) {
 	err := r.shareTeamAttributes(boardState)
 	require.Error(t, err)
 }
+
+func TestTeamIsGameOver(t *testing.T) {
+	tests := []struct {
+		Snakes   []Snake
+		TeamMap  map[string]string
+		Expected bool
+	}{
+		{[]Snake{}, map[string]string{}, true},
+		{[]Snake{{ID: "R1"}}, map[string]string{"R1": "red"}, true},
+		{
+			[]Snake{{ID: "R1"}, {ID: "R2"}, {ID: "R3"}},
+			map[string]string{"R1": "red", "R2": "red", "R3": "red"},
+			true,
+		},
+		{
+			[]Snake{{ID: "R1"}, {ID: "B1"}},
+			map[string]string{"R1": "red", "B1": "blue"},
+			false,
+		},
+		{
+			[]Snake{{ID: "R1"}, {ID: "B1"}, {ID: "B2"}, {ID: "G1"}},
+			map[string]string{"R1": "red", "B1": "blue", "B2": "blue", "G1": "green"},
+			false,
+		},
+		{
+			[]Snake{
+				{ID: "R1", EliminatedCause: EliminatedByOutOfBounds},
+				{ID: "B1", EliminatedCause: EliminatedBySelfCollision, EliminatedBy: "B1"},
+				{ID: "B2", EliminatedCause: EliminatedByCollision, EliminatedBy: "B2"},
+				{ID: "G1"},
+			},
+			map[string]string{"R1": "red", "B1": "blue", "B2": "blue", "G1": "green"},
+			true,
+		},
+	}
+
+	for _, test := range tests {
+		b := &BoardState{
+			Height: 11,
+			Width:  11,
+			Snakes: test.Snakes,
+			Food:   []Point{},
+		}
+		r := TeamRuleset{TeamMap: test.TeamMap}
+
+		actual, err := r.IsGameOver(b)
+		require.NoError(t, err)
+		require.Equal(t, test.Expected, actual)
+	}
+}
