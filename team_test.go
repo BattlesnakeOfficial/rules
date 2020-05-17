@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestTeamRulesetInterface(t *testing.T) {
+	var _ Ruleset = (*TeamRuleset)(nil)
+}
+
 func TestCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := TeamRuleset{}

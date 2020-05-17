@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSoloRulesetInterface(t *testing.T) {
+	var _ Ruleset = (*SoloRuleset)(nil)
+}
+
 func TestSoloCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SoloRuleset{}

@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestStandardRulesetInterface(t *testing.T) {
+	var _ Ruleset = (*StandardRuleset)(nil)
+}
+
 func TestSanity(t *testing.T) {
 	r := StandardRuleset{}
 
