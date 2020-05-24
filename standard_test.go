@@ -43,12 +43,11 @@ func TestCreateInitialBoardState(t *testing.T) {
 		ExpectedNumFood int
 		Err             error
 	}{
-		{1, 1, []string{"one"}, 0, nil},
 		{1, 2, []string{"one"}, 1, nil},
 		{9, 8, []string{"one"}, 1, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
-		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
+		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
 	}
 
 	r := StandardRuleset{}
@@ -73,13 +72,15 @@ func TestCreateInitialBoardState(t *testing.T) {
 func TestPlaceSnakes(t *testing.T) {
 	// Because placement is random, we only test to ensure
 	// that snake bodies are populated correctly
+	// Note: because snakes are randomly spawned on odd or even diagonal points, the board can accomodate
+	// number of snakes equal to: width*height/2
 	tests := []struct {
 		BoardState *BoardState
 		Err        error
 	}{
 		{
 			&BoardState{
-				Width:  1,
+				Width:  2,
 				Height: 1,
 				Snakes: make([]Snake, 1),
 			},
@@ -87,7 +88,7 @@ func TestPlaceSnakes(t *testing.T) {
 		},
 		{
 			&BoardState{
-				Width:  1,
+				Width:  2,
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
@@ -97,7 +98,7 @@ func TestPlaceSnakes(t *testing.T) {
 			&BoardState{
 				Width:  10,
 				Height: 5,
-				Snakes: make([]Snake, 49),
+				Snakes: make([]Snake, 24),
 			},
 			nil,
 		},
@@ -105,7 +106,7 @@ func TestPlaceSnakes(t *testing.T) {
 			&BoardState{
 				Width:  5,
 				Height: 10,
-				Snakes: make([]Snake, 50),
+				Snakes: make([]Snake, 25),
 			},
 			nil,
 		},
@@ -181,6 +182,7 @@ func TestPlaceSnakes(t *testing.T) {
 		err := r.placeSnakes(test.BoardState)
 		require.Equal(t, test.Err, err, "Snakes: %d", len(test.BoardState.Snakes))
 		if err == nil {
+			var firstSnakePlacedOnEvenSquare bool = ((test.BoardState.Snakes[0].Body[0].X + test.BoardState.Snakes[0].Body[0].Y) % 2) == 0
 			for i := 0; i < len(test.BoardState.Snakes); i++ {
 				require.Len(t, test.BoardState.Snakes[i].Body, 3)
 				for _, point := range test.BoardState.Snakes[i].Body {
@@ -189,6 +191,8 @@ func TestPlaceSnakes(t *testing.T) {
 					require.Less(t, point.X, test.BoardState.Width)
 					require.Less(t, point.Y, test.BoardState.Height)
 				}
+				var snakePlacedOnEvenSquare bool = ((test.BoardState.Snakes[i].Body[0].X + test.BoardState.Snakes[i].Body[0].Y) % 2) == 0
+				require.Equal(t, firstSnakePlacedOnEvenSquare, snakePlacedOnEvenSquare)
 			}
 		}
 	}

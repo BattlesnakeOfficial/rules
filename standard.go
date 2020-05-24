@@ -99,10 +99,11 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 
-	// TODO: Always place on all black or all white squares
+	// Place snakes randomly either on odd or even squares, so they never spawn next to each other
+	var placeOnEvenSquares bool = rand.Float32() < 0.5
 
 	for i := 0; i < len(b.Snakes); i++ {
-		unoccupiedPoints := r.getUnoccupiedPoints(b)
+		unoccupiedPoints := r.getOddOrEvenUnoccupiedPoints(b, placeOnEvenSquares)
 		if len(unoccupiedPoints) <= 0 {
 			return errors.New("not enough space to place snake")
 		}
@@ -438,6 +439,26 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
 		}
 	}
 	return unoccupiedPoints
+}
+
+func (r *StandardRuleset) getOddOrEvenUnoccupiedPoints(b *BoardState, getEvenPoints bool) []Point {
+	// Start by getting unoccupied points
+	unoccupiedPoints := r.getUnoccupiedPoints(b)
+
+	// Create a new array to hold points that are either odd or even
+	oddOrEvenUnoccupiedPoints := []Point{}
+
+	// expectedXYRemainder is the remainder we expect after dividing X+Y by 2 and allows us to restrict points to being odd or even
+	var expectedXYRemainder int32 = 1
+	if getEvenPoints {
+		expectedXYRemainder = 0
+	}
+	for _, point := range unoccupiedPoints {
+		if ((point.X + point.Y) % 2) == expectedXYRemainder {
+			oddOrEvenUnoccupiedPoints = append(oddOrEvenUnoccupiedPoints, point)
+		}
+	}
+	return oddOrEvenUnoccupiedPoints
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
