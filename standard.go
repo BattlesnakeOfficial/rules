@@ -99,10 +99,8 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 
-	// TODO: Always place on all black or all white squares
-
 	for i := 0; i < len(b.Snakes); i++ {
-		unoccupiedPoints := r.getUnoccupiedPoints(b)
+		unoccupiedPoints := r.getEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
 			return errors.New("not enough space to place snake")
 		}
@@ -438,6 +436,21 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
 		}
 	}
 	return unoccupiedPoints
+}
+
+func (r *StandardRuleset) getEvenUnoccupiedPoints(b *BoardState) []Point {
+	// Start by getting unoccupied points
+	unoccupiedPoints := r.getUnoccupiedPoints(b)
+
+	// Create a new array to hold points that are  even
+	evenUnoccupiedPoints := []Point{}
+
+	for _, point := range unoccupiedPoints {
+		if ((point.X + point.Y) % 2) == 0 {
+			evenUnoccupiedPoints = append(evenUnoccupiedPoints, point)
+		}
+	}
+	return evenUnoccupiedPoints
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {

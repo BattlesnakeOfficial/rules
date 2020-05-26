@@ -49,6 +49,7 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
+		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
 	}
 
 	r := StandardRuleset{}
@@ -73,6 +74,7 @@ func TestCreateInitialBoardState(t *testing.T) {
 func TestPlaceSnakes(t *testing.T) {
 	// Because placement is random, we only test to ensure
 	// that snake bodies are populated correctly
+	// Note: because snakes are randomly spawned on even diagonal points, the board can accomodate number of snakes equal to: width*height/2
 	tests := []struct {
 		BoardState *BoardState
 		Err        error
@@ -95,9 +97,25 @@ func TestPlaceSnakes(t *testing.T) {
 		},
 		{
 			&BoardState{
+				Width:  2,
+				Height: 1,
+				Snakes: make([]Snake, 2),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
+				Width:  1,
+				Height: 2,
+				Snakes: make([]Snake, 2),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
 				Width:  10,
 				Height: 5,
-				Snakes: make([]Snake, 49),
+				Snakes: make([]Snake, 24),
 			},
 			nil,
 		},
@@ -105,9 +123,25 @@ func TestPlaceSnakes(t *testing.T) {
 			&BoardState{
 				Width:  5,
 				Height: 10,
-				Snakes: make([]Snake, 50),
+				Snakes: make([]Snake, 25),
 			},
 			nil,
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 5,
+				Snakes: make([]Snake, 49),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
+				Width:  5,
+				Height: 10,
+				Snakes: make([]Snake, 50),
+			},
+			errors.New("not enough space to place snake"),
 		},
 		{
 			&BoardState{
@@ -189,6 +223,10 @@ func TestPlaceSnakes(t *testing.T) {
 					require.Less(t, point.X, test.BoardState.Width)
 					require.Less(t, point.Y, test.BoardState.Height)
 				}
+
+				// All snakes are expected to be placed on an even square - this is true even of fixed positions for known board sizes
+				var snakePlacedOnEvenSquare bool = ((test.BoardState.Snakes[i].Body[0].X + test.BoardState.Snakes[i].Body[0].Y) % 2) == 0
+				require.Equal(t, true, snakePlacedOnEvenSquare)
 			}
 		}
 	}
@@ -1119,6 +1157,93 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 		require.Equal(t, len(test.Expected), len(unoccupiedPoints))
 		for i, e := range test.Expected {
 			require.Equal(t, e, unoccupiedPoints[i])
+		}
+	}
+}
+
+func TestGetEvenUnoccupiedPoints(t *testing.T) {
+	tests := []struct {
+		Board    *BoardState
+		Expected []Point
+	}{
+		{
+			&BoardState{
+				Height: 1,
+				Width:  1,
+			},
+			[]Point{{0, 0}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  2,
+			},
+			[]Point{{0, 0}, {1, 1}},
+		},
+		{
+			&BoardState{
+				Height: 1,
+				Width:  1,
+				Food:   []Point{{0, 0}, {101, 202}, {-4, -5}},
+			},
+			[]Point{},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  2,
+				Food:   []Point{{0, 0}, {1, 0}},
+			},
+			[]Point{{1, 1}},
+		},
+		{
+			&BoardState{
+				Height: 4,
+				Width:  4,
+				Food:   []Point{{0, 0}, {0, 2}, {1, 1}, {1, 3}, {2, 0}, {2, 2}, {3, 1}, {3, 3}},
+			},
+			[]Point{},
+		},
+		{
+			&BoardState{
+				Height: 4,
+				Width:  1,
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}}},
+				},
+			},
+			[]Point{{0, 2}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  3,
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+				},
+			},
+			[]Point{{2, 0}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  3,
+				Food:   []Point{{0, 0}, {1, 0}, {1, 1}, {2, 1}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{0, 1}}},
+				},
+			},
+			[]Point{{2, 0}},
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		evenUnoccupiedPoints := r.getEvenUnoccupiedPoints(test.Board)
+		require.Equal(t, len(test.Expected), len(evenUnoccupiedPoints))
+		for i, e := range test.Expected {
+			require.Equal(t, e, evenUnoccupiedPoints[i])
 		}
 	}
 }
