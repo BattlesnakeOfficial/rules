@@ -48,6 +48,7 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{9, 8, []string{"one"}, 1, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
+		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
 		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
 	}
 
@@ -88,8 +89,24 @@ func TestPlaceSnakes(t *testing.T) {
 		},
 		{
 			&BoardState{
+				Width:  1,
+				Height: 1,
+				Snakes: make([]Snake, 2),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
 				Width:  2,
 				Height: 1,
+				Snakes: make([]Snake, 2),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
+				Width:  1,
+				Height: 2,
 				Snakes: make([]Snake, 2),
 			},
 			errors.New("not enough space to place snake"),
@@ -109,6 +126,22 @@ func TestPlaceSnakes(t *testing.T) {
 				Snakes: make([]Snake, 25),
 			},
 			nil,
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 5,
+				Snakes: make([]Snake, 49),
+			},
+			errors.New("not enough space to place snake"),
+		},
+		{
+			&BoardState{
+				Width:  5,
+				Height: 10,
+				Snakes: make([]Snake, 50),
+			},
+			errors.New("not enough space to place snake"),
 		},
 		{
 			&BoardState{
@@ -1124,6 +1157,93 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 		require.Equal(t, len(test.Expected), len(unoccupiedPoints))
 		for i, e := range test.Expected {
 			require.Equal(t, e, unoccupiedPoints[i])
+		}
+	}
+}
+
+func TestGetEvenUnoccupiedPoints(t *testing.T) {
+	tests := []struct {
+		Board    *BoardState
+		Expected []Point
+	}{
+		{
+			&BoardState{
+				Height: 1,
+				Width:  1,
+			},
+			[]Point{{0, 0}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  2,
+			},
+			[]Point{{0, 0}, {1, 1}},
+		},
+		{
+			&BoardState{
+				Height: 1,
+				Width:  1,
+				Food:   []Point{{0, 0}, {101, 202}, {-4, -5}},
+			},
+			[]Point{},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  2,
+				Food:   []Point{{0, 0}, {1, 0}},
+			},
+			[]Point{{1, 1}},
+		},
+		{
+			&BoardState{
+				Height: 4,
+				Width:  4,
+				Food:   []Point{{0, 0}, {0, 2}, {1, 1}, {1, 3}, {2, 0}, {2, 2}, {3, 1}, {3, 3}},
+			},
+			[]Point{},
+		},
+		{
+			&BoardState{
+				Height: 4,
+				Width:  1,
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}}},
+				},
+			},
+			[]Point{{0, 2}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  3,
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+				},
+			},
+			[]Point{{2, 0}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  3,
+				Food:   []Point{{0, 0}, {1, 0}, {1, 1}, {2, 1}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{0, 1}}},
+				},
+			},
+			[]Point{{2, 0}},
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		evenUnoccupiedPoints := r.getEvenUnoccupiedPoints(test.Board)
+		require.Equal(t, len(test.Expected), len(evenUnoccupiedPoints))
+		for i, e := range test.Expected {
+			require.Equal(t, e, evenUnoccupiedPoints[i])
 		}
 	}
 }
