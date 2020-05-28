@@ -287,7 +287,108 @@ func TestPlaceFood(t *testing.T) {
 }
 
 func TestCreateNextBoardState(t *testing.T) {
-	// TODO
+	tests := []struct {
+		prevState     *BoardState
+		moves         []SnakeMove
+		expectedError error
+		expectedState *BoardState
+	}{
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 1}, {1, 2}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{3, 4}, {3, 3}},
+						Health: 100,
+					},
+				},
+				Food: []Point{{0, 0}, {1, 0}},
+			},
+			[]SnakeMove{},
+			errors.New("not enough snake moves"),
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 1}, {1, 2}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{},
+						Health: 100,
+					},
+				},
+				Food: []Point{{0, 0}, {1, 0}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
+			},
+			errors.New("found snake with zero size body"),
+			nil,
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 1}, {1, 2}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{3, 4}, {3, 3}},
+						Health: 100,
+					},
+				},
+				Food: []Point{{0, 0}, {1, 0}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
+			},
+			nil,
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{3, 5}, {3, 4}},
+						Health: 99,
+					},
+				},
+				Food: []Point{{0, 0}},
+			},
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		require.Equal(t, err, test.expectedError)
+		require.Equal(t, nextState, test.expectedState)
+	}
 }
 
 func TestMoveSnakes(t *testing.T) {

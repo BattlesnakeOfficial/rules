@@ -185,6 +185,11 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 }
 
 func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+	for i := 0; i < len(b.Snakes); i++ {
+		if len(b.Snakes[i].Body) == 0 {
+			return errors.New("found snake with zero size body")
+		}
+	}
 	if len(moves) < len(b.Snakes) {
 		return errors.New("not enough snake moves")
 	}
