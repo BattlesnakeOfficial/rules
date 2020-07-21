@@ -50,6 +50,7 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
 		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
+		{BoardSizeSmall, BoardSizeSmall, []string{"one", "two"}, 3, nil},
 	}
 
 	r := StandardRuleset{}
@@ -269,6 +270,50 @@ func TestPlaceFood(t *testing.T) {
 			},
 			200,
 		},
+		{
+			&BoardState{
+				Width:  BoardSizeSmall,
+				Height: BoardSizeSmall,
+				Snakes: []Snake{
+					{Body: []Point{{5, 1}}},
+					{Body: []Point{{5, 3}}},
+					{Body: []Point{{5, 5}}},
+				},
+			},
+			4, // +1 because of fixed spawn locations
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeMedium,
+				Height: BoardSizeMedium,
+				Snakes: []Snake{
+					{Body: []Point{{1, 1}}},
+					{Body: []Point{{1, 5}}},
+					{Body: []Point{{1, 9}}},
+					{Body: []Point{{5, 1}}},
+					{Body: []Point{{5, 9}}},
+					{Body: []Point{{9, 1}}},
+					{Body: []Point{{9, 5}}},
+					{Body: []Point{{9, 9}}},
+				},
+			},
+			9, // +1 because of fixed spawn locations
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeLarge,
+				Height: BoardSizeLarge,
+				Snakes: []Snake{
+					{Body: []Point{{1, 1}}},
+					{Body: []Point{{1, 9}}},
+					{Body: []Point{{1, 17}}},
+					{Body: []Point{{17, 1}}},
+					{Body: []Point{{17, 9}}},
+					{Body: []Point{{17, 17}}},
+				},
+			},
+			7, // +1 because of fixed spawn locations
+		},
 	}
 
 	r := StandardRuleset{}
@@ -284,6 +329,136 @@ func TestPlaceFood(t *testing.T) {
 			require.Less(t, point.Y, test.BoardState.Height)
 		}
 	}
+}
+
+func TestPlaceFoodFixed(t *testing.T) {
+	tests := []struct {
+		BoardState *BoardState
+	}{
+		{
+			&BoardState{
+				Width:  BoardSizeSmall,
+				Height: BoardSizeSmall,
+				Snakes: []Snake{
+					{Body: []Point{{1, 3}}},
+				},
+			},
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeMedium,
+				Height: BoardSizeMedium,
+				Snakes: []Snake{
+					{Body: []Point{{1, 1}}},
+					{Body: []Point{{1, 5}}},
+					{Body: []Point{{9, 5}}},
+					{Body: []Point{{9, 9}}},
+				},
+			},
+		},
+		{
+			&BoardState{
+				Width:  BoardSizeLarge,
+				Height: BoardSizeLarge,
+				Snakes: []Snake{
+					{Body: []Point{{1, 1}}},
+					{Body: []Point{{1, 9}}},
+					{Body: []Point{{1, 17}}},
+					{Body: []Point{{9, 1}}},
+					{Body: []Point{{9, 17}}},
+					{Body: []Point{{17, 1}}},
+					{Body: []Point{{17, 9}}},
+					{Body: []Point{{17, 17}}},
+				},
+			},
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		require.Len(t, test.BoardState.Food, 0)
+
+		err := r.placeFoodFixed(test.BoardState)
+		require.NoError(t, err)
+		require.Equal(t, len(test.BoardState.Snakes)+1, len(test.BoardState.Food))
+
+		// Make sure every snake has food within 2 moves of it
+		for _, snake := range test.BoardState.Snakes {
+			head := snake.Body[0]
+
+			bottomLeft := Point{head.X - 1, head.Y - 1}
+			topLeft := Point{head.X - 1, head.Y + 1}
+			bottomRight := Point{head.X + 1, head.Y - 1}
+			topRight := Point{head.X + 1, head.Y + 1}
+
+			foundFoodInTwoMoves := false
+			for _, food := range test.BoardState.Food {
+				if food == bottomLeft || food == topLeft || food == bottomRight || food == topRight {
+					foundFoodInTwoMoves = true
+					break
+				}
+			}
+			require.True(t, foundFoodInTwoMoves)
+		}
+
+		// Make sure one food exists in center of board
+		foundFoodInCenter := false
+		midPoint := Point{(test.BoardState.Width - 1) / 2, (test.BoardState.Height - 1) / 2}
+		for _, food := range test.BoardState.Food {
+			if food == midPoint {
+				foundFoodInCenter = true
+				break
+			}
+		}
+		require.True(t, foundFoodInCenter)
+	}
+}
+
+func TestPlaceFoodFixedNoRoom(t *testing.T) {
+	r := StandardRuleset{}
+
+	boardState := &BoardState{
+		Width:  3,
+		Height: 3,
+		Snakes: []Snake{
+			{Body: []Point{{1, 1}}},
+		},
+		Food: []Point{},
+	}
+	err := r.placeFoodFixed(boardState)
+	require.Error(t, err)
+
+	boardState = &BoardState{
+		Width:  7,
+		Height: 7,
+		Snakes: []Snake{
+			{Body: []Point{{1, 1}}},
+		},
+		Food: []Point{},
+	}
+	err = r.placeFoodFixed(boardState)
+	require.NoError(t, err)
+	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
+	require.Equal(t, 1, len(boardState.Food))
+
+	err = r.placeFoodFixed(boardState)
+	require.NoError(t, err)
+	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
+	require.Equal(t, 2, len(boardState.Food))
+
+	err = r.placeFoodFixed(boardState)
+	require.NoError(t, err)
+	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
+	require.Equal(t, 3, len(boardState.Food))
+
+	err = r.placeFoodFixed(boardState)
+	require.NoError(t, err)
+	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
+	require.Equal(t, 4, len(boardState.Food))
+
+	// And now there should be no more room.
+	err = r.placeFoodFixed(boardState)
+	require.Error(t, err)
 }
 
 func TestCreateNextBoardState(t *testing.T) {

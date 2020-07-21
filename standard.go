@@ -113,6 +113,66 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 }
 
 func (r *StandardRuleset) placeFood(b *BoardState) error {
+	if r.isKnownBoardSize(b) {
+		return r.placeFoodFixed(b)
+	}
+	return r.placeFoodRandomly(b)
+}
+
+func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
+	// Place 1 food within exactly 2 moves of each snake
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeHead := b.Snakes[i].Body[0]
+		possibleFoodLocations := []Point{
+			Point{snakeHead.X - 1, snakeHead.Y - 1},
+			Point{snakeHead.X - 1, snakeHead.Y + 1},
+			Point{snakeHead.X + 1, snakeHead.Y - 1},
+			Point{snakeHead.X + 1, snakeHead.Y + 1},
+		}
+		availableFoodLocations := []Point{}
+
+		for _, p := range possibleFoodLocations {
+			isOccupiedAlready := false
+			for _, food := range b.Food {
+				if food.X == p.X && food.Y == p.Y {
+					isOccupiedAlready = true
+					break
+				}
+			}
+
+			if !isOccupiedAlready {
+				availableFoodLocations = append(availableFoodLocations, p)
+			}
+		}
+
+		if len(availableFoodLocations) <= 0 {
+			return errors.New("not enough space to place food")
+		}
+
+		// Select randomly from available locations
+		placedFood := availableFoodLocations[rand.Intn(len(availableFoodLocations))]
+		b.Food = append(b.Food, placedFood)
+	}
+
+	// Finally, always place 1 food in center of board for dramatic purposes
+	isCenterOccupied := true
+	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
+	unoccupiedPoints := r.getUnoccupiedPoints(b)
+	for _, point := range unoccupiedPoints {
+		if point == centerCoord {
+			isCenterOccupied = false
+			break
+		}
+	}
+	if isCenterOccupied {
+		return errors.New("not enough space to place food")
+	}
+	b.Food = append(b.Food, centerCoord)
+
+	return nil
+}
+
+func (r *StandardRuleset) placeFoodRandomly(b *BoardState) error {
 	return r.spawnFood(b, len(b.Snakes))
 }
 
