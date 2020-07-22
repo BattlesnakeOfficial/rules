@@ -349,15 +349,21 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 
-		// Always check body collisions before head-to-heads
+		// Check for self-collisions first
+		if r.snakeHasBodyCollided(snake, snake) {
+			snake.EliminatedCause = EliminatedBySelfCollision
+			snake.EliminatedBy = snake.ID
+			continue
+		}
+
+		// Check for body collisions with other snakes second
 		for _, otherIndex := range snakeIndicesByLength {
 			other := &b.Snakes[otherIndex]
+			if snake.ID == other.ID {
+				continue
+			}
 			if r.snakeHasBodyCollided(snake, other) {
-				if snake.ID == other.ID {
-					snake.EliminatedCause = EliminatedBySelfCollision
-				} else {
-					snake.EliminatedCause = EliminatedByCollision
-				}
+				snake.EliminatedCause = EliminatedByCollision
 				snake.EliminatedBy = other.ID
 				break
 			}
@@ -366,7 +372,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 
-		// Always check head-to-heads after body collisions
+		// Check for head-to-heads last
 		for _, otherIndex := range snakeIndicesByLength {
 			other := &b.Snakes[otherIndex]
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {

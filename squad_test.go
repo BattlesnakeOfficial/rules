@@ -338,3 +338,54 @@ func TestSquadIsGameOver(t *testing.T) {
 		require.Equal(t, test.Expected, actual)
 	}
 }
+
+func TestIssue16Regression(t *testing.T) {
+	// This is a specific test case to detect this issue:
+	// https://github.com/BattlesnakeOfficial/rules/issues/16
+	boardState := &BoardState{
+		Width:  11,
+		Height: 11,
+		Snakes: []Snake{
+			{ID: "teamBoi", Health: 10, Body: []Point{{1, 4}, {1, 3}, {0, 3}, {0, 2}, {1, 2}, {2, 2}}},
+			{ID: "Node-Red-Bellied-Black-Snake", Health: 10, Body: []Point{{1, 8}, {2, 8}, {2, 9}, {3, 9}, {4, 9}, {4, 10}}},
+			{ID: "Crash Override", Health: 10, Body: []Point{{2, 7}, {2, 6}, {3, 6}, {4, 6}, {4, 5}, {5, 5}, {6, 5}}},
+			{ID: "Zero Cool", Health: 10, Body: []Point{{6, 5}, {5, 5}, {5, 4}, {5, 3}, {4, 3}, {3, 3}, {3, 4}}},
+		},
+	}
+	squadMap := map[string]string{
+		"teamBoi":                      "BirdSnakers",
+		"Node-Red-Bellied-Black-Snake": "BirdSnakers",
+		"Crash Override":               "Hackers",
+		"Zero Cool":                    "Hackers",
+	}
+	snakeMoves := []SnakeMove{
+		{ID: "teamBoi", Move: "down"},
+		{ID: "Node-Red-Bellied-Black-Snake", Move: "left"},
+		{ID: "Crash Override", Move: "left"},
+		{ID: "Zero Cool", Move: "left"},
+	}
+
+	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
+
+	r := SquadRuleset{
+		AllowBodyCollisions: true,
+		SquadMap:            squadMap,
+	}
+
+	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	require.NoError(t, err)
+	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
+
+	expectedSnakes := []Snake{
+		{ID: "teamBoi", Body: []Point{{1, 5}, {1, 4}, {1, 3}, {0, 3}, {0, 2}, {1, 2}}},
+		{ID: "Node-Red-Bellied-Black-Snake", Body: []Point{{0, 8}, {1, 8}, {2, 8}, {2, 9}, {3, 9}, {4, 9}}},
+		{ID: "Crash Override", Body: []Point{{1, 7}, {2, 7}, {2, 6}, {3, 6}, {4, 6}, {4, 5}, {5, 5}}},
+		{ID: "Zero Cool", Body: []Point{{5, 5}, {6, 5}, {5, 5}, {5, 4}, {5, 3}, {4, 3}, {3, 3}}, EliminatedCause: EliminatedBySelfCollision, EliminatedBy: "Zero Cool"},
+	}
+	for i, snake := range nextBoardState.Snakes {
+		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
+		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+	}
+}

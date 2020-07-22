@@ -1266,6 +1266,45 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 	}
 }
 
+func TestMaybeEliminateSnakesPriority(t *testing.T) {
+	tests := []struct {
+		Snakes                   []Snake
+		ExpectedEliminatedCauses []string
+		ExpectedEliminatedBy     []string
+	}{
+		{
+			[]Snake{
+				{ID: "1", Health: 0, Body: []Point{{-1, 0}, {0, 0}, {1, 0}}},
+				{ID: "2", Health: 1, Body: []Point{{-1, 0}, {0, 0}, {1, 0}}},
+				{ID: "3", Health: 1, Body: []Point{{1, 0}, {0, 0}, {1, 0}}},
+				{ID: "4", Health: 1, Body: []Point{{1, 0}, {1, 1}, {1, 2}}},
+				{ID: "5", Health: 1, Body: []Point{{2, 2}, {2, 1}, {2, 0}}},
+				{ID: "6", Health: 1, Body: []Point{{2, 2}, {2, 3}, {2, 4}, {2, 5}}},
+			},
+			[]string{
+				EliminatedByStarvation,
+				EliminatedByOutOfBounds,
+				EliminatedBySelfCollision,
+				EliminatedByCollision,
+				EliminatedByHeadToHeadCollision,
+				NotEliminated,
+			},
+			[]string{"", "", "3", "1", "6", ""},
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		b := &BoardState{Width: 10, Height: 10, Snakes: test.Snakes}
+		err := r.maybeEliminateSnakes(b)
+		require.NoError(t, err)
+		for i, snake := range b.Snakes {
+			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
+			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy)
+		}
+	}
+}
+
 func TestMaybeFeedSnakes(t *testing.T) {
 	tests := []struct {
 		Name           string
