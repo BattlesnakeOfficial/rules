@@ -10,28 +10,28 @@ func TestSquadRulesetInterface(t *testing.T) {
 	var _ Ruleset = (*SquadRuleset)(nil)
 }
 
-func TestCreateNextBoardStateSanity(t *testing.T) {
+func TestSquadCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}
 	_, err := r.CreateNextBoardState(boardState, []SnakeMove{})
 	require.NoError(t, err)
 }
 
-func TestResurrectSquadBodyCollisionsSanity(t *testing.T) {
+func TestSquadResurrectSquadBodyCollisionsSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}
 	err := r.resurrectSquadBodyCollisions(boardState)
 	require.NoError(t, err)
 }
 
-func TestSharedAttributesSanity(t *testing.T) {
+func TestSquadSharedAttributesSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}
 	err := r.shareSquadAttributes(boardState)
 	require.NoError(t, err)
 }
 
-func TestAllowBodyCollisions(t *testing.T) {
+func TestSquadAllowBodyCollisions(t *testing.T) {
 	testSnakes := []struct {
 		SnakeID         string
 		SquadID         string
@@ -93,7 +93,7 @@ func TestAllowBodyCollisions(t *testing.T) {
 	}
 }
 
-func TestAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
+func TestSquadAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
 	boardState := &BoardState{
 		Snakes: []Snake{
 			Snake{ID: "1", EliminatedCause: EliminatedByCollision},
@@ -111,7 +111,7 @@ func TestAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestShareSquadHealth(t *testing.T) {
+func TestSquadShareSquadHealth(t *testing.T) {
 	testSnakes := []struct {
 		SnakeID        string
 		SquadID        string
@@ -161,7 +161,7 @@ func TestShareSquadHealth(t *testing.T) {
 	}
 }
 
-func TestSharedLength(t *testing.T) {
+func TestSquadSharedLength(t *testing.T) {
 	testSnakes := []struct {
 		SnakeID      string
 		SquadID      string
@@ -211,7 +211,7 @@ func TestSharedLength(t *testing.T) {
 	}
 }
 
-func TestSharedElimination(t *testing.T) {
+func TestSquadSharedElimination(t *testing.T) {
 	testSnakes := []struct {
 		SnakeID         string
 		SquadID         string
@@ -271,7 +271,7 @@ func TestSharedElimination(t *testing.T) {
 	}
 }
 
-func TestSharedAttributesErrorLengthZero(t *testing.T) {
+func TestSquadSharedAttributesErrorLengthZero(t *testing.T) {
 	boardState := &BoardState{
 		Snakes: []Snake{
 			Snake{ID: "1"},
@@ -339,7 +339,7 @@ func TestSquadIsGameOver(t *testing.T) {
 	}
 }
 
-func TestIssue16Regression(t *testing.T) {
+func TestRegressionIssue16(t *testing.T) {
 	// This is a specific test case to detect this issue:
 	// https://github.com/BattlesnakeOfficial/rules/issues/16
 	boardState := &BoardState{
