@@ -9,6 +9,7 @@ type RoyaleRuleset struct {
 
 	Turn              int32
 	ShrinkEveryNTurns int32
+	DamagePerTurn     int32
 
 	// Output
 	OutOfBounds []Point
@@ -16,7 +17,7 @@ type RoyaleRuleset struct {
 
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.ShrinkEveryNTurns < 1 {
-		return nil, errors.New("royale game must shrink at least every 1 turn")
+		return nil, errors.New("royale game must shrink at least every turn")
 	}
 
 	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
@@ -24,14 +25,26 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 		return nil, err
 	}
 
+	// Algorithm:
+	// - Populate OOB for last turn
+	// - Apply damage to snake heads that are OOB
+	// - Re-populate OOB for this turn
+	// ---> This means damage on board shrinks doesn't hit until the following turn.
+
 	// TODO: LOG?
-	err = r.populateOutOfBounds(nextBoardState)
+	err = r.populateOutOfBounds(nextBoardState, r.Turn-1)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO: LOG?
-	err = r.eliminateOutOfBounds(nextBoardState)
+	err = r.damageOutOfBounds(nextBoardState)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: LOG?
+	err = r.populateOutOfBounds(nextBoardState, r.Turn)
 	if err != nil {
 		return nil, err
 	}
@@ -39,18 +52,18 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	return nextBoardState, nil
 }
 
-func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState) error {
+func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState, turn int32) error {
 	r.OutOfBounds = []Point{}
 
 	if r.ShrinkEveryNTurns < 1 {
-		return errors.New("royale game must shrink at least every 1 turn")
+		return errors.New("royale game must shrink at least every turn")
 	}
 
-	if r.Turn < r.ShrinkEveryNTurns {
+	if turn < r.ShrinkEveryNTurns {
 		return nil
 	}
 
-	numShrinks := r.Turn / r.ShrinkEveryNTurns
+	numShrinks := turn / r.ShrinkEveryNTurns
 	minX, maxX := numShrinks, b.Width-1-numShrinks
 	minY, maxY := numShrinks, b.Height-1-numShrinks
 	for x := int32(0); x < b.Width; x++ {
@@ -64,15 +77,23 @@ func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState) error {
 	return nil
 }
 
-func (r *RoyaleRuleset) eliminateOutOfBounds(b *BoardState) error {
+func (r *RoyaleRuleset) damageOutOfBounds(b *BoardState) error {
+	if r.DamagePerTurn < 1 {
+		return errors.New("royale damage per turn must be greater than zero")
+	}
+
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause == NotEliminated {
 			head := snake.Body[0]
 			for _, p := range r.OutOfBounds {
 				if head == p {
-					// Snake is now out of bounds, eliminate it
-					snake.EliminatedCause = EliminatedByOutOfBounds
+					// Snake is now out of bounds, reduce health
+					snake.Health = snake.Health - r.DamagePerTurn
+					if snake.Health <= 0 {
+						snake.Health = 0
+						snake.EliminatedCause = EliminatedByStarvation
+					}
 				}
 			}
 		}
