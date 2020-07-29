@@ -2,12 +2,13 @@ package rules
 
 import (
 	"errors"
-	"hash/crc32"
 	"math/rand"
 )
 
 type RoyaleRuleset struct {
 	StandardRuleset
+
+	Seed int64
 
 	Turn              int32
 	ShrinkEveryNTurns int32
@@ -65,10 +66,7 @@ func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState, turn int32) error {
 		return nil
 	}
 
-	randGenerator, err := r.getRandGenerator(b)
-	if err != nil {
-		return err
-	}
+	randGenerator := rand.New(rand.NewSource(r.Seed))
 
 	numShrinks := turn / r.ShrinkEveryNTurns
 	minX, maxX := int32(0), b.Width-1
@@ -120,22 +118,4 @@ func (r *RoyaleRuleset) damageOutOfBounds(b *BoardState) error {
 	}
 
 	return nil
-}
-
-func (r *RoyaleRuleset) getRandGenerator(b *BoardState) (*rand.Rand, error) {
-	if len(b.Snakes) < 1 {
-		return nil, errors.New("royale mode requires at least one snake id")
-	}
-
-	// Use the "lowest" Snake ID as a random seed
-	seedStr := b.Snakes[0].ID
-	for i := 1; i < len(b.Snakes); i++ {
-		if b.Snakes[i].ID < seedStr {
-			seedStr = b.Snakes[i].ID
-		}
-	}
-
-	seed := int64(crc32.ChecksumIEEE([]byte(seedStr)))
-
-	return rand.New(rand.NewSource(seed)), nil
 }

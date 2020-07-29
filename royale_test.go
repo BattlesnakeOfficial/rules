@@ -23,18 +23,8 @@ func TestRoyaleDefaultSanity(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestRoyaleOutOfBoundsNoSnakes(t *testing.T) {
-	b := &BoardState{}
-	r := RoyaleRuleset{
-		ShrinkEveryNTurns: 10,
-		DamagePerTurn:     10,
-	}
-
-	err := r.populateOutOfBounds(b, 100)
-	require.Equal(t, errors.New("royale mode requires at least one snake id"), err)
-}
-
 func TestRoyaleOutOfBounds(t *testing.T) {
+	seed := int64(25543234525)
 	tests := []struct {
 		Width               int32
 		Height              int32
@@ -66,11 +56,11 @@ func TestRoyaleOutOfBounds(t *testing.T) {
 		},
 		{
 			Width: 3, Height: 3, Turn: 31, ShrinkEveryNTurns: 10,
-			ExpectedOutOfBounds: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 2}},
+			ExpectedOutOfBounds: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 1}, {2, 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 42, ShrinkEveryNTurns: 10,
-			ExpectedOutOfBounds: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 2}},
+			ExpectedOutOfBounds: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 53, ShrinkEveryNTurns: 10,
@@ -90,9 +80,9 @@ func TestRoyaleOutOfBounds(t *testing.T) {
 		b := &BoardState{
 			Width:  test.Width,
 			Height: test.Height,
-			Snakes: []Snake{{ID: "test-snake"}},
 		}
 		r := RoyaleRuleset{
+			Seed:              seed,
 			Turn:              test.Turn,
 			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 		}
@@ -209,16 +199,18 @@ func TestRoyaleDamagePerTurn(t *testing.T) {
 }
 
 func TestRoyalDamageNextTurn(t *testing.T) {
-	b := &BoardState{Width: 10, Height: 10, Snakes: []Snake{{ID: "one", Health: 100, Body: []Point{{1, 0}}}}}
-	r := RoyaleRuleset{ShrinkEveryNTurns: 10, DamagePerTurn: 30}
-	m := []SnakeMove{{ID: "one", Move: "right"}}
+	seed := int64(45897034512311)
+
+	b := &BoardState{Width: 10, Height: 10, Snakes: []Snake{{ID: "one", Health: 100, Body: []Point{{9, 1}}}}}
+	r := RoyaleRuleset{Seed: seed, ShrinkEveryNTurns: 10, DamagePerTurn: 30}
+	m := []SnakeMove{{ID: "one", Move: "up"}}
 
 	r.Turn = 10
 	n, err := r.CreateNextBoardState(b, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, n.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(99), n.Snakes[0].Health)
-	require.Equal(t, Point{2, 0}, n.Snakes[0].Body[0])
+	require.Equal(t, Point{9, 0}, n.Snakes[0].Body[0])
 	require.Equal(t, 10, len(r.OutOfBounds)) // X = 0
 
 	r.Turn = 20
@@ -226,51 +218,22 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, n.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(99), n.Snakes[0].Health)
-	require.Equal(t, Point{2, 0}, n.Snakes[0].Body[0])
-	require.Equal(t, 19, len(r.OutOfBounds)) // Y = 0
+	require.Equal(t, Point{9, 0}, n.Snakes[0].Body[0])
+	require.Equal(t, 20, len(r.OutOfBounds)) // X = 9
 
 	r.Turn = 21
 	n, err = r.CreateNextBoardState(b, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, n.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(69), n.Snakes[0].Health)
-	require.Equal(t, Point{2, 0}, n.Snakes[0].Body[0])
-	require.Equal(t, 19, len(r.OutOfBounds))
+	require.Equal(t, Point{9, 0}, n.Snakes[0].Body[0])
+	require.Equal(t, 20, len(r.OutOfBounds))
 
 	b.Snakes[0].Health = 15
 	n, err = r.CreateNextBoardState(b, m)
 	require.NoError(t, err)
 	require.Equal(t, EliminatedByStarvation, n.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(0), n.Snakes[0].Health)
-	require.Equal(t, Point{2, 0}, n.Snakes[0].Body[0])
-	require.Equal(t, 19, len(r.OutOfBounds))
-}
-
-func TestRoyalGetRandGenerator(t *testing.T) {
-	tests := []struct {
-		SnakeIDs []string
-		Error    error
-		firstInt int
-	}{
-		{[]string{}, errors.New("royale mode requires at least one snake id"), 0},
-		{[]string{"1"}, nil, 1400170195406563237},
-		{[]string{"1", "2", "3", "4", "5"}, nil, 1400170195406563237},
-		{[]string{"5", "4", "3", "2", "1"}, nil, 1400170195406563237},
-		{[]string{"3", "4", "1", "5", "2"}, nil, 1400170195406563237},
-		{[]string{"3", "4", "5", "2"}, nil, 5139088052943840554},
-	}
-
-	for _, test := range tests {
-		b := &BoardState{}
-		for _, id := range test.SnakeIDs {
-			b.Snakes = append(b.Snakes, Snake{ID: id})
-		}
-
-		r := RoyaleRuleset{}
-		generator, err := r.getRandGenerator(b)
-		require.Equal(t, test.Error, err)
-		if err == nil {
-			require.Equal(t, test.firstInt, generator.Int())
-		}
-	}
+	require.Equal(t, Point{9, 0}, n.Snakes[0].Body[0])
+	require.Equal(t, 20, len(r.OutOfBounds))
 }
