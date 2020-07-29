@@ -8,8 +8,8 @@ jobs:
     name: Format (gofmt)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-go@master
+    - uses: actions/checkout@main
+    - uses: actions/setup-go@main
       with:
         go-version: '1.13'
     - name: Run gofmt
@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [format]
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@master
+      - uses: actions/checkout@main
+      - uses: actions/setup-go@main
         with:
           go-version: '1.13'
       - name: Run golangci-lint
@@ -34,8 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-go@master
+    - uses: actions/checkout@main
+    - uses: actions/setup-go@main
       with:
         go-version: '1.13'
     - name: Run go test
