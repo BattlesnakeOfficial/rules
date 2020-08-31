@@ -218,18 +218,11 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 	}
 
 	// TODO: LOG?
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO
-	// bvanvugt: we specifically want this to happen before elimination
-	// so that head-to-head collisions on food still remove the food.
-	// It does create an artifact though, where head-to-head collisions
-	// of equal length actually show length + 1
-
-	// TODO: LOG?
+	// bvanvugt: We specifically want this to happen before elimination for two reasons:
+	// 1) We want snakes to be able to eat on their very last turn and still survive.
+	// 2) So that head-to-head collisions on food still remove the food.
+	//    This does create an artifact though, where head-to-head collisions
+	//    of equal length actually show length + 1 and full health, as if both snakes ate.
 	err = r.maybeFeedSnakes(nextState)
 	if err != nil {
 		return nil, err
@@ -237,6 +230,12 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 
 	// TODO: LOG?
 	err = r.maybeSpawnFood(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: LOG?
+	err = r.maybeEliminateSnakes(nextState)
 	if err != nil {
 		return nil, err
 	}

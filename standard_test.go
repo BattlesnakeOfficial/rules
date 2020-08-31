@@ -566,6 +566,71 @@ func TestCreateNextBoardState(t *testing.T) {
 	}
 }
 
+func TestEatingOnLastMove(t *testing.T) {
+	// We want to specifically ensure that snakes eating food on their last turn
+	// survive. It used to be that this wasn't the case, and snakes were eliminated
+	// if they moved onto food with their final move. This behaviour wasn't "wrong" or incorrect,
+	// it just was less fun to watch. So let's ensure we're always giving snakes every possible
+	// changes to reach food before eliminating them.
+	tests := []struct {
+		prevState     *BoardState
+		moves         []SnakeMove
+		expectedError error
+		expectedState *BoardState
+	}{
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Health: 1,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{3, 2}, {3, 3}, {3, 4}},
+						Health: 1,
+					},
+				},
+				Food: []Point{{0, 3}, {9, 9}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveDown},
+				{ID: "two", Move: MoveUp},
+			},
+			nil,
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Health: 100,
+					},
+					{
+						ID:              "two",
+						Body:            []Point{{3, 1}, {3, 2}, {3, 3}},
+						Health:          0,
+						EliminatedCause: EliminatedByStarvation,
+					},
+				},
+				Food: []Point{{9, 9}},
+			},
+		},
+	}
+
+	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	r := StandardRuleset{}
+	for _, test := range tests {
+		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		require.Equal(t, err, test.expectedError)
+		require.Equal(t, nextState, test.expectedState)
+	}
+}
+
 func TestMoveSnakes(t *testing.T) {
 	b := &BoardState{
 		Snakes: []Snake{
