@@ -631,6 +631,118 @@ func TestEatingOnLastMove(t *testing.T) {
 	}
 }
 
+func TestHeadToHeadOnFood(t *testing.T) {
+	// We want to specifically ensure that snakes that collide head-to-head
+	// on top of food successfully remove the food - that's the core behaviour this test
+	// is enforicing. There's a known side effect of this though, in that both snakes will
+	// have eaten prior to being evaluated on the head-to-head (+1 length, full health).
+	// We're okay with that since it does not impact the result of the head-to-head,
+	// however that behaviour could change in the future and this test could be updated.
+	tests := []struct {
+		prevState     *BoardState
+		moves         []SnakeMove
+		expectedError error
+		expectedState *BoardState
+	}{
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Health: 10,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{0, 4}, {0, 5}, {0, 6}},
+						Health: 10,
+					},
+				},
+				Food: []Point{{0, 3}, {9, 9}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveDown},
+				{ID: "two", Move: MoveUp},
+			},
+			nil,
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:              "one",
+						Body:            []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Health:          100,
+						EliminatedCause: EliminatedByHeadToHeadCollision,
+						EliminatedBy:    "two",
+					},
+					{
+						ID:              "two",
+						Body:            []Point{{0, 3}, {0, 4}, {0, 5}, {0, 5}},
+						Health:          100,
+						EliminatedCause: EliminatedByHeadToHeadCollision,
+						EliminatedBy:    "one",
+					},
+				},
+				Food: []Point{{9, 9}},
+			},
+		},
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Health: 10,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{0, 4}, {0, 5}, {0, 6}, {0, 7}},
+						Health: 10,
+					},
+				},
+				Food: []Point{{0, 3}, {9, 9}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveDown},
+				{ID: "two", Move: MoveUp},
+			},
+			nil,
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:              "one",
+						Body:            []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Health:          100,
+						EliminatedCause: EliminatedByHeadToHeadCollision,
+						EliminatedBy:    "two",
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 6}},
+						Health: 100,
+					},
+				},
+				Food: []Point{{9, 9}},
+			},
+		},
+	}
+
+	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	r := StandardRuleset{}
+	for _, test := range tests {
+		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		require.Equal(t, err, test.expectedError)
+		require.Equal(t, nextState, test.expectedState)
+	}
+}
+
 func TestMoveSnakes(t *testing.T) {
 	b := &BoardState{
 		Snakes: []Snake{
