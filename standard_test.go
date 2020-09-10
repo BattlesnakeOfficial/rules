@@ -487,7 +487,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{},
-			errors.New("not enough snake moves"),
+			errors.New("move not provided for snake"),
 			nil,
 		},
 		{
@@ -530,12 +530,19 @@ func TestCreateNextBoardState(t *testing.T) {
 						Body:   []Point{{3, 4}, {3, 3}},
 						Health: 100,
 					},
+					{
+						ID:              "three",
+						Body:            []Point{},
+						Health:          100,
+						EliminatedCause: EliminatedByOutOfBounds,
+					},
 				},
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
 				{ID: "two", Move: MoveDown},
+				{ID: "three", Move: MoveLeft}, // Should be ignored
 			},
 			nil,
 			&BoardState{
@@ -552,6 +559,12 @@ func TestCreateNextBoardState(t *testing.T) {
 						Body:   []Point{{3, 5}, {3, 4}},
 						Health: 99,
 					},
+					{
+						ID:              "three",
+						Body:            []Point{},
+						Health:          100,
+						EliminatedCause: EliminatedByOutOfBounds,
+					},
 				},
 				Food: []Point{{0, 0}},
 			},
@@ -561,8 +574,8 @@ func TestCreateNextBoardState(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
-		require.Equal(t, err, test.expectedError)
-		require.Equal(t, nextState, test.expectedState)
+		require.Equal(t, test.expectedError, err)
+		require.Equal(t, test.expectedState, nextState)
 	}
 }
 
@@ -634,7 +647,7 @@ func TestEatingOnLastMove(t *testing.T) {
 func TestHeadToHeadOnFood(t *testing.T) {
 	// We want to specifically ensure that snakes that collide head-to-head
 	// on top of food successfully remove the food - that's the core behaviour this test
-	// is enforicing. There's a known side effect of this though, in that both snakes will
+	// is enforcing. There's a known side effect of this though, in that both snakes will
 	// have eaten prior to being evaluated on the head-to-head (+1 length, full health).
 	// We're okay with that since it does not impact the result of the head-to-head,
 	// however that behaviour could change in the future and this test could be updated.
@@ -738,9 +751,82 @@ func TestHeadToHeadOnFood(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		require.Equal(t, test.expectedError, err)
+		require.Equal(t, test.expectedState, nextState)
+	}
+}
+
+func TestRegressionIssue19(t *testing.T) {
+	// Eliminated snakes passed to CreateNextBoardState should not impact next game state
+	tests := []struct {
+		prevState     *BoardState
+		moves         []SnakeMove
+		expectedError error
+		expectedState *BoardState
+	}{
+		{
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{0, 5}, {0, 6}, {0, 7}},
+						Health: 100,
+					},
+					{
+						ID:              "eliminated",
+						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
+						Health:          0,
+						EliminatedCause: EliminatedByStarvation,
+					},
+				},
+				Food: []Point{{9, 9}},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveDown},
+				{ID: "two", Move: MoveUp},
+			},
+			nil,
+			&BoardState{
+				Width:  10,
+				Height: 10,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 3}, {0, 2}, {0, 1}},
+						Health: 99,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{0, 4}, {0, 5}, {0, 6}},
+						Health: 99,
+					},
+					{
+						ID:              "eliminated",
+						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
+						Health:          0,
+						EliminatedCause: EliminatedByStarvation,
+					},
+				},
+				Food: []Point{{9, 9}},
+			},
+		},
+	}
+
+	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	r := StandardRuleset{}
+	for _, test := range tests {
+		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
 		require.Equal(t, nextState, test.expectedState)
 	}
+
 }
 
 func TestMoveSnakes(t *testing.T) {
@@ -853,7 +939,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, err, errors.New("snake not found for move"))
+	require.Equal(t, errors.New("move not provided for snake"), err)
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {
@@ -878,10 +964,10 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, err, errors.New("not enough snake moves"))
+	require.Equal(t, errors.New("move not provided for snake"), err)
 }
 
-func TestMoveSnakesTooManyMoves(t *testing.T) {
+func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 	b := &BoardState{
 		Snakes: []Snake{
 			{
@@ -903,7 +989,8 @@ func TestMoveSnakesTooManyMoves(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, err, errors.New("too many snake moves"))
+	require.NoError(t, err)
+	require.Equal(t, []Point{{1, 0}}, b.Snakes[0].Body)
 }
 
 func TestIsKnownBoardSize(t *testing.T) {
@@ -1466,7 +1553,7 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 				EliminatedByHeadToHeadCollision,
 				NotEliminated,
 			},
-			[]string{"", "", "3", "1", "6", ""},
+			[]string{"", "", "3", "3", "6", ""},
 		},
 	}
 
@@ -1476,8 +1563,8 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 		err := r.maybeEliminateSnakes(b)
 		require.NoError(t, err)
 		for i, snake := range b.Snakes {
-			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
-			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy)
+			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause, snake.ID)
+			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy, snake.ID)
 		}
 	}
 }

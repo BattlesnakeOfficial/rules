@@ -201,6 +201,8 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 		nextState.Snakes[i].ID = prevState.Snakes[i].ID
 		nextState.Snakes[i].Health = prevState.Snakes[i].Health
 		nextState.Snakes[i].Body = append([]Point{}, prevState.Snakes[i].Body...)
+		nextState.Snakes[i].EliminatedCause = prevState.Snakes[i].EliminatedCause
+		nextState.Snakes[i].EliminatedBy = prevState.Snakes[i].EliminatedBy
 	}
 
 	// TODO: Gut check the BoardState?
@@ -244,67 +246,71 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 }
 
 func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+	// Sanity check that all non-eliminated snakes have moves and bodies.
 	for i := 0; i < len(b.Snakes); i++ {
-		if len(b.Snakes[i].Body) == 0 {
-			return errors.New("found snake with zero size body")
-		}
-	}
-	if len(moves) < len(b.Snakes) {
-		return errors.New("not enough snake moves")
-	}
-	if len(moves) > len(b.Snakes) {
-		return errors.New("too many snake moves")
-	}
-
-	for _, move := range moves {
-		var snake *Snake
-		for i := 0; i < len(b.Snakes); i++ {
-			if b.Snakes[i].ID == move.ID {
-				snake = &b.Snakes[i]
-			}
-		}
-		if snake == nil {
-			return errors.New("snake not found for move")
-		}
-
-		// Do not move eliminated snakes
+		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
 			continue
 		}
 
-		var newHead = Point{}
-		switch move.Move {
-		case MoveDown:
-			newHead.X = snake.Body[0].X
-			newHead.Y = snake.Body[0].Y + 1
-		case MoveLeft:
-			newHead.X = snake.Body[0].X - 1
-			newHead.Y = snake.Body[0].Y
-		case MoveRight:
-			newHead.X = snake.Body[0].X + 1
-			newHead.Y = snake.Body[0].Y
-		case MoveUp:
-			newHead.X = snake.Body[0].X
-			newHead.Y = snake.Body[0].Y - 1
-		default:
-			// Default to UP
-			var dX int32 = 0
-			var dY int32 = -1
-			// If neck is available, use neck to determine last direction
-			if len(snake.Body) >= 2 {
-				dX = snake.Body[0].X - snake.Body[1].X
-				dY = snake.Body[0].Y - snake.Body[1].Y
-				if dX == 0 && dY == 0 {
-					dY = -1 // Move up if no last move was made
-				}
+		if len(snake.Body) == 0 {
+			return errors.New("found snake with zero size body")
+		}
+		moveFound := false
+		for _, move := range moves {
+			if snake.ID == move.ID {
+				moveFound = true
+				break
 			}
-			// Apply
-			newHead.X = snake.Body[0].X + dX
-			newHead.Y = snake.Body[0].Y + dY
+		}
+		if !moveFound {
+			return errors.New("move not provided for snake")
+		}
+	}
+
+	for i := 0; i < len(b.Snakes); i++ {
+		snake := &b.Snakes[i]
+		if snake.EliminatedCause != NotEliminated {
+			continue
 		}
 
-		// Append new head, pop old tail
-		snake.Body = append([]Point{newHead}, snake.Body[:len(snake.Body)-1]...)
+		for _, move := range moves {
+			if move.ID == snake.ID {
+				var newHead = Point{}
+				switch move.Move {
+				case MoveDown:
+					newHead.X = snake.Body[0].X
+					newHead.Y = snake.Body[0].Y + 1
+				case MoveLeft:
+					newHead.X = snake.Body[0].X - 1
+					newHead.Y = snake.Body[0].Y
+				case MoveRight:
+					newHead.X = snake.Body[0].X + 1
+					newHead.Y = snake.Body[0].Y
+				case MoveUp:
+					newHead.X = snake.Body[0].X
+					newHead.Y = snake.Body[0].Y - 1
+				default:
+					// Default to UP
+					var dX int32 = 0
+					var dY int32 = -1
+					// If neck is available, use neck to determine last direction
+					if len(snake.Body) >= 2 {
+						dX = snake.Body[0].X - snake.Body[1].X
+						dY = snake.Body[0].Y - snake.Body[1].Y
+						if dX == 0 && dY == 0 {
+							dY = -1 // Move up if no last move was made
+						}
+					}
+					// Apply
+					newHead.X = snake.Body[0].X + dX
+					newHead.Y = snake.Body[0].Y + dY
+				}
+
+				// Append new head, pop old tail
+				snake.Body = append([]Point{newHead}, snake.Body[:len(snake.Body)-1]...)
+			}
+		}
 	}
 	return nil
 }
@@ -331,9 +337,13 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 		return lenI > lenJ
 	})
 
-	// Iterate through snakes checking for eliminations.
+	// First, iterate over all non-eliminated snakes and eliminate the ones
+	// that are out of health or have moved out of bounds.
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
 		if len(snake.Body) <= 0 {
 			return errors.New("snake is length zero")
 		}
@@ -347,40 +357,90 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			snake.EliminatedCause = EliminatedByOutOfBounds
 			continue
 		}
+	}
+
+	// Next, look for any collisions. Note we apply collision eliminations
+	// after this check so that snakes can collide with each other and be properly eliminated.
+	type CollisionElimination struct {
+		ID    string
+		Cause string
+		By    string
+	}
+	collisionEliminations := []CollisionElimination{}
+	for i := 0; i < len(b.Snakes); i++ {
+		snake := &b.Snakes[i]
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
+		if len(snake.Body) <= 0 {
+			return errors.New("snake is length zero")
+		}
 
 		// Check for self-collisions first
 		if r.snakeHasBodyCollided(snake, snake) {
-			snake.EliminatedCause = EliminatedBySelfCollision
-			snake.EliminatedBy = snake.ID
+			collisionEliminations = append(collisionEliminations, CollisionElimination{
+				ID:    snake.ID,
+				Cause: EliminatedBySelfCollision,
+				By:    snake.ID,
+			})
 			continue
 		}
 
 		// Check for body collisions with other snakes second
+		hasBodyCollided := false
 		for _, otherIndex := range snakeIndicesByLength {
 			other := &b.Snakes[otherIndex]
-			if snake.ID == other.ID {
+			if other.EliminatedCause != NotEliminated {
 				continue
 			}
-			if r.snakeHasBodyCollided(snake, other) {
-				snake.EliminatedCause = EliminatedByCollision
-				snake.EliminatedBy = other.ID
+			if snake.ID != other.ID && r.snakeHasBodyCollided(snake, other) {
+				collisionEliminations = append(collisionEliminations, CollisionElimination{
+					ID:    snake.ID,
+					Cause: EliminatedByCollision,
+					By:    other.ID,
+				})
+				hasBodyCollided = true
 				break
 			}
 		}
-		if snake.EliminatedCause != NotEliminated {
+		if hasBodyCollided {
 			continue
 		}
 
 		// Check for head-to-heads last
+		hasHeadCollided := false
 		for _, otherIndex := range snakeIndicesByLength {
 			other := &b.Snakes[otherIndex]
+			if other.EliminatedCause != NotEliminated {
+				continue
+			}
 			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
-				snake.EliminatedCause = EliminatedByHeadToHeadCollision
-				snake.EliminatedBy = other.ID
+				collisionEliminations = append(collisionEliminations, CollisionElimination{
+					ID:    snake.ID,
+					Cause: EliminatedByHeadToHeadCollision,
+					By:    other.ID,
+				})
+				hasHeadCollided = true
+				break
+			}
+		}
+		if hasHeadCollided {
+			continue
+		}
+	}
+
+	// Apply collision eliminations
+	for _, elimination := range collisionEliminations {
+		for i := 0; i < len(b.Snakes); i++ {
+			snake := &b.Snakes[i]
+			if snake.ID == elimination.ID {
+				snake.EliminatedCause = elimination.Cause
+				snake.EliminatedBy = elimination.By
 				break
 			}
 		}
 	}
+
 	return nil
 }
 
