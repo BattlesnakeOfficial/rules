@@ -123,7 +123,7 @@ func TestRoyaleDamageOutOfBounds(t *testing.T) {
 		{
 			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
 			OutOfBounds:              []Point{{0, 0}},
-			ExpectedEliminatedCauses: []string{EliminatedByStarvation},
+			ExpectedEliminatedCauses: []string{EliminatedByOutOfHealth},
 			ExpectedEliminatedByIDs:  []string{""},
 		},
 		{
@@ -147,7 +147,7 @@ func TestRoyaleDamageOutOfBounds(t *testing.T) {
 				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
 			},
 			OutOfBounds:              []Point{{3, 3}},
-			ExpectedEliminatedCauses: []string{NotEliminated, EliminatedByStarvation},
+			ExpectedEliminatedCauses: []string{NotEliminated, EliminatedByOutOfHealth},
 			ExpectedEliminatedByIDs:  []string{"", ""},
 		},
 	}
@@ -177,14 +177,14 @@ func TestRoyaleDamagePerTurn(t *testing.T) {
 		{100, -100, 100, NotEliminated, errors.New("royale damage per turn must be greater than zero")},
 		{100, 1, 99, NotEliminated, nil},
 		{100, 99, 1, NotEliminated, nil},
-		{100, 100, 0, EliminatedByStarvation, nil},
-		{100, 101, 0, EliminatedByStarvation, nil},
-		{100, 999, 0, EliminatedByStarvation, nil},
+		{100, 100, 0, EliminatedByOutOfHealth, nil},
+		{100, 101, 0, EliminatedByOutOfHealth, nil},
+		{100, 999, 0, EliminatedByOutOfHealth, nil},
 		{2, 1, 1, NotEliminated, nil},
-		{1, 1, 0, EliminatedByStarvation, nil},
-		{1, 999, 0, EliminatedByStarvation, nil},
-		{0, 1, 0, EliminatedByStarvation, nil},
-		{0, 999, 0, EliminatedByStarvation, nil},
+		{1, 1, 0, EliminatedByOutOfHealth, nil},
+		{1, 999, 0, EliminatedByOutOfHealth, nil},
+		{0, 1, 0, EliminatedByOutOfHealth, nil},
+		{0, 999, 0, EliminatedByOutOfHealth, nil},
 	}
 
 	for _, test := range tests {
@@ -232,7 +232,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	b.Snakes[0].Health = 15
 	n, err = r.CreateNextBoardState(b, m)
 	require.NoError(t, err)
-	require.Equal(t, EliminatedByStarvation, n.Snakes[0].EliminatedCause)
+	require.Equal(t, EliminatedByOutOfHealth, n.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(0), n.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, n.Snakes[0].Body[0])
 	require.Equal(t, 20, len(r.OutOfBounds))

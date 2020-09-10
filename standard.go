@@ -22,7 +22,7 @@ const (
 	NotEliminated                   = ""
 	EliminatedByCollision           = "snake-collision"
 	EliminatedBySelfCollision       = "snake-self-collision"
-	EliminatedByStarvation          = "starvation"
+	EliminatedByOutOfHealth         = "out-of-health"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
 
@@ -348,8 +348,8 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			return errors.New("snake is length zero")
 		}
 
-		if r.snakeHasStarved(snake) {
-			snake.EliminatedCause = EliminatedByStarvation
+		if r.snakeIsOutOfHealth(snake) {
+			snake.EliminatedCause = EliminatedByOutOfHealth
 			continue
 		}
 
@@ -444,7 +444,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 	return nil
 }
 
-func (r *StandardRuleset) snakeHasStarved(s *Snake) bool {
+func (r *StandardRuleset) snakeIsOutOfHealth(s *Snake) bool {
 	return s.Health <= 0
 }
 

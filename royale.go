@@ -108,9 +108,11 @@ func (r *RoyaleRuleset) damageOutOfBounds(b *BoardState) error {
 				if head == p {
 					// Snake is now out of bounds, reduce health
 					snake.Health = snake.Health - r.DamagePerTurn
-					if snake.Health <= 0 {
+					if snake.Health < 0 {
 						snake.Health = 0
-						snake.EliminatedCause = EliminatedByStarvation
+					}
+					if r.StandardRuleset.snakeIsOutOfHealth(snake) {
+						snake.EliminatedCause = EliminatedByOutOfHealth
 					}
 				}
 			}

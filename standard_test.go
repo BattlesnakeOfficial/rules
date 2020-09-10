@@ -627,7 +627,7 @@ func TestEatingOnLastMove(t *testing.T) {
 						ID:              "two",
 						Body:            []Point{{3, 1}, {3, 2}, {3, 3}},
 						Health:          0,
-						EliminatedCause: EliminatedByStarvation,
+						EliminatedCause: EliminatedByOutOfHealth,
 					},
 				},
 				Food: []Point{{9, 9}},
@@ -783,7 +783,7 @@ func TestRegressionIssue19(t *testing.T) {
 						ID:              "eliminated",
 						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
 						Health:          0,
-						EliminatedCause: EliminatedByStarvation,
+						EliminatedCause: EliminatedByOutOfHealth,
 					},
 				},
 				Food: []Point{{9, 9}},
@@ -811,7 +811,7 @@ func TestRegressionIssue19(t *testing.T) {
 						ID:              "eliminated",
 						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
 						Health:          0,
-						EliminatedCause: EliminatedByStarvation,
+						EliminatedCause: EliminatedByOutOfHealth,
 					},
 				},
 				Food: []Point{{9, 9}},
@@ -1121,7 +1121,7 @@ func TestReduceSnakeHealth(t *testing.T) {
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 }
 
-func TestSnakeHasStarved(t *testing.T) {
+func TestSnakeIsOutOfHealth(t *testing.T) {
 	tests := []struct {
 		Health   int32
 		Expected bool
@@ -1140,7 +1140,7 @@ func TestSnakeHasStarved(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		s := &Snake{Health: test.Health}
-		require.Equal(t, test.Expected, r.snakeHasStarved(s), "Health: %+v", test.Health)
+		require.Equal(t, test.Expected, r.snakeIsOutOfHealth(s), "Health: %+v", test.Health)
 	}
 }
 
@@ -1372,7 +1372,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 			[]Snake{
 				Snake{ID: "1", Body: []Point{{1, 1}}},
 			},
-			[]string{EliminatedByStarvation},
+			[]string{EliminatedByOutOfHealth},
 			[]string{""},
 			nil,
 		},
@@ -1546,7 +1546,7 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 				{ID: "6", Health: 1, Body: []Point{{2, 2}, {2, 3}, {2, 4}, {2, 5}}},
 			},
 			[]string{
-				EliminatedByStarvation,
+				EliminatedByOutOfHealth,
 				EliminatedByOutOfBounds,
 				EliminatedBySelfCollision,
 				EliminatedByCollision,

@@ -53,7 +53,7 @@ func TestSquadAllowBodyCollisions(t *testing.T) {
 		{"R4", "red", EliminatedByCollision, "R4", EliminatedByCollision, "R4"}, // this is an error case but worth testing
 		{"R5", "red", EliminatedByCollision, "R4", NotEliminated, ""},
 		// Green Squad
-		{"G1", "green", EliminatedByStarvation, "x", EliminatedByStarvation, "x"},
+		{"G1", "green", EliminatedByOutOfHealth, "x", EliminatedByOutOfHealth, "x"},
 		// Yellow Squad
 		{"Y1", "yellow", EliminatedByCollision, "B4", EliminatedByCollision, "B4"},
 	}
@@ -231,7 +231,7 @@ func TestSquadSharedElimination(t *testing.T) {
 		{"R3", "red", NotEliminated, "", EliminatedBySquad, ""},
 		{"R4", "red", EliminatedByCollision, "B1", EliminatedByCollision, "B1"},
 		// Green Squad
-		{"G1", "green", EliminatedByStarvation, "x", EliminatedByStarvation, "x"},
+		{"G1", "green", EliminatedByOutOfHealth, "x", EliminatedByOutOfHealth, "x"},
 		// Yellow Squad
 		{"Y1", "yellow", NotEliminated, "", NotEliminated, ""},
 	}
