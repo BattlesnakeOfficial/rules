@@ -28,7 +28,7 @@ const (
 
 	// TODO - Error consts
 	ErrorBodyOutOfBounds = "Error Snake body out of bounds" // constant used to test techniques
-	ErrorTooManySnakes = "too many snakes for fixed start positions"
+	ErrorTooManySnakes   = "too many snakes for fixed start positions"
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
