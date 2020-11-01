@@ -27,7 +27,8 @@ const (
 	EliminatedByOutOfBounds         = "wall-collision"
 
 	// TODO - Error consts
-	ErrorBodyOutOfBounds = "Error Snake body out of bounds"
+	ErrorBodyOutOfBounds = "Error Snake body out of bounds" // constant used to test techniques
+	ErrorTooManySnakes = "too many snakes for fixed start positions"
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -80,7 +81,7 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 	// Sanity check
 	if len(b.Snakes) > len(startPoints) {
-		return errors.New("too many snakes for fixed start positions")
+		return errors.New("too many snakes for fixed start positions") // TODO: swap this string for a constant
 	}
 
 	// Randomly order them
