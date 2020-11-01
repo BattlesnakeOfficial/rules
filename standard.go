@@ -81,7 +81,7 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 	// Sanity check
 	if len(b.Snakes) > len(startPoints) {
-		return errors.New("too many snakes for fixed start positions") // TODO: swap this string for a constant
+		return errors.New(ErrorTooManySnakes) // TODO: swap this string for a constant
 	}
 
 	// Randomly order them
