@@ -27,6 +27,7 @@ const (
 	EliminatedByOutOfBounds         = "wall-collision"
 
 	// TODO - Error consts
+	ErrorBodyOutOfBounds         = "Error, Snake body out of bounds"
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
