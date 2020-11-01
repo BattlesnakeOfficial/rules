@@ -30,6 +30,9 @@ const (
 	ErrorBodyOutOfBounds = "Error Snake body out of bounds" // constant used to test techniques
 	ErrorTooManySnakes   = "too many snakes for fixed start positions"
 	ErrorNoRoomForSnake  = "not enough space to place snake"
+	ErrorNoRoomForFood   = "not enough space to place food"
+	ErrorSizeZeroBody    = "found snake with zero size body"
+	ErrorNoMoveFound     = "move not provided for snake"
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -149,7 +152,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 
 		if len(availableFoodLocations) <= 0 {
-			return errors.New("not enough space to place food")
+			return errors.New(ErrorNoRoomForFood)
 		}
 
 		// Select randomly from available locations
@@ -168,7 +171,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 	}
 	if isCenterOccupied {
-		return errors.New("not enough space to place food")
+		return errors.New(ErrorNoRoomForFood)
 	}
 	b.Food = append(b.Food, centerCoord)
 
@@ -257,7 +260,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 
 		if len(snake.Body) == 0 {
-			return errors.New("found snake with zero size body")
+			return errors.New(ErrorSizeZeroBody)
 		}
 		moveFound := false
 		for _, move := range moves {
@@ -267,7 +270,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 		if !moveFound {
-			return errors.New("move not provided for snake")
+			return errors.New(ErrorNoMoveFound)
 		}
 	}
 
