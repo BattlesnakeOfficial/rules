@@ -31,7 +31,11 @@ const (
 	ErrorTooManySnakes   = "too many snakes for fixed start positions"
 	ErrorNoRoomForSnake  = "not enough space to place snake"
 	ErrorNoRoomForFood   = "not enough space to place food"
+	
+	// TODO: These two error codes seem equivalent, Do we only need one ?
 	ErrorSizeZeroBody    = "found snake with zero size body"
+	ErrorZeroLengthSnake = "snake is length zero"
+	
 	ErrorNoMoveFound     = "move not provided for snake"
 )
 
@@ -351,7 +355,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New("snake is length zero")
+			return errors.New(ErrorZeroLengthSnake)
 		}
 
 		if r.snakeIsOutOfHealth(snake) {
@@ -379,7 +383,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New("snake is length zero")
+			return errors.New(ErrorZeroLengthSnake)
 		}
 
 		// Check for self-collisions first
