@@ -29,6 +29,7 @@ const (
 	// TODO - Error consts
 	ErrorBodyOutOfBounds = "Error Snake body out of bounds" // constant used to test techniques
 	ErrorTooManySnakes   = "too many snakes for fixed start positions"
+	ErrorNoRoomForSnake  = "not enough space to place snake"
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -81,7 +82,7 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 	// Sanity check
 	if len(b.Snakes) > len(startPoints) {
-		return errors.New(ErrorTooManySnakes) // TODO: swap this string for a constant
+		return errors.New(ErrorTooManySnakes)
 	}
 
 	// Randomly order them
@@ -104,7 +105,7 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := r.getEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
-			return errors.New("not enough space to place snake")
+			return errors.New(ErrorNoRoomForSnake)
 		}
 		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 		for j := 0; j < SnakeStartSize; j++ {
