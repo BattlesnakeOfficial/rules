@@ -48,8 +48,8 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{9, 8, []string{"one"}, 1, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
 		{2, 2, []string{"one", "two"}, 2, nil},
-		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
-		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
+		{1, 1, []string{"one", "two"}, 2, errors.New(ErrorNoRoomForSnake)},
+		{1, 2, []string{"one", "two"}, 2, errors.New(ErrorNoRoomForSnake)},
 		{BoardSizeSmall, BoardSizeSmall, []string{"one", "two"}, 3, nil},
 	}
 
