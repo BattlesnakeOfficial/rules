@@ -512,7 +512,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				{ID: "one", Move: MoveUp},
 				{ID: "two", Move: MoveDown},
 			},
-			errors.New("found snake with zero size body"),
+			errors.New(ErrorSizeZeroBody),
 			nil,
 		},
 		{
@@ -939,7 +939,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New("move not provided for snake"), err)
+	require.Equal(t, errors.New(ErrorNoMoveFound), err)
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {
@@ -964,7 +964,7 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New("move not provided for snake"), err)
+	require.Equal(t, errors.New(ErrorNoMoveFound), err)
 }
 
 func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
@@ -1365,7 +1365,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 			},
 			[]string{NotEliminated},
 			[]string{""},
-			errors.New("snake is length zero"),
+			errors.New(ErrorZeroLengthSnake),
 		},
 		{
 			"Single Starvation",
