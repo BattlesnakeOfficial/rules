@@ -27,10 +27,10 @@ const (
 	EliminatedByOutOfBounds         = "wall-collision"
 
 	// TODO - Error consts
-	ErrorTooManySnakes   = "too many snakes for fixed start positions"
-	ErrorNoRoomForSnake  = "not enough space to place snake"
-	ErrorNoRoomForFood   = "not enough space to place food"
-	ErrorNoMoveFound     = "move not provided for snake"
+	ErrorTooManySnakes  = "too many snakes for fixed start positions"
+	ErrorNoRoomForSnake = "not enough space to place snake"
+	ErrorNoRoomForFood  = "not enough space to place food"
+	ErrorNoMoveFound    = "move not provided for snake"
 
 	// TODO: These two error codes seem equivalent, Do we only need one ?
 	ErrorSizeZeroBody    = "found snake with zero size body"
