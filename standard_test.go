@@ -94,7 +94,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -102,7 +102,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -110,7 +110,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -134,7 +134,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 5,
 				Snakes: make([]Snake, 49),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -142,7 +142,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: make([]Snake, 50),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -150,7 +150,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 51),
 			},
-			errors.New("not enough space to place snake"),
+			errors.New(ErrorNoRoomForSnake),
 		},
 		{
 			&BoardState{
@@ -174,7 +174,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeSmall,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			errors.New(ErrorTooManySnakes),
 		},
 		{
 			&BoardState{
@@ -190,7 +190,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeMedium,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			errors.New(ErrorTooManySnakes),
 		},
 		{
 			&BoardState{
@@ -206,7 +206,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeLarge,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			errors.New(ErrorTooManySnakes),
 		},
 	}
 
@@ -487,7 +487,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{},
-			errors.New("move not provided for snake"),
+			errors.New(ErrorNoMoveFound),
 			nil,
 		},
 		{
