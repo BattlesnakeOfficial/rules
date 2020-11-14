@@ -33,7 +33,7 @@ From the root folder of the project, run:
 go build -o battlesnake cli/main.go
 ```
 
-This will create the `rules` command, that you can use. It currently has one verb: `play`.
+This will create the `battlesnake` command, that you can use. It currently has one verb: `play`.
 
 ```
 Use the CLI to configure and play a game of Battlesnake against 
