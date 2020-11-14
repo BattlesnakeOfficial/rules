@@ -125,13 +125,13 @@ var run = func(cmd *cobra.Command, args []string) {
 	var ruleset rules.Ruleset
 	var royale rules.RoyaleRuleset
 	var outOfBounds []rules.Point
-	ruleset, royale = getRuleset(seed, Turn, snakes)
+	ruleset, _ = getRuleset(seed, Turn, snakes)
 	state := initializeBoardFromArgs(ruleset, snakes)
 	for _, snake := range snakes {
 		InternalSnakes[snake.ID] = snake
 	}
 
-	for v := false; v == false; v, _ = ruleset.IsGameOver(state) {
+	for v := false; !v; v, _ = ruleset.IsGameOver(state) {
 		Turn++
 		ruleset, royale = getRuleset(seed, Turn, snakes)
 		state, outOfBounds = createNextBoardState(ruleset, royale, state, outOfBounds, snakes)
@@ -240,7 +240,13 @@ func createNextBoardState(ruleset rules.Ruleset, royale rules.RoyaleRuleset, sta
 		snake.LastMove = move.Move
 		InternalSnakes[move.ID] = snake
 	}
-	royale.CreateNextBoardState(state, moves)
+	if GameType == "royale" {
+		_, err := royale.CreateNextBoardState(state, moves)
+		if err != nil {
+			log.Panic("[PANIC]: Error Producing Next Royale Board State")
+			panic(err)
+		}
+	}
 	state, err := ruleset.CreateNextBoardState(state, moves)
 	if err != nil {
 		log.Panic("[PANIC]: Error Producing Next Board State")
@@ -269,12 +275,16 @@ func getMoveForSnake(state *rules.BoardState, snake InternalSnake, outOfBounds [
 			log.Fatal(readErr)
 		} else {
 			playerResponse := PlayerResponse{}
-			json.Unmarshal(body, &playerResponse)
-			move = playerResponse.Move
-			if snake.API == "1" && move == "up" {
-				move = "down"
-			} else if snake.API == "1" && move == "down" {
-				move = "up"
+			jsonErr := json.Unmarshal(body, &playerResponse)
+			if jsonErr != nil {
+				log.Fatal(jsonErr)
+			} else {
+				move = playerResponse.Move
+				if snake.API == "1" && move == "up" {
+					move = "down"
+				} else if snake.API == "1" && move == "down" {
+					move = "up"
+				}
 			}
 		}
 	}
@@ -415,8 +425,12 @@ func buildSnakesFromOptions() []InternalSnake {
 			}
 
 			pingResponse := PingResponse{}
-			json.Unmarshal(body, &pingResponse)
-			api = pingResponse.APIVersion
+			jsonErr := json.Unmarshal(body, &pingResponse)
+			if jsonErr != nil {
+				log.Fatal(jsonErr)
+			} else {
+				api = pingResponse.APIVersion
+			}
 		}
 		snake := InternalSnake{Name: snakeName, URL: snakeURL, ID: id, API: api, LastMove: "up", Character: bodyChars[i%8]}
 		if GameType == "squad" {
@@ -459,5 +473,5 @@ func printMap(state *rules.BoardState, outOfBounds []rules.Point, gameTurn int32
 		}
 		o.WriteString("\n")
 	}
-	log.Printf(o.String())
+	log.Print(o.String())
 }
