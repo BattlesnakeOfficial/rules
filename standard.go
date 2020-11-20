@@ -6,14 +6,15 @@ import (
 	"sort"
 )
 
-type StandardRuleset struct{}
+type StandardRuleset struct {
+	FoodSpawnChance int32 // [0, 100]
+	MinimumFood     int32
+}
 
 const (
 	BoardSizeSmall  = 7
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
-
-	FoodSpawnChance = 0.15
 
 	SnakeMaxHealth = 100
 	SnakeStartSize = 3
@@ -173,7 +174,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 }
 
 func (r *StandardRuleset) placeFoodRandomly(b *BoardState) error {
-	return r.spawnFood(b, len(b.Snakes))
+	return r.spawnFood(b, int32(len(b.Snakes)))
 }
 
 func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
@@ -518,14 +519,17 @@ func (r *StandardRuleset) growSnake(snake *Snake) {
 }
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
-	if len(b.Food) == 0 || rand.Float32() <= FoodSpawnChance {
+	numCurrentFood := int32(len(b.Food))
+	if numCurrentFood < r.MinimumFood {
+		return r.spawnFood(b, r.MinimumFood-numCurrentFood)
+	} else if r.FoodSpawnChance > 0 && int32(rand.Intn(100)) < r.FoodSpawnChance {
 		return r.spawnFood(b, 1)
 	}
 	return nil
 }
 
-func (r *StandardRuleset) spawnFood(b *BoardState, n int) error {
-	for i := 0; i < n; i++ {
+func (r *StandardRuleset) spawnFood(b *BoardState, n int32) error {
+	for i := int32(0); i < n; i++ {
 		unoccupiedPoints := r.getUnoccupiedPoints(b, false)
 		if len(unoccupiedPoints) > 0 {
 			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]

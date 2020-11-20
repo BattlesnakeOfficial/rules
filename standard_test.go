@@ -1828,22 +1828,89 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 	}
 }
 
-func TestMaybeSpawnFood(t *testing.T) {
+func TestMaybeSpawnFoodMinimum(t *testing.T) {
+	tests := []struct {
+		MinimumFood  int32
+		Food         []Point
+		ExpectedFood int
+	}{
+		// Use pre-tested seeds and results
+		{0, []Point{}, 0},
+		{1, []Point{}, 1},
+		{9, []Point{}, 9},
+		{7, []Point{{4, 5}, {4, 4}, {4, 1}}, 7},
+	}
+
+	for _, test := range tests {
+		r := StandardRuleset{MinimumFood: test.MinimumFood}
+		b := &BoardState{
+			Height: 11,
+			Width:  11,
+			Snakes: []Snake{
+				{Body: []Point{{1, 0}, {1, 1}}},
+				{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+			},
+			Food: test.Food,
+		}
+
+		err := r.maybeSpawnFood(b)
+		require.NoError(t, err)
+		require.Equal(t, test.ExpectedFood, len(b.Food))
+	}
+}
+
+func TestMaybeSpawnFoodZeroChance(t *testing.T) {
+	r := StandardRuleset{FoodSpawnChance: 0}
+	b := &BoardState{
+		Height: 11,
+		Width:  11,
+		Snakes: []Snake{
+			{Body: []Point{{1, 0}, {1, 1}}},
+			{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+		},
+		Food: []Point{},
+	}
+	for i := 0; i < 1000; i++ {
+		err := r.maybeSpawnFood(b)
+		require.NoError(t, err)
+		require.Equal(t, len(b.Food), 0)
+	}
+}
+
+func TestMaybeSpawnFoodHundredChance(t *testing.T) {
+	r := StandardRuleset{FoodSpawnChance: 100}
+	b := &BoardState{
+		Height: 11,
+		Width:  11,
+		Snakes: []Snake{
+			{Body: []Point{{1, 0}, {1, 1}}},
+			{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+		},
+		Food: []Point{},
+	}
+	for i := 1; i <= 22; i++ {
+		err := r.maybeSpawnFood(b)
+		require.NoError(t, err)
+		require.Equal(t, i, len(b.Food))
+	}
+}
+
+func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 	tests := []struct {
 		Seed         int64
 		Food         []Point
-		ExpectedFood []Point
+		ExpectedFood int32
 	}{
 		// Use pre-tested seeds and results
-		{123, []Point{}, []Point{{2, 3}}},
-		{456, []Point{{4, 4}}, []Point{{4, 4}}},
-		{789, []Point{{4, 4}}, []Point{{4, 4}}},
-		{1024, []Point{}, []Point{{1, 2}}},
-		{511, []Point{{4, 4}}, []Point{{4, 4}, {4, 1}}},
-		{165, []Point{{4, 4}}, []Point{{4, 4}, {4, 2}}},
+		{123, []Point{}, 1},
+		{12345, []Point{}, 0},
+		{456, []Point{{4, 4}}, 1},
+		{789, []Point{{4, 4}}, 2},
+		{511, []Point{{4, 4}}, 1},
+		{165, []Point{{4, 4}}, 2},
 	}
 
-	r := StandardRuleset{}
+	r := StandardRuleset{FoodSpawnChance: 50}
 	for _, test := range tests {
 		b := &BoardState{
 			Height: 4,
@@ -1858,10 +1925,7 @@ func TestMaybeSpawnFood(t *testing.T) {
 		rand.Seed(test.Seed)
 		err := r.maybeSpawnFood(b)
 		require.NoError(t, err)
-		require.Equal(t, len(test.ExpectedFood), len(b.Food), "Seed %d", test.Seed)
-		for i, e := range test.ExpectedFood {
-			require.Equal(t, e, b.Food[i], "Seed %d", test.Seed)
-		}
+		require.Equal(t, test.ExpectedFood, int32(len(b.Food)), "Seed %d", test.Seed)
 	}
 }
 
