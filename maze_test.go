@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFeastRulesetInterface(t *testing.T) {
-	var _ Ruleset = (*FeastRuleset)(nil)
+func TestMazeRulesetInterface(t *testing.T) {
+	var _ Ruleset = (*MazeRuleset)(nil)
 }
 
-func TestFeastCreateInitialBoardState(t *testing.T) {
+func TestMazeCreateInitialBoardState(t *testing.T) {
 	tests := []struct {
 		Height          int32
 		Width           int32
@@ -27,7 +27,7 @@ func TestFeastCreateInitialBoardState(t *testing.T) {
 		{11, 11, []string{"one", "two", "three", "four", "five"}, 116, nil},
 	}
 
-	r := FeastRuleset{}
+	r := MazeRuleset{}
 	for testNum, test := range tests {
 		state, err := r.CreateInitialBoardState(test.Width, test.Height, test.IDs)
 		require.Equal(t, test.Err, err)
@@ -46,11 +46,10 @@ func TestFeastCreateInitialBoardState(t *testing.T) {
 	}
 }
 
-func TestFeastCreateNextBoardState(t *testing.T) {
+func TestMazeCreateNextBoardState(t *testing.T) {
 	tests := []struct {
 		prevState     *BoardState
 		moves         []SnakeMove
-		expectedError error
 		expectedState *BoardState
 	}{
 		{
@@ -75,7 +74,6 @@ func TestFeastCreateNextBoardState(t *testing.T) {
 				{ID: "one", Move: MoveDown},
 				{ID: "two", Move: MoveUp},
 			},
-			nil,
 			&BoardState{
 				Width:  3,
 				Height: 3,
@@ -94,12 +92,84 @@ func TestFeastCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 2}, {1, 1}, {2, 0}},
 			},
 		},
+		// Ensure food is spawning in front of snakes
+		{
+			&BoardState{
+				Width:  3,
+				Height: 3,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 0}, {1, 0}, {1, 0}},
+						Health: 75,
+					},
+				},
+				Food: []Point{},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveDown},
+			},
+			&BoardState{
+				Width:  3,
+				Height: 3,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 1}, {1, 0}, {1, 0}},
+						Health: 74,
+					},
+				},
+				Food: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
+			},
+		},
+		// Ensure eliminated snakes are immediately replace with food
+		{
+			&BoardState{
+				Width:  3,
+				Height: 3,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{1, 0}, {2, 0}, {2, 0}},
+						Health: 100,
+					},
+					{
+						ID:     "two",
+						Body:   []Point{{2, 2}, {1, 2}, {0, 2}},
+						Health: 100,
+					},
+				},
+				Food: []Point{},
+			},
+			[]SnakeMove{
+				{ID: "one", Move: MoveLeft},
+				{ID: "two", Move: MoveDown},
+			},
+			&BoardState{
+				Width:  3,
+				Height: 3,
+				Snakes: []Snake{
+					{
+						ID:     "one",
+						Body:   []Point{{0, 0}, {1, 0}, {2, 0}},
+						Health: 99,
+					},
+					{
+						ID:              "two",
+						Body:            []Point{{2, 3}, {2, 2}, {1, 2}},
+						Health:          99,
+						EliminatedCause: EliminatedByOutOfBounds,
+					},
+				},
+				Food: []Point{{0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 1}, {2, 2}},
+			},
+		},
 	}
 
-	r := FeastRuleset{}
+	r := MazeRuleset{}
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
-		require.Equal(t, test.expectedError, err)
+		require.NoError(t, err)
 		require.Equal(t, test.expectedState, nextState)
 	}
 }

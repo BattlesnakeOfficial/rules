@@ -548,6 +548,9 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState, includePossibleMove
 		pointIsOccupied[p.X][p.Y] = true
 	}
 	for _, snake := range b.Snakes {
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
 		for i, p := range snake.Body {
 			if _, xExists := pointIsOccupied[p.X]; !xExists {
 				pointIsOccupied[p.X] = map[int32]bool{}
