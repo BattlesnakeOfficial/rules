@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"bytes"
@@ -93,10 +93,9 @@ var ViewMap bool
 
 var playCmd = &cobra.Command{
 	Use:   "play",
-	Short: "Play a game of Battlesnake",
-	Long: `Use the CLI to configure and play a game of Battlesnake against 
-multiple snakes, with multiple rulesets.`,
-	Run: run,
+	Short: "Play a game of Battlesnake locally.",
+	Long:  "Play a game of Battlesnake locally.",
+	Run:   run,
 }
 
 func init() {

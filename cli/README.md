@@ -1,15 +1,18 @@
 # Battlesnake CLI
 
-This tool allows running a Battlesnake game locally. There are several command-
-line options for the play verb, including the ability to send snakes requests 
-sequentially or all at the same time, and also to set a timeout limit.
+This tool allows running a Battlesnake game locally. There are several command-line options for running games, including the ability to send Battlesnake requests sequentially or concurrently, set a custom timeout, etc.
+
+## Installation
+
+The Battlesnake CLI requires Go 1.13 or later.
+
+```
+go get github.com/BattlesnakeOfficial/rules/cli/battlesnake
+```
 
 ## Usage
 
 ```
-Use the CLI to configure and play a game of Battlesnake against 
-multiple snakes, with multiple rulesets.
-
 Usage:
   battlesnake play [flags]
 
@@ -29,19 +32,23 @@ Global Flags:
       --config string   config file (default is $HOME/.battlesnake.yaml)
 ```
 
-Names and URLs will be paired together in sequence, so in the following example
-it effectively makes:
-
-* Snake1: http://snake1-url-whatever:port
-* Snake2: http://snake2-url-whatever:port
-
-Names are optional, but definitely way easier to read than UUIDs. URLs are
-optional too, but your snake will lose if the server is only sending move
-requests to http://example.com.
-
+Battlesnake names and URLs will be paired together in sequence, for example:
 
 ```
-battlesnake play --width 7 --height 7 --name Snake1 --url http://snake1-url-whatever:port --name Snake2 --url http://snake2-url-whatever:port
+battlesnake play --name Snake1 --url http://snake1-url-whatever --name Snake2 --url http://snake2-url-whatever
+```
+
+This will create a game with the following Battlesnakes:
+* Snake1, http://snake1-url-whatever
+* Snake2, http://snake2-url-whatever
+
+Names are optional, and if you don't provide them UUIDs will be generated instead. However names are way easier to read and highly recommended!
+
+URLs are technically optional too, but your Battlesnake will lose if the server is only sending move requests to http://example.com.
+
+Example creating a 7x7 Standard game with two Battlesnakes:
+```
+battlesnake play --width 7 --height 7 --name Snake1 --url http://snake1-url-whatever --name Snake2 --url http://snake2-url-whatever
 ```
 
 ### Sample Output
