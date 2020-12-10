@@ -24,3 +24,38 @@ This was functionality that an older version of the game logic provided, includi
 This is because the game rules implement an inverted Y-Axis. Older versions of the Battlesnake API operated this way, and several highly competitive Battlesnakes still rely on this behaviour and we'd still like to upport them. The current game engine accounts for this by translating the Y-Axis (or not) based on which version of the API each Battlesnake implements. More info [here](https://docs.battlesnake.com/guides/migrating-to-api-version-1) and [here](https://github.com/BattlesnakeOfficial/rules/issues/18).
 
 In the future we might switch this to make the rules easier to develop? But until we drop support for the older API version it doesn't make sense to make that change.
+
+## CLI Build Instructions
+
+From the root folder of the project, run:
+
+```
+go build -o battlesnake cli/main.go
+```
+
+This will create the `battlesnake` command, that you can use. It currently has one verb: `play`.
+
+```
+Use the CLI to configure and play a game of Battlesnake against 
+multiple snakes, with multiple rulesets.
+
+Usage:
+  battlesnake play [flags]
+
+Flags:
+  -g, --gametype string     Type of Game Rules (default "standard")
+  -H, --height int32        Height of Board (default 11)
+  -h, --help                help for play
+  -n, --name stringArray    Name of Snake
+  -s, --sequential          Use Sequential Processing
+  -S, --squad stringArray   Squad of Snake
+  -t, --timeout int32       Request Timeout (default 500)
+  -u, --url stringArray     URL of Snake
+  -v, --viewmap             View the Map Each Turn
+  -W, --width int32         Width of Board (default 11)
+
+Global Flags:
+      --config string   config file (default is $HOME/.battlesnake.yaml)
+```
+
+For more details, see the [CLI-Specific README](cli/README.md)
