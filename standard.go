@@ -6,14 +6,15 @@ import (
 	"sort"
 )
 
-type StandardRuleset struct{}
+type StandardRuleset struct {
+	FoodSpawnChance int32 // [0, 100]
+	MinimumFood     int32
+}
 
 const (
 	BoardSizeSmall  = 7
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
-
-	FoodSpawnChance = 0.15
 
 	SnakeMaxHealth = 100
 	SnakeStartSize = 3
@@ -165,7 +166,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 	// Finally, always place 1 food in center of board for dramatic purposes
 	isCenterOccupied := true
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
-	unoccupiedPoints := r.getUnoccupiedPoints(b)
+	unoccupiedPoints := r.getUnoccupiedPoints(b, true)
 	for _, point := range unoccupiedPoints {
 		if point == centerCoord {
 			isCenterOccupied = false
@@ -181,7 +182,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 }
 
 func (r *StandardRuleset) placeFoodRandomly(b *BoardState) error {
-	return r.spawnFood(b, len(b.Snakes))
+	return r.spawnFood(b, int32(len(b.Snakes)))
 }
 
 func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
@@ -526,15 +527,18 @@ func (r *StandardRuleset) growSnake(snake *Snake) {
 }
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
-	if len(b.Food) == 0 || rand.Float32() <= FoodSpawnChance {
+	numCurrentFood := int32(len(b.Food))
+	if numCurrentFood < r.MinimumFood {
+		return r.spawnFood(b, r.MinimumFood-numCurrentFood)
+	} else if r.FoodSpawnChance > 0 && int32(rand.Intn(100)) < r.FoodSpawnChance {
 		return r.spawnFood(b, 1)
 	}
 	return nil
 }
 
-func (r *StandardRuleset) spawnFood(b *BoardState, n int) error {
-	for i := 0; i < n; i++ {
-		unoccupiedPoints := r.getUnoccupiedPoints(b)
+func (r *StandardRuleset) spawnFood(b *BoardState, n int32) error {
+	for i := int32(0); i < n; i++ {
+		unoccupiedPoints := r.getUnoccupiedPoints(b, false)
 		if len(unoccupiedPoints) > 0 {
 			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 			b.Food = append(b.Food, newFood)
@@ -543,7 +547,7 @@ func (r *StandardRuleset) spawnFood(b *BoardState, n int) error {
 	return nil
 }
 
-func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
+func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	pointIsOccupied := map[int32]map[int32]bool{}
 	for _, p := range b.Food {
 		if _, xExists := pointIsOccupied[p.X]; !xExists {
@@ -552,11 +556,29 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
 		pointIsOccupied[p.X][p.Y] = true
 	}
 	for _, snake := range b.Snakes {
-		for _, p := range snake.Body {
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
+		for i, p := range snake.Body {
 			if _, xExists := pointIsOccupied[p.X]; !xExists {
 				pointIsOccupied[p.X] = map[int32]bool{}
 			}
 			pointIsOccupied[p.X][p.Y] = true
+
+			if i == 0 && !includePossibleMoves {
+				nextMovePoints := []Point{
+					{X: p.X - 1, Y: p.Y},
+					{X: p.X + 1, Y: p.Y},
+					{X: p.X, Y: p.Y - 1},
+					{X: p.X, Y: p.Y + 1},
+				}
+				for _, nextP := range nextMovePoints {
+					if _, xExists := pointIsOccupied[nextP.X]; !xExists {
+						pointIsOccupied[nextP.X] = map[int32]bool{}
+					}
+					pointIsOccupied[nextP.X][nextP.Y] = true
+				}
+			}
 		}
 	}
 
@@ -578,7 +600,7 @@ func (r *StandardRuleset) getUnoccupiedPoints(b *BoardState) []Point {
 
 func (r *StandardRuleset) getEvenUnoccupiedPoints(b *BoardState) []Point {
 	// Start by getting unoccupied points
-	unoccupiedPoints := r.getUnoccupiedPoints(b)
+	unoccupiedPoints := r.getUnoccupiedPoints(b, true)
 
 	// Create a new array to hold points that are  even
 	evenUnoccupiedPoints := []Point{}
