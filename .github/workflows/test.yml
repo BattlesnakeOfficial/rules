@@ -49,7 +49,7 @@ jobs:
         fail_ci_if_error: true
 
   build-cli:
-    name: Build CLI
+    name: Build CLI (go build)
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
