@@ -175,7 +175,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeSmall,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New(ErrorTooManySnakes),
+			ErrorTooManySnakes,
 		},
 		{
 			&BoardState{
@@ -191,7 +191,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeMedium,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New(ErrorTooManySnakes),
+			ErrorTooManySnakes,
 		},
 		{
 			&BoardState{
@@ -207,7 +207,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeLarge,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New(ErrorTooManySnakes),
+			ErrorTooManySnakes,
 		},
 	}
 
