@@ -37,3 +37,7 @@ type Ruleset interface {
 	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 	IsGameOver(state *BoardState) (bool, error)
 }
+
+type RulesetError string
+
+func (err RulesetError) Error() string { return string(err) }

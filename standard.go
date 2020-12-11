@@ -1,7 +1,7 @@
 package rules
 
 import (
-	"errors"
+	//"errors"
 	"math/rand"
 	"sort"
 )
@@ -28,6 +28,14 @@ const (
 	EliminatedByOutOfBounds         = "wall-collision"
 
 	// TODO - Error consts
+	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
+	ErrorNoRoomForSnake = RulesetError("not enough space to place snake")
+	ErrorNoRoomForFood  = RulesetError("not enough space to place food")
+	ErrorNoMoveFound    = RulesetError("move not provided for snake")
+
+	// TODO: These two error codes seem equivalent, Do we only need one ?
+	ErrorSizeZeroBody    = RulesetError("found snake with zero size body")
+	ErrorZeroLengthSnake = RulesetError("snake is length zero")
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -80,7 +88,7 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 
 	// Sanity check
 	if len(b.Snakes) > len(startPoints) {
-		return errors.New("too many snakes for fixed start positions")
+		return ErrorTooManySnakes
 	}
 
 	// Randomly order them
@@ -103,7 +111,7 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := r.getEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
-			return errors.New("not enough space to place snake")
+			return ErrorNoRoomForSnake
 		}
 		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 		for j := 0; j < SnakeStartSize; j++ {
@@ -147,7 +155,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 
 		if len(availableFoodLocations) <= 0 {
-			return errors.New("not enough space to place food")
+			return ErrorNoRoomForFood
 		}
 
 		// Select randomly from available locations
@@ -166,7 +174,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 	}
 	if isCenterOccupied {
-		return errors.New("not enough space to place food")
+		return ErrorNoRoomForFood
 	}
 	b.Food = append(b.Food, centerCoord)
 
@@ -255,7 +263,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 
 		if len(snake.Body) == 0 {
-			return errors.New("found snake with zero size body")
+			return ErrorSizeZeroBody
 		}
 		moveFound := false
 		for _, move := range moves {
@@ -265,7 +273,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 		if !moveFound {
-			return errors.New("move not provided for snake")
+			return ErrorNoMoveFound
 		}
 	}
 
@@ -346,7 +354,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New("snake is length zero")
+			return ErrorZeroLengthSnake
 		}
 
 		if r.snakeIsOutOfHealth(snake) {
@@ -374,7 +382,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New("snake is length zero")
+			return ErrorZeroLengthSnake
 		}
 
 		// Check for self-collisions first

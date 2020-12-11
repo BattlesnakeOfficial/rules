@@ -1,7 +1,7 @@
 package rules
 
 import (
-	"errors"
+	//"errors"
 	"math"
 	"math/rand"
 	"testing"
@@ -49,8 +49,8 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{2, 2, []string{"one"}, 1, nil},
 		{9, 8, []string{"one"}, 1, nil},
 		{2, 2, []string{"one", "two"}, 0, nil},
-		{1, 1, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
-		{1, 2, []string{"one", "two"}, 2, errors.New("not enough space to place snake")},
+		{1, 1, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
+		{1, 2, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
 		{BoardSizeSmall, BoardSizeSmall, []string{"one", "two"}, 3, nil},
 	}
 
@@ -95,7 +95,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -103,7 +103,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -111,7 +111,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -135,7 +135,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 5,
 				Snakes: make([]Snake, 49),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -143,7 +143,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: make([]Snake, 50),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -151,7 +151,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 51),
 			},
-			errors.New("not enough space to place snake"),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -175,7 +175,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeSmall,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			ErrorTooManySnakes,
 		},
 		{
 			&BoardState{
@@ -191,7 +191,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeMedium,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			ErrorTooManySnakes,
 		},
 		{
 			&BoardState{
@@ -207,7 +207,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: BoardSizeLarge,
 				Snakes: make([]Snake, 9),
 			},
-			errors.New("too many snakes for fixed start positions"),
+			ErrorTooManySnakes,
 		},
 	}
 
@@ -488,7 +488,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{},
-			errors.New("move not provided for snake"),
+			ErrorNoMoveFound,
 			nil,
 		},
 		{
@@ -513,7 +513,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				{ID: "one", Move: MoveUp},
 				{ID: "two", Move: MoveDown},
 			},
-			errors.New("found snake with zero size body"),
+			ErrorSizeZeroBody,
 			nil,
 		},
 		{
@@ -940,7 +940,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New("move not provided for snake"), err)
+	require.Equal(t, ErrorNoMoveFound, err) // TODO: @bvanvugt is this a place where an "==" comparision should be used ?
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {
@@ -965,7 +965,7 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New("move not provided for snake"), err)
+	require.Equal(t, ErrorNoMoveFound, err)
 }
 
 func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
@@ -1366,7 +1366,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 			},
 			[]string{NotEliminated},
 			[]string{""},
-			errors.New("snake is length zero"),
+			ErrorZeroLengthSnake,
 		},
 		{
 			"Single Starvation",
