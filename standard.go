@@ -29,7 +29,7 @@ const (
 
 	// TODO - Error consts
 	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
-	ErrorNoRoomForSnake = "not enough space to place snake"
+	ErrorNoRoomForSnake = RulesetError("not enough space to place snake")
 	ErrorNoRoomForFood  = "not enough space to place food"
 	ErrorNoMoveFound    = "move not provided for snake"
 
@@ -111,7 +111,7 @@ func (r *StandardRuleset) placeSnakesRandomly(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := r.getEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
-			return errors.New(ErrorNoRoomForSnake)
+			return ErrorNoRoomForSnake
 		}
 		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 		for j := 0; j < SnakeStartSize; j++ {

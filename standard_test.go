@@ -49,8 +49,8 @@ func TestCreateInitialBoardState(t *testing.T) {
 		{2, 2, []string{"one"}, 1, nil},
 		{9, 8, []string{"one"}, 1, nil},
 		{2, 2, []string{"one", "two"}, 0, nil},
-		{1, 1, []string{"one", "two"}, 2, errors.New(ErrorNoRoomForSnake)},
-		{1, 2, []string{"one", "two"}, 2, errors.New(ErrorNoRoomForSnake)},
+		{1, 1, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
+		{1, 2, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
 		{BoardSizeSmall, BoardSizeSmall, []string{"one", "two"}, 3, nil},
 	}
 
@@ -95,7 +95,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -103,7 +103,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 1,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -111,7 +111,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 2),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -135,7 +135,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 5,
 				Snakes: make([]Snake, 49),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -143,7 +143,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: make([]Snake, 50),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -151,7 +151,7 @@ func TestPlaceSnakes(t *testing.T) {
 				Height: 2,
 				Snakes: make([]Snake, 51),
 			},
-			errors.New(ErrorNoRoomForSnake),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
