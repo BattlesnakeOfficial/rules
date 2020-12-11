@@ -1,7 +1,6 @@
 package rules
 
 import (
-	//"errors"
 	"math"
 	"math/rand"
 	"testing"
@@ -513,7 +512,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				{ID: "one", Move: MoveUp},
 				{ID: "two", Move: MoveDown},
 			},
-			ErrorSizeZeroBody,
+			ErrorZeroLengthSnake,
 			nil,
 		},
 		{
@@ -940,7 +939,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, ErrorNoMoveFound, err) // TODO: @bvanvugt is this a place where an "==" comparision should be used ?
+	require.Equal(t, ErrorNoMoveFound, err)
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {

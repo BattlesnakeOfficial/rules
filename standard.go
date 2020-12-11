@@ -1,7 +1,6 @@
 package rules
 
 import (
-	//"errors"
 	"math/rand"
 	"sort"
 )
@@ -10,33 +9,6 @@ type StandardRuleset struct {
 	FoodSpawnChance int32 // [0, 100]
 	MinimumFood     int32
 }
-
-const (
-	BoardSizeSmall  = 7
-	BoardSizeMedium = 11
-	BoardSizeLarge  = 19
-
-	SnakeMaxHealth = 100
-	SnakeStartSize = 3
-
-	// bvanvugt - TODO: Just return formatted strings instead of codes?
-	NotEliminated                   = ""
-	EliminatedByCollision           = "snake-collision"
-	EliminatedBySelfCollision       = "snake-self-collision"
-	EliminatedByOutOfHealth         = "out-of-health"
-	EliminatedByHeadToHeadCollision = "head-collision"
-	EliminatedByOutOfBounds         = "wall-collision"
-
-	// TODO - Error consts
-	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
-	ErrorNoRoomForSnake = RulesetError("not enough space to place snake")
-	ErrorNoRoomForFood  = RulesetError("not enough space to place food")
-	ErrorNoMoveFound    = RulesetError("move not provided for snake")
-
-	// TODO: These two error codes seem equivalent, Do we only need one ?
-	ErrorSizeZeroBody    = RulesetError("found snake with zero size body")
-	ErrorZeroLengthSnake = RulesetError("snake is length zero")
-)
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := &BoardState{
@@ -263,7 +235,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 
 		if len(snake.Body) == 0 {
-			return ErrorSizeZeroBody
+			return ErrorZeroLengthSnake
 		}
 		moveFound := false
 		for _, move := range moves {
