@@ -40,4 +40,4 @@ type Ruleset interface {
 
 type RulesetError string
 
-func (RulesetError e) Error() string { return String(e) }
+func (e RulesetError) Error() string { return String(e) }
