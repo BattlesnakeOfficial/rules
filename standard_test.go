@@ -1,7 +1,7 @@
 package rules
 
 import (
-	"errors"
+	//"errors"
 	"math"
 	"math/rand"
 	"testing"
