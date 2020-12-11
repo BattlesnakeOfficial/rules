@@ -30,7 +30,7 @@ const (
 	// TODO - Error consts
 	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
 	ErrorNoRoomForSnake = RulesetError("not enough space to place snake")
-	ErrorNoRoomForFood  = "not enough space to place food"
+	ErrorNoRoomForFood  = RulesetError("not enough space to place food")
 	ErrorNoMoveFound    = "move not provided for snake"
 
 	// TODO: These two error codes seem equivalent, Do we only need one ?
@@ -155,7 +155,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 
 		if len(availableFoodLocations) <= 0 {
-			return errors.New(ErrorNoRoomForFood)
+			return ErrorNoRoomForFood
 		}
 
 		// Select randomly from available locations
@@ -174,7 +174,7 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 		}
 	}
 	if isCenterOccupied {
-		return errors.New(ErrorNoRoomForFood)
+		return ErrorNoRoomForFood
 	}
 	b.Food = append(b.Food, centerCoord)
 
