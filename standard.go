@@ -34,8 +34,8 @@ const (
 	ErrorNoMoveFound    = RulesetError("move not provided for snake")
 
 	// TODO: These two error codes seem equivalent, Do we only need one ?
-	ErrorSizeZeroBody    = "found snake with zero size body"
-	ErrorZeroLengthSnake = "snake is length zero"
+	ErrorSizeZeroBody    = RulesetError("found snake with zero size body")
+	ErrorZeroLengthSnake = RulesetError("snake is length zero")
 )
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
@@ -263,7 +263,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 
 		if len(snake.Body) == 0 {
-			return errors.New(ErrorSizeZeroBody)
+			return ErrorSizeZeroBody
 		}
 		moveFound := false
 		for _, move := range moves {
@@ -354,7 +354,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New(ErrorZeroLengthSnake)
+			return ErrorZeroLengthSnake
 		}
 
 		if r.snakeIsOutOfHealth(snake) {
@@ -382,7 +382,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return errors.New(ErrorZeroLengthSnake)
+			return ErrorZeroLengthSnake
 		}
 
 		// Check for self-collisions first

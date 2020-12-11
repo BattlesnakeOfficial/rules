@@ -513,7 +513,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				{ID: "one", Move: MoveUp},
 				{ID: "two", Move: MoveDown},
 			},
-			errors.New(ErrorSizeZeroBody),
+			ErrorSizeZeroBody,
 			nil,
 		},
 		{
@@ -1366,7 +1366,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 			},
 			[]string{NotEliminated},
 			[]string{""},
-			errors.New(ErrorZeroLengthSnake),
+			ErrorZeroLengthSnake,
 		},
 		{
 			"Single Starvation",
