@@ -31,7 +31,7 @@ const (
 	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
 	ErrorNoRoomForSnake = RulesetError("not enough space to place snake")
 	ErrorNoRoomForFood  = RulesetError("not enough space to place food")
-	ErrorNoMoveFound    = "move not provided for snake"
+	ErrorNoMoveFound    = RulesetError("move not provided for snake")
 
 	// TODO: These two error codes seem equivalent, Do we only need one ?
 	ErrorSizeZeroBody    = "found snake with zero size body"
@@ -273,7 +273,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 		if !moveFound {
-			return errors.New(ErrorNoMoveFound)
+			return ErrorNoMoveFound
 		}
 	}
 

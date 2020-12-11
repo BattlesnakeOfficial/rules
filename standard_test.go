@@ -488,7 +488,7 @@ func TestCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{},
-			errors.New(ErrorNoMoveFound),
+			ErrorNoMoveFound,
 			nil,
 		},
 		{
@@ -940,7 +940,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New(ErrorNoMoveFound), err)
+	require.Equal(t, ErrorNoMoveFound, err) // TODO: @bvanvugt is this a place where an "==" comparision should be used ?
 }
 
 func TestMoveSnakesNotEnoughMoves(t *testing.T) {
@@ -965,7 +965,7 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 
 	r := StandardRuleset{}
 	err := r.moveSnakes(b, moves)
-	require.Equal(t, errors.New(ErrorNoMoveFound), err)
+	require.Equal(t, ErrorNoMoveFound, err)
 }
 
 func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
