@@ -28,7 +28,7 @@ const (
 	EliminatedByOutOfBounds         = "wall-collision"
 
 	// TODO - Error consts
-	ErrorTooManySnakes  = "too many snakes for fixed start positions"
+	ErrorTooManySnakes  = RulesetError("too many snakes for fixed start positions")
 	ErrorNoRoomForSnake = "not enough space to place snake"
 	ErrorNoRoomForFood  = "not enough space to place food"
 	ErrorNoMoveFound    = "move not provided for snake"
