@@ -30,10 +30,10 @@ In the future we might switch this to make the rules easier to develop? But unti
 From the root folder of the project, run:
 
 ```
-go build -o battlesnake cli/main.go
+go install github.com/BattlesnakeOfficial/rules/cli/battlesnake
 ```
 
-This will create the `battlesnake` command, that you can use. It currently has one verb: `play`.
+This will create the `battlesnake` command, that you can use. It currently has one command: `play`.
 
 ```
 Use the CLI to configure and play a game of Battlesnake against 
