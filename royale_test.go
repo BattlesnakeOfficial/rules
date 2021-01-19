@@ -203,7 +203,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 
 	b := &BoardState{Width: 10, Height: 10, Snakes: []Snake{{ID: "one", Health: 100, Body: []Point{{9, 1}}}}}
 	r := RoyaleRuleset{Seed: seed, ShrinkEveryNTurns: 10, DamagePerTurn: 30}
-	m := []SnakeMove{{ID: "one", Move: "up"}}
+	m := []SnakeMove{{ID: "one", Move: "down"}}
 
 	r.Turn = 10
 	n, err := r.CreateNextBoardState(b, m)

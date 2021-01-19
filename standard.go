@@ -261,7 +261,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 				switch move.Move {
 				case MoveDown:
 					newHead.X = snake.Body[0].X
-					newHead.Y = snake.Body[0].Y + 1
+					newHead.Y = snake.Body[0].Y - 1
 				case MoveLeft:
 					newHead.X = snake.Body[0].X - 1
 					newHead.Y = snake.Body[0].Y
@@ -270,17 +270,17 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 					newHead.Y = snake.Body[0].Y
 				case MoveUp:
 					newHead.X = snake.Body[0].X
-					newHead.Y = snake.Body[0].Y - 1
+					newHead.Y = snake.Body[0].Y + 1
 				default:
 					// Default to UP
 					var dX int32 = 0
-					var dY int32 = -1
+					var dY int32 = 1
 					// If neck is available, use neck to determine last direction
 					if len(snake.Body) >= 2 {
 						dX = snake.Body[0].X - snake.Body[1].X
 						dY = snake.Body[0].Y - snake.Body[1].Y
 						if dX == 0 && dY == 0 {
-							dY = -1 // Move up if no last move was made
+							dY = 1 // Move up if no last move was made
 						}
 					}
 					// Apply

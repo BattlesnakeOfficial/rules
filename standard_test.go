@@ -540,8 +540,8 @@ func TestCreateNextBoardState(t *testing.T) {
 				Food: []Point{{0, 0}, {1, 0}},
 			},
 			[]SnakeMove{
-				{ID: "one", Move: MoveUp},
-				{ID: "two", Move: MoveDown},
+				{ID: "one", Move: MoveDown},
+				{ID: "two", Move: MoveUp},
 				{ID: "three", Move: MoveLeft}, // Should be ignored
 			},
 			nil,
@@ -610,8 +610,8 @@ func TestEatingOnLastMove(t *testing.T) {
 				Food: []Point{{0, 3}, {9, 9}},
 			},
 			[]SnakeMove{
-				{ID: "one", Move: MoveDown},
-				{ID: "two", Move: MoveUp},
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
 			},
 			nil,
 			&BoardState{
@@ -676,8 +676,8 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Food: []Point{{0, 3}, {9, 9}},
 			},
 			[]SnakeMove{
-				{ID: "one", Move: MoveDown},
-				{ID: "two", Move: MoveUp},
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
 			},
 			nil,
 			&BoardState{
@@ -721,8 +721,8 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Food: []Point{{0, 3}, {9, 9}},
 			},
 			[]SnakeMove{
-				{ID: "one", Move: MoveDown},
-				{ID: "two", Move: MoveUp},
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
 			},
 			nil,
 			&BoardState{
@@ -789,8 +789,8 @@ func TestRegressionIssue19(t *testing.T) {
 				Food: []Point{{9, 9}},
 			},
 			[]SnakeMove{
-				{ID: "one", Move: MoveDown},
-				{ID: "two", Move: MoveUp},
+				{ID: "one", Move: MoveUp},
+				{ID: "two", Move: MoveDown},
 			},
 			nil,
 			&BoardState{
@@ -860,29 +860,29 @@ func TestMoveSnakes(t *testing.T) {
 		ExpectedThree []Point
 	}{
 		{
-			MoveUp, []Point{{10, 109}, {10, 110}},
-			MoveDown, []Point{{23, 221}, {23, 220}, {22, 220}, {21, 220}},
-			MoveUp, []Point{{0, 0}},
+			MoveDown, []Point{{10, 109}, {10, 110}},
+			MoveUp, []Point{{23, 221}, {23, 220}, {22, 220}, {21, 220}},
+			MoveDown, []Point{{0, 0}},
 		},
 		{
 			MoveRight, []Point{{11, 109}, {10, 109}},
 			MoveLeft, []Point{{22, 221}, {23, 221}, {23, 220}, {22, 220}},
-			MoveUp, []Point{{0, 0}},
+			MoveDown, []Point{{0, 0}},
 		},
 		{
 			MoveRight, []Point{{12, 109}, {11, 109}},
 			MoveLeft, []Point{{21, 221}, {22, 221}, {23, 221}, {23, 220}},
-			MoveUp, []Point{{0, 0}},
+			MoveDown, []Point{{0, 0}},
 		},
 		{
 			MoveRight, []Point{{13, 109}, {12, 109}},
 			MoveLeft, []Point{{20, 221}, {21, 221}, {22, 221}, {23, 221}},
-			MoveUp, []Point{{0, 0}},
+			MoveDown, []Point{{0, 0}},
 		},
 		{
-			MoveUp, []Point{{13, 108}, {13, 109}},
-			MoveDown, []Point{{20, 222}, {20, 221}, {21, 221}, {22, 221}},
-			MoveUp, []Point{{0, 0}},
+			MoveDown, []Point{{13, 108}, {13, 109}},
+			MoveUp, []Point{{20, 222}, {20, 221}, {21, 221}, {22, 221}},
+			MoveDown, []Point{{0, 0}},
 		},
 	}
 
@@ -979,11 +979,11 @@ func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 	moves := []SnakeMove{
 		{
 			ID:   "one",
-			Move: MoveUp,
+			Move: MoveDown,
 		},
 		{
 			ID:   "two",
-			Move: MoveUp,
+			Move: MoveLeft,
 		},
 	}
 
@@ -1027,12 +1027,12 @@ func TestMoveSnakesDefault(t *testing.T) {
 		{
 			Body:     []Point{{0, 0}},
 			Move:     "invalid",
-			Expected: []Point{{0, -1}},
+			Expected: []Point{{0, 1}},
 		},
 		{
 			Body:     []Point{{5, 5}, {5, 5}},
 			Move:     "",
-			Expected: []Point{{5, 4}, {5, 5}},
+			Expected: []Point{{5, 6}, {5, 5}},
 		},
 		{
 			Body:     []Point{{5, 5}, {5, 4}},

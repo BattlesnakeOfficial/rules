@@ -359,7 +359,7 @@ func TestRegressionIssue16(t *testing.T) {
 		"Zero Cool":                    "Hackers",
 	}
 	snakeMoves := []SnakeMove{
-		{ID: "teamBoi", Move: "down"},
+		{ID: "teamBoi", Move: "up"},
 		{ID: "Node-Red-Bellied-Black-Snake", Move: "left"},
 		{ID: "Crash Override", Move: "left"},
 		{ID: "Zero Cool", Move: "left"},

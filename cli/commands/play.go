@@ -300,11 +300,6 @@ func getMoveForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []r
 				log.Fatal(jsonErr)
 			} else {
 				move = playerResponse.Move
-				if snake.API == "1" && move == "up" {
-					move = "down"
-				} else if snake.API == "1" && move == "down" {
-					move = "up"
-				}
 			}
 		}
 	}
