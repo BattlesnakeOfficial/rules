@@ -14,12 +14,12 @@ This repo provides a simple CLI tool to run games locally against your dev envir
 Download precompiled binaries here: <br>
 [https://github.com/BattlesnakeOfficial/rules/releases](https://github.com/BattlesnakeOfficial/rules/releases)
 
-Install as a Go package. Requires Go 1.13 or higher. [[Download](https://golang.org/dl/)]
+Install as a Go package. Requires Go 1.15 or higher. [[Download](https://golang.org/dl/)]
 ```
 go get github.com/BattlesnakeOfficial/rules/cli/battlesnake
 ```
 
-Compile from source. Also requires Go 1.13 or higher.
+Compile from source. Also requires Go 1.15 or higher.
 ```
 git clone git@github.com:BattlesnakeOfficial/rules.git
 cd rules
