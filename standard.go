@@ -172,19 +172,7 @@ func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
 
 func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	// We specifically want to copy prevState, so as not to alter it directly.
-	nextState := &BoardState{
-		Height: prevState.Height,
-		Width:  prevState.Width,
-		Food:   append([]Point{}, prevState.Food...),
-		Snakes: make([]Snake, len(prevState.Snakes)),
-	}
-	for i := 0; i < len(prevState.Snakes); i++ {
-		nextState.Snakes[i].ID = prevState.Snakes[i].ID
-		nextState.Snakes[i].Health = prevState.Snakes[i].Health
-		nextState.Snakes[i].Body = append([]Point{}, prevState.Snakes[i].Body...)
-		nextState.Snakes[i].EliminatedCause = prevState.Snakes[i].EliminatedCause
-		nextState.Snakes[i].EliminatedBy = prevState.Snakes[i].EliminatedBy
-	}
+	nextState := prevState.Copy()
 
 	// TODO: Gut check the BoardState?
 

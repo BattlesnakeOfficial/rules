@@ -15,20 +15,47 @@ func replace(value, min, max int32) int32 {
 }
 
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
+	nextState := prevState.Copy()
+
+	err := r.moveSnakes(nextState, moves)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := 0; i < len(nextBoardState.Snakes); i++ {
-		snake := &nextBoardState.Snakes[i]
-		if snake.EliminatedCause == EliminatedByOutOfBounds {
-			snake.EliminatedCause = NotEliminated
-			snake.EliminatedBy = ""
-			snake.Body[0].X = replace(snake.Body[0].X, 0, nextBoardState.Width-1)
-			snake.Body[0].Y = replace(snake.Body[0].Y, 0, nextBoardState.Height-1)
-		}
+	err = r.reduceSnakeHealth(nextState)
+	if err != nil {
+		return nil, err
 	}
 
-	return nextBoardState, nil
+	err = r.maybeFeedSnakes(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.maybeSpawnFood(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.maybeEliminateSnakes(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	return nextState, nil
+}
+
+func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+	err := r.StandardRuleset.moveSnakes(b, moves)
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < len(b.Snakes); i++ {
+		snake := &b.Snakes[i]
+		snake.Body[0].X = replace(snake.Body[0].X, 0, b.Width-1)
+		snake.Body[0].Y = replace(snake.Body[0].Y, 0, b.Height-1)
+	}
+
+	return nil
 }

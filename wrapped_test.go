@@ -161,3 +161,88 @@ func TestDown(t *testing.T) {
 		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
 	}
 }
+
+func TestEdgeCrossingCollision(t *testing.T) {
+	boardState := &BoardState{
+		Width:  11,
+		Height: 11,
+		Snakes: []Snake{
+			{ID: "left", Health: 10, Body: []Point{{0, 5}}},
+			{ID: "rightEdge", Health: 10, Body: []Point{
+				{10, 1},
+				{10, 2},
+				{10, 3},
+				{10, 4},
+				{10, 5},
+				{10, 6},
+			}},
+		},
+	}
+
+	snakeMoves := []SnakeMove{
+		{ID: "left", Move: "left"},
+		{ID: "rightEdge", Move: "down"},
+	}
+
+	r := WrappedRuleset{}
+
+	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	require.NoError(t, err)
+	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
+
+	expectedSnakes := []Snake{
+		{ID: "left", Health: 0, Body: []Point{{10, 5}}, EliminatedCause: EliminatedByCollision, EliminatedBy: "rightEdge"},
+		{ID: "rightEdge", Health: 10, Body: []Point{
+			{10, 0},
+			{10, 1},
+			{10, 2},
+			{10, 3},
+			{10, 4},
+			{10, 5},
+		}},
+	}
+	for i, snake := range nextBoardState.Snakes {
+		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
+		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+	}
+}
+
+func TestEdgeCrossingEating(t *testing.T) {
+	boardState := &BoardState{
+		Width:  11,
+		Height: 11,
+		Snakes: []Snake{
+			{ID: "left", Health: 10, Body: []Point{{0, 5}, {1, 5}}},
+			{ID: "other", Health: 10, Body: []Point{{5, 5}}},
+		},
+		Food: []Point{
+			{10, 5},
+		},
+	}
+
+	snakeMoves := []SnakeMove{
+		{ID: "left", Move: "left"},
+		{ID: "other", Move: "left"},
+	}
+
+	r := WrappedRuleset{}
+
+	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	require.NoError(t, err)
+	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
+
+	expectedSnakes := []Snake{
+		{ID: "left", Health: 100, Body: []Point{{10, 5}, {0, 5}, {0, 5}}},
+		{ID: "other", Health: 9, Body: []Point{{4, 5}}},
+	}
+	for i, snake := range nextBoardState.Snakes {
+		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
+		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
+		require.Equal(t, expectedSnakes[i].Health, snake.Health, snake.ID)
+
+	}
+}
