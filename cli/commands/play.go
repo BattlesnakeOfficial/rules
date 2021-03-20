@@ -201,6 +201,10 @@ func getRuleset(seed int64, gameTurn int32, snakes []Battlesnake) (rules.Ruleset
 		ruleset = &rules.SoloRuleset{
 			StandardRuleset: standard,
 		}
+	case "wrapped":
+		ruleset = &rules.WrappedRuleset{
+			StandardRuleset: standard,
+		}
 	case "constrictor":
 		ruleset = &rules.ConstrictorRuleset{
 			StandardRuleset: standard,
