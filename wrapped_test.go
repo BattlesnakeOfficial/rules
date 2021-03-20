@@ -40,9 +40,9 @@ func TestLeft(t *testing.T) {
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
-		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
 	}
 }
 
@@ -79,9 +79,9 @@ func TestRight(t *testing.T) {
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
-		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
 	}
 }
 

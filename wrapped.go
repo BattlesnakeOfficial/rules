@@ -4,30 +4,27 @@ type WrappedRuleset struct {
 	StandardRuleset
 }
 
-func (r *WrappedRuleset) snakeIsOutOfBounds(s *Snake, boardWidth int32, boardHeight int32) bool {
-	return false
-}
-
 func replace(value, min, max int32) int32 {
 	if value < min {return max}
 	if value > max {return min}
 	return value
 }
 
-func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
-
-	err := r.StandardRuleset.moveSnakes(b, moves)
+func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
+	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for i := 0; i < len(b.Snakes); i++ {
-		snake := &b.Snakes[i]
-		if snake.EliminatedCause != NotEliminated {
-			continue
+	for i := 0; i < len(nextBoardState.Snakes); i++ {
+		snake := &nextBoardState.Snakes[i]
+		if snake.EliminatedCause == EliminatedByOutOfBounds {
+			snake.EliminatedCause = NotEliminated
+			snake.EliminatedBy = ""
+			snake.Body[0].X = replace(snake.Body[0].X, 0, nextBoardState.Width-1)
+			snake.Body[0].Y = replace(snake.Body[0].Y, 0, nextBoardState.Height-1)
 		}
-		snake.Body[0].X = replace(snake.Body[0].X, 0, b.Width-1)
-		snake.Body[0].Y = replace(snake.Body[0].Y, 0, b.Width-1)
 	}
-	return nil
+
+	return nextBoardState, nil
 }
