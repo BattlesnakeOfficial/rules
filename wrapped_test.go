@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestLeft(t *testing.T) {
 	boardState := &BoardState{
 		Width:  11,

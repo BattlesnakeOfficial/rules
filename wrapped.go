@@ -5,8 +5,12 @@ type WrappedRuleset struct {
 }
 
 func replace(value, min, max int32) int32 {
-	if value < min {return max}
-	if value > max {return min}
+	if value < min {
+		return max
+	}
+	if value > max {
+		return min
+	}
 	return value
 }
 
