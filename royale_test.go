@@ -25,7 +25,7 @@ func TestRoyaleDefaultSanity(t *testing.T) {
 
 func TestRoyaleName(t *testing.T) {
 	r := RoyaleRuleset{}
-	require.Equal(t,"royale", r.Name())
+	require.Equal(t, "royale", r.Name())
 }
 
 func TestRoyaleOutOfBounds(t *testing.T) {

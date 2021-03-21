@@ -12,6 +12,5 @@ func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
 	}
 	return true, nil
 }
-func (r *SoloRuleset) Name() string { return "solo" }
+func (r *SoloRuleset) Name() string    { return "solo" }
 func (r *SoloRuleset) Version() string { return "1.0.0" }
-

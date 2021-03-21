@@ -12,7 +12,7 @@ func TestSoloRulesetInterface(t *testing.T) {
 
 func TestSoloName(t *testing.T) {
 	r := SoloRuleset{}
-	require.Equal(t,"solo", r.Name())
+	require.Equal(t, "solo", r.Name())
 }
 
 func TestSoloCreateNextBoardStateSanity(t *testing.T) {

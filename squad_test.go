@@ -12,7 +12,7 @@ func TestSquadRulesetInterface(t *testing.T) {
 
 func TestSquadName(t *testing.T) {
 	r := SquadRuleset{}
-	require.Equal(t,"squad", r.Name())
+	require.Equal(t, "squad", r.Name())
 }
 
 func TestSquadCreateNextBoardStateSanity(t *testing.T) {

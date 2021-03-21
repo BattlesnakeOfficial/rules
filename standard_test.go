@@ -36,7 +36,7 @@ func TestSanity(t *testing.T) {
 
 func TestStandardName(t *testing.T) {
 	r := StandardRuleset{}
-	require.Equal(t,"standard", r.Name())
+	require.Equal(t, "standard", r.Name())
 }
 
 func TestCreateInitialBoardState(t *testing.T) {
