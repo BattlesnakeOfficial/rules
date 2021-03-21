@@ -23,6 +23,11 @@ func TestRoyaleDefaultSanity(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestRoyaleName(t *testing.T) {
+	r := RoyaleRuleset{}
+	require.Equal(t,"royale", r.Name())
+}
+
 func TestRoyaleOutOfBounds(t *testing.T) {
 	seed := int64(25543234525)
 	tests := []struct {

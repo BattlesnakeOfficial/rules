@@ -10,6 +10,11 @@ func TestSoloRulesetInterface(t *testing.T) {
 	var _ Ruleset = (*SoloRuleset)(nil)
 }
 
+func TestSoloName(t *testing.T) {
+	r := SoloRuleset{}
+	require.Equal(t,"solo", r.Name())
+}
+
 func TestSoloCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SoloRuleset{}

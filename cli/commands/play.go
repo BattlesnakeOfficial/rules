@@ -52,16 +52,23 @@ type BoardResponse struct {
 	Snakes  []SnakeResponse `json:"snakes"`
 }
 
+type GameResponseRuleset struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
 type GameResponse struct {
 	Id      string `json:"id"`
 	Timeout int32  `json:"timeout"`
+	Ruleset GameResponseRuleset `json:"ruleset"`
 }
 
 type ResponsePayload struct {
-	Game  GameResponse  `json:"game"`
-	Turn  int32         `json:"turn"`
-	Board BoardResponse `json:"board"`
-	You   SnakeResponse `json:"you"`
+	Game        GameResponse  `json:"game"`
+	Turn        int32         `json:"turn"`
+	Board       BoardResponse `json:"board"`
+	You         SnakeResponse `json:"you"`
+
 }
 
 type PlayerResponse struct {
@@ -153,7 +160,7 @@ var run = func(cmd *cobra.Command, args []string) {
 			if snake.EliminatedCause == rules.NotEliminated {
 				isDraw = false
 				winner = Battlesnakes[snake.ID].Name
-				sendEndRequest(state, Battlesnakes[snake.ID])
+				sendEndRequest(ruleset, state, Battlesnakes[snake.ID])
 			}
 		}
 
@@ -229,7 +236,7 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakes []Battlesnake) *rules
 		panic(err)
 	}
 	for _, snake := range snakes {
-		requestBody := getIndividualBoardStateForSnake(state, snake, nil)
+		requestBody := getIndividualBoardStateForSnake(state, snake, nil, ruleset)
 		u, _ := url.ParseRequestURI(snake.URL)
 		u.Path = path.Join(u.Path, "start")
 		_, err = HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
@@ -244,12 +251,12 @@ func createNextBoardState(ruleset rules.Ruleset, royale rules.RoyaleRuleset, sta
 	var moves []rules.SnakeMove
 	if Sequential {
 		for _, snake := range snakes {
-			moves = append(moves, getMoveForSnake(state, snake, outOfBounds))
+			moves = append(moves, getMoveForSnake(ruleset, state, snake, outOfBounds))
 		}
 	} else {
 		c := make(chan rules.SnakeMove, len(snakes))
 		for _, snake := range snakes {
-			go getConcurrentMoveForSnake(state, snake, outOfBounds, c)
+			go getConcurrentMoveForSnake(ruleset, state, snake, outOfBounds, c)
 		}
 		for range snakes {
 			moves = append(moves, <-c)
@@ -275,12 +282,12 @@ func createNextBoardState(ruleset rules.Ruleset, royale rules.RoyaleRuleset, sta
 	return state, royale.OutOfBounds
 }
 
-func getConcurrentMoveForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, c chan rules.SnakeMove) {
-	c <- getMoveForSnake(state, snake, outOfBounds)
+func getConcurrentMoveForSnake(ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, c chan rules.SnakeMove) {
+	c <- getMoveForSnake(ruleset, state, snake, outOfBounds)
 }
 
-func getMoveForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point) rules.SnakeMove {
-	requestBody := getIndividualBoardStateForSnake(state, snake, outOfBounds)
+func getMoveForSnake(ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point) rules.SnakeMove {
+	requestBody := getIndividualBoardStateForSnake(state, snake, outOfBounds, ruleset)
 	u, _ := url.ParseRequestURI(snake.URL)
 	u.Path = path.Join(u.Path, "move")
 	res, err := HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
@@ -306,8 +313,8 @@ func getMoveForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []r
 	return rules.SnakeMove{ID: snake.ID, Move: move}
 }
 
-func sendEndRequest(state *rules.BoardState, snake Battlesnake) {
-	requestBody := getIndividualBoardStateForSnake(state, snake, nil)
+func sendEndRequest(ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake) {
+	requestBody := getIndividualBoardStateForSnake(state, snake, nil, ruleset)
 	u, _ := url.ParseRequestURI(snake.URL)
 	u.Path = path.Join(u.Path, "end")
 	_, err := HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
@@ -316,7 +323,7 @@ func sendEndRequest(state *rules.BoardState, snake Battlesnake) {
 	}
 }
 
-func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point) []byte {
+func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, ruleset rules.Ruleset) []byte {
 	var youSnake rules.Snake
 	for _, snk := range state.Snakes {
 		if snake.ID == snk.ID {
@@ -325,7 +332,10 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 		}
 	}
 	response := ResponsePayload{
-		Game: GameResponse{Id: GameId, Timeout: Timeout},
+		Game: GameResponse{Id: GameId, Timeout: Timeout, Ruleset: GameResponseRuleset{
+			Name: ruleset.Name(),
+			Version: ruleset.Version(),
+		}},
 		Turn: Turn,
 		Board: BoardResponse{
 			Height:  state.Height,
@@ -334,7 +344,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 			Hazards: coordFromPointArray(outOfBounds),
 			Snakes:  buildSnakesResponse(state.Snakes),
 		},
-		You: snakeResponseFromSnake(youSnake),
+		You:         snakeResponseFromSnake(youSnake),
 	}
 	responseJson, err := json.Marshal(response)
 	if err != nil {

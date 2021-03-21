@@ -55,6 +55,10 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	return nextBoardState, nil
 }
 
+func (r *RoyaleRuleset) Name() string { return "royale" }
+
+func (r *RoyaleRuleset) Version() string { return "1.0.0" }
+
 func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState, turn int32) error {
 	r.OutOfBounds = []Point{}
 
