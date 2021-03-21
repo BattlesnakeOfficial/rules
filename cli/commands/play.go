@@ -58,17 +58,16 @@ type GameResponseRuleset struct {
 }
 
 type GameResponse struct {
-	Id      string `json:"id"`
-	Timeout int32  `json:"timeout"`
+	Id      string              `json:"id"`
+	Timeout int32               `json:"timeout"`
 	Ruleset GameResponseRuleset `json:"ruleset"`
 }
 
 type ResponsePayload struct {
-	Game        GameResponse  `json:"game"`
-	Turn        int32         `json:"turn"`
-	Board       BoardResponse `json:"board"`
-	You         SnakeResponse `json:"you"`
-
+	Game  GameResponse  `json:"game"`
+	Turn  int32         `json:"turn"`
+	Board BoardResponse `json:"board"`
+	You   SnakeResponse `json:"you"`
 }
 
 type PlayerResponse struct {
@@ -333,7 +332,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 	}
 	response := ResponsePayload{
 		Game: GameResponse{Id: GameId, Timeout: Timeout, Ruleset: GameResponseRuleset{
-			Name: ruleset.Name(),
+			Name:    ruleset.Name(),
 			Version: ruleset.Version(),
 		}},
 		Turn: Turn,
@@ -344,7 +343,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 			Hazards: coordFromPointArray(outOfBounds),
 			Snakes:  buildSnakesResponse(state.Snakes),
 		},
-		You:         snakeResponseFromSnake(youSnake),
+		You: snakeResponseFromSnake(youSnake),
 	}
 	responseJson, err := json.Marshal(response)
 	if err != nil {
