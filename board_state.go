@@ -16,3 +16,15 @@ func (b *BoardState) Copy() *BoardState {
 	}
 	return nextState
 }
+
+type UpdateFunction func(*BoardState, []SnakeMove) error
+
+func (b *BoardState) Update(updateFunctions []UpdateFunction, moves []SnakeMove) error {
+	for _, updateFunction := range updateFunctions {
+		err := updateFunction(b, moves)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -171,46 +171,17 @@ func (r *StandardRuleset) isKnownBoardSize(b *BoardState) bool {
 }
 
 func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	// We specifically want to copy prevState, so as not to alter it directly.
 	nextState := prevState.Copy()
-
-	// TODO: Gut check the BoardState?
-
-	// TODO: LOG?
-	err := r.moveSnakes(nextState, moves)
+	err := nextState.Update([]UpdateFunction{
+		r.moveSnakes,
+		r.reduceSnakeHealth,
+		r.maybeFeedSnakes,
+		r.maybeSpawnFood,
+		r.maybeEliminateSnakes,
+	}, moves)
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: LOG?
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: LOG?
-	// bvanvugt: We specifically want this to happen before elimination for two reasons:
-	// 1) We want snakes to be able to eat on their very last turn and still survive.
-	// 2) So that head-to-head collisions on food still remove the food.
-	//    This does create an artifact though, where head-to-head collisions
-	//    of equal length actually show length + 1 and full health, as if both snakes ate.
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: LOG?
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: LOG?
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
 	return nextState, nil
 }
 
@@ -284,7 +255,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 	return nil
 }
 
-func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
+func (r *StandardRuleset) reduceSnakeHealth(b *BoardState, _ []SnakeMove) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
 			b.Snakes[i].Health = b.Snakes[i].Health - 1
@@ -293,7 +264,7 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 	return nil
 }
 
-func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
+func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState, _ []SnakeMove) error {
 	// First order snake indices by length.
 	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
 	snakeIndicesByLength := make([]int, len(b.Snakes))
@@ -448,7 +419,7 @@ func (r *StandardRuleset) snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 	return false
 }
 
-func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
+func (r *StandardRuleset) maybeFeedSnakes(b *BoardState, _ []SnakeMove) error {
 	newFood := []Point{}
 	for _, food := range b.Food {
 		foodHasBeenEaten := false
@@ -486,7 +457,7 @@ func (r *StandardRuleset) growSnake(snake *Snake) {
 	}
 }
 
-func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
+func (r *StandardRuleset) maybeSpawnFood(b *BoardState, _ []SnakeMove) error {
 	numCurrentFood := int32(len(b.Food))
 	if numCurrentFood < r.MinimumFood {
 		return r.spawnFood(b, r.MinimumFood-numCurrentFood)

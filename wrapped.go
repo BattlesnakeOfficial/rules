@@ -16,36 +16,20 @@ func replace(value, min, max int32) int32 {
 
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextState := prevState.Copy()
-
-	err := r.moveSnakes(nextState, moves)
+	err := nextState.Update([]UpdateFunction{
+		r.moveSnakes,
+		r.reduceSnakeHealth,
+		r.maybeFeedSnakes,
+		r.maybeSpawnFood,
+		r.maybeEliminateSnakes,
+	}, moves)
 	if err != nil {
 		return nil, err
 	}
-
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
 	return nextState, nil
 }
 
-func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+func (r WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 	err := r.StandardRuleset.moveSnakes(b, moves)
 	if err != nil {
 		return err
