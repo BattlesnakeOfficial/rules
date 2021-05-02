@@ -6,6 +6,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"encoding/json"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 )
 
 func TestStandardRulesetInterface(t *testing.T) {
@@ -2009,5 +2014,35 @@ func TestIsGameOver(t *testing.T) {
 		actual, err := r.IsGameOver(b)
 		require.NoError(t, err)
 		require.Equal(t, test.Expected, actual)
+	}
+}
+
+type JsonGameInput struct {
+	BoardState BoardState
+	Moves      []SnakeMove
+}
+
+func TestFromJson(t *testing.T) {
+	r := StandardRuleset{}
+
+	files, err := filepath.Glob("tests/standard/*.in.json")
+	require.NoError(t, err)
+
+	for _, file := range files {
+		var input JsonGameInput
+		inputData, err := ioutil.ReadFile(file)
+		require.NoError(t, err)
+
+		err2 := json.Unmarshal([]byte(inputData), &input)
+		require.NoError(t, err2)
+
+		var expectedOutput BoardState
+		expectedOutputData, err := ioutil.ReadFile(strings.Replace(file, "in.json", "out.json", 1))
+		err3 := json.Unmarshal([]byte(expectedOutputData), &expectedOutput)
+		require.NoError(t, err3)
+
+		nextState, err4 := r.CreateNextBoardState(&input.BoardState, input.Moves)
+		require.NoError(t, err4)
+		require.Equal(t, *nextState, expectedOutput)
 	}
 }

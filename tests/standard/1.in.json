@@ -1,0 +1,37 @@
+{
+  "BoardState": {
+    "Height": 2,
+    "Width": 2,
+    "Food": [
+      {
+        "X": 1,
+        "Y": 1
+      }
+    ],
+    "Snakes": [
+      {
+        "ID": "one",
+        "Body": [
+          {
+            "X": 0,
+            "Y": 0
+          },
+          {
+            "X": 0,
+            "Y": 0
+          },
+          {
+            "X": 0,
+            "Y": 0
+          }
+        ],
+        "Health": 100,
+        "EliminatedCause": "",
+        "EliminatedBy": ""
+      }
+    ]
+  },
+  "Moves": [
+    { "ID": "one", "move": "up"}
+  ]
+}
