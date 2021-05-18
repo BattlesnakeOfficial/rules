@@ -47,3 +47,7 @@ Yes! [See the included CLI](cli/README.md).
 The [old game engine](https://github.com/battlesnakeio/engine) was re-written in early 2020 to handle a higher volume of concurrent games. As part of that rebuild we moved the game logic into a separate Go module that gets compiled into the production engine.
 
 This provides two benefits: it makes it much simpler/easier to build new game modes, and it allows the community to get more involved in game development (without the maintenance overhead of the entire game engine).
+
+### Feedback
+
+* **Do you have an issue or suggestions for this repository?** Head over to our [Feedback Repository](https://play.battlesnake.com/feedback) today and let us know!
