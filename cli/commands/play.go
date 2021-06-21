@@ -37,7 +37,7 @@ type SnakeResponse struct {
 	Name    string  `json:"name"`
 	Health  int32   `json:"health"`
 	Body    []Coord `json:"body"`
-	Latency int32   `json:"latency"`
+	Latency string  `json:"latency"`
 	Head    Coord   `json:"head"`
 	Length  int32   `json:"length"`
 	Shout   string  `json:"shout"`
@@ -350,7 +350,7 @@ func snakeResponseFromSnake(snake rules.Snake) SnakeResponse {
 		Name:    Battlesnakes[snake.ID].Name,
 		Health:  snake.Health,
 		Body:    coordFromPointArray(snake.Body),
-		Latency: 0,
+		Latency: "0",
 		Head:    coordFromPoint(snake.Body[0]),
 		Length:  int32(len(snake.Body)),
 		Shout:   "",
