@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/BattlesnakeOfficial/rules"
-	"github.com/google/uuid"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -15,6 +12,10 @@ import (
 	"path"
 	"strconv"
 	"time"
+
+	"github.com/BattlesnakeOfficial/rules"
+	"github.com/google/uuid"
+	"github.com/spf13/cobra"
 )
 
 type Battlesnake struct {
@@ -478,7 +479,9 @@ func printMap(state *rules.BoardState, outOfBounds []rules.Point, gameTurn int32
 	o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
 	for _, s := range state.Snakes {
 		for _, b := range s.Body {
-			board[b.X][b.Y] = Battlesnakes[s.ID].Character
+			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
+				board[b.X][b.Y] = Battlesnakes[s.ID].Character
+			}
 		}
 		o.WriteString(fmt.Sprintf("%v %c: %v\n", Battlesnakes[s.ID].Name, Battlesnakes[s.ID].Character, s))
 	}
