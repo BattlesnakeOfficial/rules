@@ -34,6 +34,11 @@ func TestSanity(t *testing.T) {
 	require.Len(t, state.Snakes, 0)
 }
 
+func TestStandardName(t *testing.T) {
+	r := StandardRuleset{}
+	require.Equal(t, "standard", r.Name())
+}
+
 func TestCreateInitialBoardState(t *testing.T) {
 	tests := []struct {
 		Height          int32
