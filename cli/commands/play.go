@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -249,15 +250,30 @@ func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, outOfB
 	var moves []rules.SnakeMove
 	if Sequential {
 		for _, snake := range snakes {
-			moves = append(moves, getMoveForSnake(ruleset, state, snake, outOfBounds))
+			for _, stateSnake := range state.Snakes {
+				if snake.ID == stateSnake.ID && stateSnake.EliminatedCause == rules.NotEliminated {
+					moves = append(moves, getMoveForSnake(ruleset, state, snake, outOfBounds))
+				}
+			}
 		}
 	} else {
+		var wg sync.WaitGroup
 		c := make(chan rules.SnakeMove, len(snakes))
+
 		for _, snake := range snakes {
-			go getConcurrentMoveForSnake(ruleset, state, snake, outOfBounds, c)
+			for _, stateSnake := range state.Snakes {
+				if snake.ID == stateSnake.ID && stateSnake.EliminatedCause == rules.NotEliminated {
+					wg.Add(1)
+					go getConcurrentMoveForSnake(&wg, ruleset, state, snake, outOfBounds, c)
+				}
+			}
 		}
-		for range snakes {
-			moves = append(moves, <-c)
+
+		wg.Wait()
+		close(c)
+
+		for move := range c {
+			moves = append(moves, move)
 		}
 	}
 	for _, move := range moves {
@@ -273,7 +289,8 @@ func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, outOfB
 	return state
 }
 
-func getConcurrentMoveForSnake(ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, c chan rules.SnakeMove) {
+func getConcurrentMoveForSnake(wg *sync.WaitGroup, ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, c chan rules.SnakeMove) {
+	defer wg.Done()
 	c <- getMoveForSnake(ruleset, state, snake, outOfBounds)
 }
 
