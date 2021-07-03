@@ -18,6 +18,8 @@ type RoyaleRuleset struct {
 	OutOfBounds []Point
 }
 
+func (r *RoyaleRuleset) Name() string { return "royale" }
+
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.ShrinkEveryNTurns < 1 {
 		return nil, errors.New("royale game must shrink at least every turn")
@@ -54,10 +56,6 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 
 	return nextBoardState, nil
 }
-
-func (r *RoyaleRuleset) Name() string { return "royale" }
-
-func (r *RoyaleRuleset) Version() string { return "1.0.0" }
 
 func (r *RoyaleRuleset) populateOutOfBounds(b *BoardState, turn int32) error {
 	r.OutOfBounds = []Point{}

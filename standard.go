@@ -10,8 +10,7 @@ type StandardRuleset struct {
 	MinimumFood     int32
 }
 
-func (r *StandardRuleset) Name() string    { return "standard" }
-func (r *StandardRuleset) Version() string { return "1.0.0" }
+func (r *StandardRuleset) Name() string { return "standard" }
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := &BoardState{

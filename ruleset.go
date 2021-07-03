@@ -59,9 +59,8 @@ type SnakeMove struct {
 }
 
 type Ruleset interface {
+	Name() string
 	CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error)
 	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 	IsGameOver(state *BoardState) (bool, error)
-	Name() string
-	Version() string
 }

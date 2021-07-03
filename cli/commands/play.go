@@ -325,7 +325,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 	response := ResponsePayload{
 		Game: GameResponse{Id: GameId, Timeout: Timeout, Ruleset: GameResponseRuleset{
 			Name:    ruleset.Name(),
-			Version: ruleset.Version(),
+			Version: "cli", // TODO: Use GitHub Release Version
 		}},
 		Turn: Turn,
 		Board: BoardResponse{
