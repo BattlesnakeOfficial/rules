@@ -158,8 +158,8 @@ var run = func(cmd *cobra.Command, args []string) {
 			if snake.EliminatedCause == rules.NotEliminated {
 				isDraw = false
 				winner = Battlesnakes[snake.ID].Name
-				sendEndRequest(ruleset, state, Battlesnakes[snake.ID])
 			}
+			sendEndRequest(ruleset, state, Battlesnakes[snake.ID])
 		}
 
 		if isDraw {
