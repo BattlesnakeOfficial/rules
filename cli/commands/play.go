@@ -133,8 +133,9 @@ var run = func(cmd *cobra.Command, args []string) {
 	snakes := buildSnakesFromOptions()
 
 	var ruleset rules.Ruleset
+	var royale rules.RoyaleRuleset
 	var outOfBounds []rules.Point
-	ruleset = getRuleset(Seed, Turn, snakes)
+	ruleset, _ = getRuleset(Seed, Turn, snakes)
 	state := initializeBoardFromArgs(ruleset, snakes)
 	for _, snake := range snakes {
 		Battlesnakes[snake.ID] = snake
@@ -142,8 +143,8 @@ var run = func(cmd *cobra.Command, args []string) {
 
 	for v := false; !v; v, _ = ruleset.IsGameOver(state) {
 		Turn++
-		ruleset = getRuleset(Seed, Turn, snakes)
-		state = createNextBoardState(ruleset, state, outOfBounds, snakes)
+		ruleset, royale = getRuleset(Seed, Turn, snakes)
+		state, outOfBounds = createNextBoardState(ruleset, royale, state, outOfBounds, snakes)
 		if ViewMap {
 			printMap(state, outOfBounds, Turn)
 		} else {
@@ -172,7 +173,7 @@ var run = func(cmd *cobra.Command, args []string) {
 	}
 }
 
-func getRuleset(seed int64, gameTurn int32, snakes []Battlesnake) rules.Ruleset {
+func getRuleset(seed int64, gameTurn int32, snakes []Battlesnake) (rules.Ruleset, rules.RoyaleRuleset) {
 	var ruleset rules.Ruleset
 	var royale rules.RoyaleRuleset
 
@@ -215,7 +216,7 @@ func getRuleset(seed int64, gameTurn int32, snakes []Battlesnake) rules.Ruleset 
 	default:
 		ruleset = &standard
 	}
-	return ruleset
+	return ruleset, royale
 }
 
 func initializeBoardFromArgs(ruleset rules.Ruleset, snakes []Battlesnake) *rules.BoardState {
@@ -247,7 +248,7 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakes []Battlesnake) *rules
 	return state
 }
 
-func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, outOfBounds []rules.Point, snakes []Battlesnake) *rules.BoardState {
+func createNextBoardState(ruleset rules.Ruleset, royale rules.RoyaleRuleset, state *rules.BoardState, outOfBounds []rules.Point, snakes []Battlesnake) (*rules.BoardState, []rules.Point) {
 	var moves []rules.SnakeMove
 	if Sequential {
 		for _, snake := range snakes {
@@ -282,12 +283,19 @@ func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, outOfB
 		snake.LastMove = move.Move
 		Battlesnakes[move.ID] = snake
 	}
+	if GameType == "royale" {
+		_, err := royale.CreateNextBoardState(state, moves)
+		if err != nil {
+			log.Panic("[PANIC]: Error Producing Next Royale Board State")
+			panic(err)
+		}
+	}
 	state, err := ruleset.CreateNextBoardState(state, moves)
 	if err != nil {
 		log.Panic("[PANIC]: Error Producing Next Board State")
 		panic(err)
 	}
-	return state
+	return state, royale.OutOfBounds
 }
 
 func getConcurrentMoveForSnake(wg *sync.WaitGroup, ruleset rules.Ruleset, state *rules.BoardState, snake Battlesnake, outOfBounds []rules.Point, c chan rules.SnakeMove) {
