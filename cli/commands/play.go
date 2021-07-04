@@ -100,6 +100,7 @@ var Sequential bool
 var GameType string
 var ViewMap bool
 var Seed int64
+var TurnDelay int32
 
 var playCmd = &cobra.Command{
 	Use:   "play",
@@ -121,6 +122,7 @@ func init() {
 	playCmd.Flags().StringVarP(&GameType, "gametype", "g", "standard", "Type of Game Rules")
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
+	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 }
 
 var run = func(cmd *cobra.Command, args []string) {
@@ -144,10 +146,15 @@ var run = func(cmd *cobra.Command, args []string) {
 		Turn++
 		ruleset = getRuleset(Seed, Turn, snakes)
 		state = createNextBoardState(ruleset, state, outOfBounds, snakes)
+
 		if ViewMap {
 			printMap(state, outOfBounds, Turn)
 		} else {
 			log.Printf("[%v]: State: %v OutOfBounds: %v\n", Turn, state, outOfBounds)
+		}
+
+		if TurnDelay > 0 {
+			time.Sleep(time.Duration(TurnDelay) * time.Millisecond)
 		}
 	}
 
