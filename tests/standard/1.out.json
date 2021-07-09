@@ -1,0 +1,32 @@
+{
+  "Height": 2,
+  "Width": 2,
+  "Food": [
+    {
+      "X": 1,
+      "Y": 1
+    }
+  ],
+  "Snakes": [
+    {
+      "ID": "one",
+      "Body": [
+        {
+          "X": 0,
+          "Y": 1
+        },
+        {
+          "X": 0,
+          "Y": 0
+        },
+        {
+          "X": 0,
+          "Y": 0
+        }
+      ],
+      "Health": 99,
+      "EliminatedCause": "",
+      "EliminatedBy": ""
+    }
+  ]
+}
