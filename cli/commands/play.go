@@ -393,7 +393,9 @@ func snakeResponseFromSnake(snake rules.Snake) SnakeResponse {
 func buildSnakesResponse(snakes []rules.Snake) []SnakeResponse {
 	var a []SnakeResponse
 	for _, snake := range snakes {
-		a = append(a, snakeResponseFromSnake(snake))
+		if snake.EliminatedCause == rules.NotEliminated {
+			a = append(a, snakeResponseFromSnake(snake))
+		}
 	}
 	return a
 }
