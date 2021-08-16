@@ -146,12 +146,7 @@ var run = func(cmd *cobra.Command, args []string) {
 		Turn++
 		ruleset = getRuleset(Seed, Turn, snakes)
 		state = createNextBoardState(ruleset, state, outOfBounds, snakes)
-
-		// This is a massive hack to make Battle Royale rules work...
-		royaleRuleset, ok := ruleset.(*rules.RoyaleRuleset)
-		if ok {
-			outOfBounds = append([]rules.Point{}, royaleRuleset.OutOfBounds...)
-		}
+		outOfBounds = append([]rules.Point{}, state.Hazards...)
 
 		if ViewMap {
 			printMap(state, outOfBounds, Turn)
@@ -196,12 +191,12 @@ func getRuleset(seed int64, gameTurn int32, snakes []Battlesnake) rules.Ruleset 
 
 	switch GameType {
 	case "royale":
+		standard.HazardDamagePerTurn = 15
 		royale = rules.RoyaleRuleset{
 			StandardRuleset:   standard,
 			Seed:              seed,
 			Turn:              gameTurn,
 			ShrinkEveryNTurns: 10,
-			DamagePerTurn:     1,
 		}
 		ruleset = &royale
 	case "squad":

@@ -124,6 +124,7 @@ func TestConstrictorCreateNextBoardState(t *testing.T) {
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.NoError(t, err)
-		require.Equal(t, test.expectedState, nextState)
+		require.Equal(t, test.expectedState.Food, nextState.Food)
+		require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
 	}
 }
