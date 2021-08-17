@@ -334,7 +334,7 @@ func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
 					continue
 				}
 
-				// Snake is now out of bounds, reduce health
+				// Snake is in a hazard, reduce health
 				snake.Health = snake.Health - r.HazardDamagePerTurn
 				if snake.Health < 0 {
 					snake.Health = 0
