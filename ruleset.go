@@ -47,10 +47,11 @@ type Snake struct {
 }
 
 type BoardState struct {
-	Height int32
-	Width  int32
-	Food   []Point
-	Snakes []Snake
+	Height  int32
+	Width   int32
+	Food    []Point
+	Snakes  []Snake
+	Hazards []Point
 }
 
 type SnakeMove struct {
