@@ -1671,24 +1671,31 @@ func TestHazardDamagePerTurn(t *testing.T) {
 	tests := []struct {
 		Health                   int32
 		HazardDamagePerTurn      int32
+		Food                     bool
 		ExpectedHealth           int32
 		ExpectedEliminationCause string
 		Error                    error
 	}{
-		{100, 1, 99, NotEliminated, nil},
-		{100, 99, 1, NotEliminated, nil},
-		{100, 100, 0, EliminatedByOutOfHealth, nil},
-		{100, 101, 0, EliminatedByOutOfHealth, nil},
-		{100, 999, 0, EliminatedByOutOfHealth, nil},
-		{2, 1, 1, NotEliminated, nil},
-		{1, 1, 0, EliminatedByOutOfHealth, nil},
-		{1, 999, 0, EliminatedByOutOfHealth, nil},
-		{0, 1, 0, EliminatedByOutOfHealth, nil},
-		{0, 999, 0, EliminatedByOutOfHealth, nil},
+		{100, 1, false, 99, NotEliminated, nil},
+		{100, 1, true, 100, NotEliminated, nil},
+		{100, 99, false, 1, NotEliminated, nil},
+		{100, 99, true, 100, NotEliminated, nil},
+		{100, 100, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 101, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 999, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 100, true, 100, NotEliminated, nil},
+		{2, 1, false, 1, NotEliminated, nil},
+		{1, 1, false, 0, EliminatedByOutOfHealth, nil},
+		{1, 999, false, 0, EliminatedByOutOfHealth, nil},
+		{0, 1, false, 0, EliminatedByOutOfHealth, nil},
+		{0, 999, false, 0, EliminatedByOutOfHealth, nil},
 	}
 
 	for _, test := range tests {
 		b := &BoardState{Snakes: []Snake{{Health: test.Health, Body: []Point{{0, 0}}}}, Hazards: []Point{{0, 0}}}
+		if test.Food {
+			b.Food = []Point{{0, 0}}
+		}
 		r := StandardRuleset{HazardDamagePerTurn: test.HazardDamagePerTurn}
 
 		err := r.maybeDamageHazards(b)
