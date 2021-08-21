@@ -1,17 +1,14 @@
 package rules
 
-import ()
-
 type ConstrictorRuleset struct {
 	StandardRuleset
 }
 
-func (r *ConstrictorRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
-	initialBoardState, err := r.StandardRuleset.CreateInitialBoardState(width, height, snakeIDs)
+func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
+	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)
 	if err != nil {
 		return nil, err
 	}
-
 	err = r.applyConstrictorRules(initialBoardState)
 	if err != nil {
 		return nil, err
