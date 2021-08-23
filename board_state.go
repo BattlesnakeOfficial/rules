@@ -2,18 +2,18 @@ package rules
 
 func (b *BoardState) Copy() *BoardState {
 	nextState := &BoardState{
-		Height:  prevState.Height,
-		Width:   prevState.Width,
-		Food:    append([]Point{}, prevState.Food...),
-		Snakes:  make([]Snake, len(prevState.Snakes)),
-		Hazards: append([]Point{}, prevState.Hazards...),
+		Height:  b.Height,
+		Width:   b.Width,
+		Food:    append([]Point{}, b.Food...),
+		Snakes:  make([]Snake, len(b.Snakes)),
+		Hazards: append([]Point{}, b.Hazards...),
 	}
-	for i := 0; i < len(prevState.Snakes); i++ {
-		nextState.Snakes[i].ID = prevState.Snakes[i].ID
-		nextState.Snakes[i].Health = prevState.Snakes[i].Health
-		nextState.Snakes[i].Body = append([]Point{}, prevState.Snakes[i].Body...)
-		nextState.Snakes[i].EliminatedCause = prevState.Snakes[i].EliminatedCause
-		nextState.Snakes[i].EliminatedBy = prevState.Snakes[i].EliminatedBy
+	for i := 0; i < len(b.Snakes); i++ {
+		nextState.Snakes[i].ID = b.Snakes[i].ID
+		nextState.Snakes[i].Health = b.Snakes[i].Health
+		nextState.Snakes[i].Body = append([]Point{}, b.Snakes[i].Body...)
+		nextState.Snakes[i].EliminatedCause = b.Snakes[i].EliminatedCause
+		nextState.Snakes[i].EliminatedBy = b.Snakes[i].EliminatedBy
 	}
 	return nextState
 }
