@@ -32,6 +32,7 @@ Usage:
   battlesnake play [flags]
 
 Flags:
+  -d, --delay int32         Turn Delay in Milliseconds (default 0)
   -g, --gametype string     Type of Game Rules (default "standard")
   -H, --height int32        Height of Board (default 11)
   -h, --help                help for play

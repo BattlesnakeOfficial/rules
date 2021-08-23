@@ -34,6 +34,11 @@ func TestSanity(t *testing.T) {
 	require.Len(t, state.Snakes, 0)
 }
 
+func TestStandardName(t *testing.T) {
+	r := StandardRuleset{}
+	require.Equal(t, "standard", r.Name())
+}
+
 func TestCreateInitialBoardState(t *testing.T) {
 	tests := []struct {
 		Height          int32
@@ -69,6 +74,7 @@ func TestCreateInitialBoardState(t *testing.T) {
 			require.Equal(t, id, state.Snakes[i].ID)
 		}
 		require.Len(t, state.Food, test.ExpectedNumFood, testNum)
+		require.Len(t, state.Hazards, 0, testNum)
 	}
 }
 
@@ -484,7 +490,8 @@ func TestCreateNextBoardState(t *testing.T) {
 						Health: 100,
 					},
 				},
-				Food: []Point{{0, 0}, {1, 0}},
+				Food:    []Point{{0, 0}, {1, 0}},
+				Hazards: []Point{},
 			},
 			[]SnakeMove{},
 			ErrorNoMoveFound,
@@ -506,7 +513,8 @@ func TestCreateNextBoardState(t *testing.T) {
 						Health: 100,
 					},
 				},
-				Food: []Point{{0, 0}, {1, 0}},
+				Food:    []Point{{0, 0}, {1, 0}},
+				Hazards: []Point{},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
@@ -537,7 +545,8 @@ func TestCreateNextBoardState(t *testing.T) {
 						EliminatedCause: EliminatedByOutOfBounds,
 					},
 				},
-				Food: []Point{{0, 0}, {1, 0}},
+				Food:    []Point{{0, 0}, {1, 0}},
+				Hazards: []Point{},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveDown},
@@ -566,7 +575,8 @@ func TestCreateNextBoardState(t *testing.T) {
 						EliminatedCause: EliminatedByOutOfBounds,
 					},
 				},
-				Food: []Point{{0, 0}},
+				Food:    []Point{{0, 0}},
+				Hazards: []Point{},
 			},
 		},
 	}
@@ -575,7 +585,13 @@ func TestCreateNextBoardState(t *testing.T) {
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, test.expectedError, err)
-		require.Equal(t, test.expectedState, nextState)
+		if test.expectedState != nil {
+			require.Equal(t, test.expectedState.Width, nextState.Width)
+			require.Equal(t, test.expectedState.Height, nextState.Height)
+			require.Equal(t, test.expectedState.Food, nextState.Food)
+			require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
+			require.Equal(t, test.expectedState.Hazards, nextState.Hazards)
+		}
 	}
 }
 
@@ -640,7 +656,12 @@ func TestEatingOnLastMove(t *testing.T) {
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
-		require.Equal(t, nextState, test.expectedState)
+		if test.expectedState != nil {
+			require.Equal(t, test.expectedState.Width, nextState.Width)
+			require.Equal(t, test.expectedState.Height, nextState.Height)
+			require.Equal(t, test.expectedState.Food, nextState.Food)
+			require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
+		}
 	}
 }
 
@@ -752,7 +773,12 @@ func TestHeadToHeadOnFood(t *testing.T) {
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, test.expectedError, err)
-		require.Equal(t, test.expectedState, nextState)
+		if test.expectedState != nil {
+			require.Equal(t, test.expectedState.Width, nextState.Width)
+			require.Equal(t, test.expectedState.Height, nextState.Height)
+			require.Equal(t, test.expectedState.Food, nextState.Food)
+			require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
+		}
 	}
 }
 
@@ -824,7 +850,12 @@ func TestRegressionIssue19(t *testing.T) {
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
-		require.Equal(t, nextState, test.expectedState)
+		if test.expectedState != nil {
+			require.Equal(t, test.expectedState.Width, nextState.Width)
+			require.Equal(t, test.expectedState.Height, nextState.Height)
+			require.Equal(t, test.expectedState.Food, nextState.Food)
+			require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
+		}
 	}
 
 }
@@ -1185,7 +1216,7 @@ func TestSnakeIsOutOfBounds(t *testing.T) {
 		s := Snake{Body: []Point{test.Point}}
 		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Head%+v", test.Point)
 		// Test with point as body
-		s = Snake{Body: []Point{Point{0, 0}, Point{0, 0}, test.Point}}
+		s = Snake{Body: []Point{{0, 0}, {0, 0}, test.Point}}
 		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Body%+v", test.Point)
 	}
 }
@@ -1361,7 +1392,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Zero Snake",
 			[]Snake{
-				Snake{},
+				{},
 			},
 			[]string{NotEliminated},
 			[]string{""},
@@ -1370,7 +1401,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Single Starvation",
 			[]Snake{
-				Snake{ID: "1", Body: []Point{{1, 1}}},
+				{ID: "1", Body: []Point{{1, 1}}},
 			},
 			[]string{EliminatedByOutOfHealth},
 			[]string{""},
@@ -1379,7 +1410,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Not Eliminated",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{1, 1}}},
 			},
 			[]string{NotEliminated},
 			[]string{""},
@@ -1388,7 +1419,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Out of Bounds",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{-1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{-1, 1}}},
 			},
 			[]string{EliminatedByOutOfBounds},
 			[]string{""},
@@ -1397,7 +1428,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Self Collision",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
+				{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
 			},
 			[]string{EliminatedBySelfCollision},
 			[]string{"1"},
@@ -1406,8 +1437,8 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Multiple Separate Deaths",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{-1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
+				{ID: "2", Health: 1, Body: []Point{{-1, 1}}},
 			},
 			[]string{
 				EliminatedBySelfCollision,
@@ -1418,8 +1449,8 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Other Collision",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{0, 2}, {0, 3}, {0, 4}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{ID: "1", Health: 1, Body: []Point{{0, 2}, {0, 3}, {0, 4}}},
+				{ID: "2", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
 			},
 			[]string{
 				EliminatedByCollision,
@@ -1430,9 +1461,9 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Eliminated Head 2 Head",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{1, 1}}},
-				Snake{ID: "3", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "2", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "3", Health: 1, Body: []Point{{1, 1}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1445,9 +1476,9 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"One Snake wins Head 2 Head",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{1, 1}, {0, 1}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{1, 1}, {1, 2}, {1, 3}}},
-				Snake{ID: "3", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{1, 1}, {0, 1}}},
+				{ID: "2", Health: 1, Body: []Point{{1, 1}, {1, 2}, {1, 3}}},
+				{ID: "3", Health: 1, Body: []Point{{1, 1}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1460,11 +1491,11 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Snakes Body Eliminated",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {3, 3}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{3, 3}, {2, 2}}},
-				Snake{ID: "3", Health: 1, Body: []Point{{2, 2}, {1, 1}}},
-				Snake{ID: "4", Health: 1, Body: []Point{{1, 1}, {4, 4}}},
-				Snake{ID: "5", Health: 1, Body: []Point{{4, 4}}}, // Body collision takes priority
+				{ID: "1", Health: 1, Body: []Point{{4, 4}, {3, 3}}},
+				{ID: "2", Health: 1, Body: []Point{{3, 3}, {2, 2}}},
+				{ID: "3", Health: 1, Body: []Point{{2, 2}, {1, 1}}},
+				{ID: "4", Health: 1, Body: []Point{{1, 1}, {4, 4}}},
+				{ID: "5", Health: 1, Body: []Point{{4, 4}}}, // Body collision takes priority
 			},
 			[]string{
 				EliminatedByCollision,
@@ -1479,10 +1510,10 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Snakes Eliminated Head 2 Head",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
-				Snake{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}}},
-				Snake{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
+				{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
+				{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
+				{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}}},
+				{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1496,10 +1527,10 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"4 Snakes Head 2 Head",
 			[]Snake{
-				Snake{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
-				Snake{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
-				Snake{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}, {6, 4}}},
-				Snake{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
+				{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
+				{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
+				{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}, {6, 4}}},
+				{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1566,6 +1597,111 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause, snake.ID)
 			require.Equal(t, test.ExpectedEliminatedBy[i], snake.EliminatedBy, snake.ID)
 		}
+	}
+}
+
+func TestMaybeDamageHazards(t *testing.T) {
+	tests := []struct {
+		Snakes                   []Snake
+		Hazards                  []Point
+		Food                     []Point
+		ExpectedEliminatedCauses []string
+		ExpectedEliminatedByIDs  []string
+	}{
+		{},
+		{
+			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                  []Point{},
+			ExpectedEliminatedCauses: []string{NotEliminated},
+			ExpectedEliminatedByIDs:  []string{""},
+		},
+		{
+			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                  []Point{{0, 0}},
+			ExpectedEliminatedCauses: []string{EliminatedByOutOfHealth},
+			ExpectedEliminatedByIDs:  []string{""},
+		},
+		{
+			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                  []Point{{0, 0}},
+			Food:                     []Point{{0, 0}},
+			ExpectedEliminatedCauses: []string{NotEliminated},
+			ExpectedEliminatedByIDs:  []string{""},
+		},
+		{
+			Snakes:                   []Snake{{Body: []Point{{0, 0}, {1, 0}, {2, 0}}}},
+			Hazards:                  []Point{{1, 0}, {2, 0}},
+			ExpectedEliminatedCauses: []string{NotEliminated},
+			ExpectedEliminatedByIDs:  []string{""},
+		},
+		{
+			Snakes: []Snake{
+				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
+				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
+			},
+			Hazards:                  []Point{{1, 0}, {2, 0}, {3, 4}, {3, 5}, {3, 6}},
+			ExpectedEliminatedCauses: []string{NotEliminated, NotEliminated},
+			ExpectedEliminatedByIDs:  []string{"", ""},
+		},
+		{
+			Snakes: []Snake{
+				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
+				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
+			},
+			Hazards:                  []Point{{3, 3}},
+			ExpectedEliminatedCauses: []string{NotEliminated, EliminatedByOutOfHealth},
+			ExpectedEliminatedByIDs:  []string{"", ""},
+		},
+	}
+
+	for _, test := range tests {
+		b := &BoardState{Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
+		r := StandardRuleset{HazardDamagePerTurn: 100}
+		err := r.maybeDamageHazards(b)
+		require.NoError(t, err)
+
+		for i, snake := range b.Snakes {
+			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
+		}
+
+	}
+}
+
+func TestHazardDamagePerTurn(t *testing.T) {
+	tests := []struct {
+		Health                   int32
+		HazardDamagePerTurn      int32
+		Food                     bool
+		ExpectedHealth           int32
+		ExpectedEliminationCause string
+		Error                    error
+	}{
+		{100, 1, false, 99, NotEliminated, nil},
+		{100, 1, true, 100, NotEliminated, nil},
+		{100, 99, false, 1, NotEliminated, nil},
+		{100, 99, true, 100, NotEliminated, nil},
+		{100, 100, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 101, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 999, false, 0, EliminatedByOutOfHealth, nil},
+		{100, 100, true, 100, NotEliminated, nil},
+		{2, 1, false, 1, NotEliminated, nil},
+		{1, 1, false, 0, EliminatedByOutOfHealth, nil},
+		{1, 999, false, 0, EliminatedByOutOfHealth, nil},
+		{0, 1, false, 0, EliminatedByOutOfHealth, nil},
+		{0, 999, false, 0, EliminatedByOutOfHealth, nil},
+	}
+
+	for _, test := range tests {
+		b := &BoardState{Snakes: []Snake{{Health: test.Health, Body: []Point{{0, 0}}}}, Hazards: []Point{{0, 0}}}
+		if test.Food {
+			b.Food = []Point{{0, 0}}
+		}
+		r := StandardRuleset{HazardDamagePerTurn: test.HazardDamagePerTurn}
+
+		err := r.maybeDamageHazards(b)
+		require.Equal(t, test.Error, err)
+		require.Equal(t, test.ExpectedHealth, b.Snakes[0].Health)
+		require.Equal(t, test.ExpectedEliminationCause, b.Snakes[0].EliminatedCause)
 	}
 }
 

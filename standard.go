@@ -6,9 +6,12 @@ import (
 )
 
 type StandardRuleset struct {
-	FoodSpawnChance int32 // [0, 100]
-	MinimumFood     int32
+	FoodSpawnChance     int32 // [0, 100]
+	MinimumFood         int32
+	HazardDamagePerTurn int32
 }
+
+func (r *StandardRuleset) Name() string { return "standard" }
 
 func (r *StandardRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := &BoardState{
@@ -48,14 +51,14 @@ func (r *StandardRuleset) placeSnakesFixed(b *BoardState) error {
 	// Create start 8 points
 	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
 	startPoints := []Point{
-		Point{mn, mn},
-		Point{mn, md},
-		Point{mn, mx},
-		Point{md, mn},
-		Point{md, mx},
-		Point{mx, mn},
-		Point{mx, md},
-		Point{mx, mx},
+		{mn, mn},
+		{mn, md},
+		{mn, mx},
+		{md, mn},
+		{md, mx},
+		{mx, mn},
+		{mx, md},
+		{mx, mx},
 	}
 
 	// Sanity check
@@ -105,10 +108,10 @@ func (r *StandardRuleset) placeFoodFixed(b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		snakeHead := b.Snakes[i].Body[0]
 		possibleFoodLocations := []Point{
-			Point{snakeHead.X - 1, snakeHead.Y - 1},
-			Point{snakeHead.X - 1, snakeHead.Y + 1},
-			Point{snakeHead.X + 1, snakeHead.Y - 1},
-			Point{snakeHead.X + 1, snakeHead.Y + 1},
+			{snakeHead.X - 1, snakeHead.Y - 1},
+			{snakeHead.X - 1, snakeHead.Y + 1},
+			{snakeHead.X + 1, snakeHead.Y - 1},
+			{snakeHead.X + 1, snakeHead.Y + 1},
 		}
 		availableFoodLocations := []Point{}
 
@@ -184,6 +187,11 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 
 	// TODO: LOG?
 	err = r.reduceSnakeHealth(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.maybeDamageHazards(nextState)
 	if err != nil {
 		return nil, err
 	}
@@ -290,6 +298,41 @@ func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
 			b.Snakes[i].Health = b.Snakes[i].Health - 1
 		}
 	}
+	return nil
+}
+
+func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
+	for i := 0; i < len(b.Snakes); i++ {
+		snake := &b.Snakes[i]
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
+		head := snake.Body[0]
+		for _, p := range b.Hazards {
+			if head == p {
+				// If there's a food in this square, don't reduce health
+				foundFood := false
+				for _, food := range b.Food {
+					if p == food {
+						foundFood = true
+					}
+				}
+				if foundFood {
+					continue
+				}
+
+				// Snake is in a hazard, reduce health
+				snake.Health = snake.Health - r.HazardDamagePerTurn
+				if snake.Health < 0 {
+					snake.Health = 0
+				}
+				if r.snakeIsOutOfHealth(snake) {
+					snake.EliminatedCause = EliminatedByOutOfHealth
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

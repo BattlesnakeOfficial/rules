@@ -18,6 +18,8 @@ type SquadRuleset struct {
 
 const EliminatedBySquad = "squad-eliminated"
 
+func (r *SquadRuleset) Name() string { return "squad" }
+
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
 	if err != nil {

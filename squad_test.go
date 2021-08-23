@@ -10,6 +10,11 @@ func TestSquadRulesetInterface(t *testing.T) {
 	var _ Ruleset = (*SquadRuleset)(nil)
 }
 
+func TestSquadName(t *testing.T) {
+	r := SquadRuleset{}
+	require.Equal(t, "squad", r.Name())
+}
+
 func TestSquadCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}

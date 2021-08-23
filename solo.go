@@ -4,6 +4,8 @@ type SoloRuleset struct {
 	StandardRuleset
 }
 
+func (r *SoloRuleset) Name() string { return "solo" }
+
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
