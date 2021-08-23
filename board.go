@@ -40,8 +40,10 @@ func (prevState *BoardState) Clone() *BoardState {
 	return nextState
 }
 
-// CreateDefaultBoardState is a convenience function for fully initializing a "default" board state with snakes and food.
-// The engine will not call this to generate the board state in a real game.
+// CreateDefaultBoardState is a convenience function for fully initializing a
+// "default" board state with snakes and food.
+// In a real game, the engine may generate the board without calling this
+// function, or customize the results based on game-specific settings.
 func CreateDefaultBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := NewBoardState(width, height)
 

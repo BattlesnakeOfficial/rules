@@ -11,8 +11,6 @@ type StandardRuleset struct {
 	HazardDamagePerTurn int32
 }
 
-var _ Ruleset = (*StandardRuleset)(nil)
-
 func (r *StandardRuleset) Name() string { return "standard" }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
