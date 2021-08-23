@@ -9,12 +9,13 @@ func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardSta
 	if err != nil {
 		return nil, err
 	}
-	err = r.applyConstrictorRules(initialBoardState)
+	newBoardState := initialBoardState.Clone()
+	err = r.applyConstrictorRules(newBoardState)
 	if err != nil {
 		return nil, err
 	}
 
-	return initialBoardState, nil
+	return newBoardState, nil
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
