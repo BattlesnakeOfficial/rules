@@ -240,11 +240,15 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakes []Battlesnake) *rules
 	for _, snake := range snakes {
 		snakeIds = append(snakeIds, snake.ID)
 	}
-	state, err := ruleset.CreateInitialBoardState(Width, Height, snakeIds)
+	state, err := rules.CreateDefaultBoardState(Width, Height, snakeIds)
 	if err != nil {
 		log.Panic("[PANIC]: Error Initializing Board State")
-		panic(err)
 	}
+	state, err = ruleset.ModifyInitialBoardState(state)
+	if err != nil {
+		log.Panic("[PANIC]: Error Initializing Board State")
+	}
+
 	for _, snake := range snakes {
 		requestBody := getIndividualBoardStateForSnake(state, snake, ruleset)
 		u, _ := url.ParseRequestURI(snake.URL)

@@ -15,7 +15,7 @@ func replace(value, min, max int32) int32 {
 }
 
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextState := prevState.Copy()
+	nextState := prevState.Clone()
 
 	err := r.moveSnakes(nextState, moves)
 	if err != nil {
@@ -23,6 +23,11 @@ func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []Sna
 	}
 
 	err = r.reduceSnakeHealth(nextState)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.maybeDamageHazards(nextState)
 	if err != nil {
 		return nil, err
 	}

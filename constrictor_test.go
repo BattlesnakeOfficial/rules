@@ -10,7 +10,7 @@ func TestConstrictorRulesetInterface(t *testing.T) {
 	var _ Ruleset = (*ConstrictorRuleset)(nil)
 }
 
-func TestConstrictorCreateInitialBoardState(t *testing.T) {
+func TestConstrictorModifyInitialBoardState(t *testing.T) {
 	tests := []struct {
 		Height int32
 		Width  int32
@@ -27,7 +27,10 @@ func TestConstrictorCreateInitialBoardState(t *testing.T) {
 
 	r := ConstrictorRuleset{}
 	for testNum, test := range tests {
-		state, err := r.CreateInitialBoardState(test.Width, test.Height, test.IDs)
+		state, err := CreateDefaultBoardState(test.Width, test.Height, test.IDs)
+		require.NoError(t, err)
+		require.NotNil(t, state)
+		state, err = r.ModifyInitialBoardState(state)
 		require.NoError(t, err)
 		require.NotNil(t, state)
 		require.Equal(t, test.Width, state.Width)
