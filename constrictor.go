@@ -1,23 +1,21 @@
 package rules
 
-import ()
-
 type ConstrictorRuleset struct {
 	StandardRuleset
 }
 
-func (r *ConstrictorRuleset) CreateInitialBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
-	initialBoardState, err := r.StandardRuleset.CreateInitialBoardState(width, height, snakeIDs)
+func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
+	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)
+	if err != nil {
+		return nil, err
+	}
+	newBoardState := initialBoardState.Clone()
+	err = r.applyConstrictorRules(newBoardState)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.applyConstrictorRules(initialBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return initialBoardState, nil
+	return newBoardState, nil
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
