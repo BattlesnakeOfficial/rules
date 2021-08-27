@@ -89,6 +89,7 @@ func TestRoyaleHazards(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{
+			Turn:   test.Turn,
 			Width:  test.Width,
 			Height: test.Height,
 		}
@@ -97,7 +98,6 @@ func TestRoyaleHazards(t *testing.T) {
 				HazardDamagePerTurn: 1,
 			},
 			Seed:              seed,
-			Turn:              test.Turn,
 			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 		}
 
@@ -127,46 +127,49 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 30}, Seed: seed, ShrinkEveryNTurns: 10}
 	m := []SnakeMove{{ID: "one", Move: "down"}}
 
-	r.Turn = 10
-	err := r.populateHazards(base, r.Turn-1)
-	require.NoError(t, err)
-	next, err := r.CreateNextBoardState(base, m)
+	stateAfterTurn := func(prevState *BoardState, turn int32) *BoardState {
+		nextState := prevState.Clone()
+		nextState.Turn = turn - 1
+		err := r.populateHazards(nextState, turn)
+		require.NoError(t, err)
+		nextState.Turn = turn
+		return nextState
+	}
+
+	prevState := stateAfterTurn(base, 9)
+	next, err := r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(99), next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 10, len(next.Hazards)) // X = 0
 
-	r.Turn = 20
-	err = r.populateHazards(base, r.Turn-1)
-	require.NoError(t, err)
-	next, err = r.CreateNextBoardState(base, m)
+	prevState = stateAfterTurn(base, 19)
+	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(99), next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards)) // X = 9
 
-	r.Turn = 21
-	err = r.populateHazards(base, r.Turn-1)
-	require.NoError(t, err)
-	next, err = r.CreateNextBoardState(base, m)
+	prevState = stateAfterTurn(base, 20)
+	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(69), next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 
-	base.Snakes[0].Health = 15
-	next, err = r.CreateNextBoardState(base, m)
+	prevState.Snakes[0].Health = 15
+	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, EliminatedByOutOfHealth, next.Snakes[0].EliminatedCause)
 	require.Equal(t, int32(0), next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 
-	base.Food = append(base.Food, Point{9, 0})
-	next, err = r.CreateNextBoardState(base, m)
+	prevState.Food = append(prevState.Food, Point{9, 0})
+	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)

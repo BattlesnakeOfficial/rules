@@ -10,8 +10,6 @@ type RoyaleRuleset struct {
 
 	Seed int64
 
-	// TODO: move Turn into BoardState?
-	Turn              int32
 	ShrinkEveryNTurns int32
 }
 
@@ -28,7 +26,7 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	}
 
 	// Royale's only job is now to populate the hazards for next turn - StandardRuleset takes care of applying hazard damage.
-	err = r.populateHazards(nextBoardState, r.Turn)
+	err = r.populateHazards(nextBoardState, prevState.Turn+1)
 	if err != nil {
 		return nil, err
 	}
