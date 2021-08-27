@@ -3,6 +3,7 @@ package rules
 import "math/rand"
 
 type BoardState struct {
+	Turn    int32
 	Height  int32
 	Width   int32
 	Food    []Point
@@ -13,6 +14,7 @@ type BoardState struct {
 // NewBoardState returns an empty but fully initialized BoardState
 func NewBoardState(width, height int32) *BoardState {
 	return &BoardState{
+		Turn:    0,
 		Height:  height,
 		Width:   width,
 		Food:    []Point{},
@@ -24,6 +26,7 @@ func NewBoardState(width, height int32) *BoardState {
 // Clone returns a deep copy of prevState that can be safely modified inside Ruleset.CreateNextBoardState
 func (prevState *BoardState) Clone() *BoardState {
 	nextState := &BoardState{
+		Turn:    prevState.Turn,
 		Height:  prevState.Height,
 		Width:   prevState.Width,
 		Food:    append([]Point{}, prevState.Food...),
