@@ -102,6 +102,11 @@ var ViewMap bool
 var Seed int64
 var TurnDelay int32
 
+var FoodSpawnChance int32
+var MinimumFood int32
+var HazardDamagePerTurn int32
+var ShrinkEveryNTurns int32
+
 var playCmd = &cobra.Command{
 	Use:   "play",
 	Short: "Play a game of Battlesnake locally.",
@@ -123,6 +128,13 @@ func init() {
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
+
+	playCmd.Flags().Int32Var(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
+	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
+	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
+	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
+
+	playCmd.Flags().SortFlags = false
 }
 
 var run = func(cmd *cobra.Command, args []string) {
@@ -181,17 +193,18 @@ func getRuleset(seed int64, snakes []Battlesnake) rules.Ruleset {
 	var royale rules.RoyaleRuleset
 
 	standard := rules.StandardRuleset{
-		FoodSpawnChance: 15,
-		MinimumFood:     1,
+		FoodSpawnChance:     FoodSpawnChance,
+		MinimumFood:         MinimumFood,
+		HazardDamagePerTurn: 0,
 	}
 
 	switch GameType {
 	case "royale":
-		standard.HazardDamagePerTurn = 15
+		standard.HazardDamagePerTurn = HazardDamagePerTurn
 		royale = rules.RoyaleRuleset{
 			StandardRuleset:   standard,
 			Seed:              seed,
-			ShrinkEveryNTurns: 10,
+			ShrinkEveryNTurns: ShrinkEveryNTurns,
 		}
 		ruleset = &royale
 	case "squad":
