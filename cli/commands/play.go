@@ -55,9 +55,22 @@ type BoardResponse struct {
 }
 
 type GameResponseRulesetSettings struct {
-	HazardDamagePerTurn int32 `json:"hazardDamagePerTurn"`
-	FoodSpawnChance     int32 `json:"foodSpawnChance"`
-	MinimumFood         int32 `json:"minimumFood"`
+	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
+	FoodSpawnChance     int32          `json:"foodSpawnChance"`
+	MinimumFood         int32          `json:"minimumFood"`
+	RoyaleSettings      RoyaleSettings `json:"royale"`
+	SquadSettings       SquadSettings  `json:"squad"`
+}
+
+type RoyaleSettings struct {
+	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
+}
+
+type SquadSettings struct {
+	AllowBodyCollisions bool `json:"allowBodyCollisions"`
+	SharedElimination   bool `json:"sharedElimination"`
+	SharedHealth        bool `json:"sharedHealth"`
+	SharedLength        bool `json:"sharedLength"`
 }
 
 type GameResponseRuleset struct {
@@ -382,6 +395,15 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 				HazardDamagePerTurn: HazardDamagePerTurn,
 				FoodSpawnChance:     FoodSpawnChance,
 				MinimumFood:         MinimumFood,
+				RoyaleSettings: RoyaleSettings{
+					ShrinkEveryNTurns: ShrinkEveryNTurns,
+				},
+				SquadSettings: SquadSettings{
+					AllowBodyCollisions: true,
+					SharedElimination:   true,
+					SharedHealth:        true,
+					SharedLength:        true,
+				},
 			},
 		}},
 		Turn: Turn,
