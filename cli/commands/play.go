@@ -54,9 +54,16 @@ type BoardResponse struct {
 	Snakes  []SnakeResponse `json:"snakes"`
 }
 
+type GameResponseRulesetSettings struct {
+	HazardDamagePerTurn int32 `json:"hazardDamagePerTurn"`
+	FoodSpawnChance     int32 `json:"foodSpawnChance"`
+	MinimumFood         int32 `json:"minimumFood"`
+}
+
 type GameResponseRuleset struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
+	Name     string                      `json:"name"`
+	Version  string                      `json:"version"`
+	Settings GameResponseRulesetSettings `json:"settings"`
 }
 
 type GameResponse struct {
@@ -371,6 +378,11 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 		Game: GameResponse{Id: GameId, Timeout: Timeout, Ruleset: GameResponseRuleset{
 			Name:    ruleset.Name(),
 			Version: "cli", // TODO: Use GitHub Release Version
+			Settings: GameResponseRulesetSettings{
+				HazardDamagePerTurn: HazardDamagePerTurn,
+				FoodSpawnChance:     FoodSpawnChance,
+				MinimumFood:         MinimumFood,
+			},
 		}},
 		Turn: Turn,
 		Board: BoardResponse{
@@ -387,6 +399,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 		log.Panic("[PANIC]: Error Marshalling JSON from State")
 		panic(err)
 	}
+	fmt.Printf("%v\n", string(responseJson))
 	return responseJson
 }
 
