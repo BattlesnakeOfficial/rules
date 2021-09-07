@@ -1,0 +1,90 @@
+{
+  "game": {
+    "id": "",
+    "timeout": 500,
+    "ruleset": {
+      "name": "standard",
+      "version": "cli",
+      "settings": {
+        "hazardDamagePerTurn": 14,
+        "foodSpawnChance": 15,
+        "minimumFood": 1,
+        "royale": {
+          "shrinkEveryNTurns": 25
+        },
+        "squad": {
+          "allowBodyCollisions": true,
+          "sharedElimination": true,
+          "sharedHealth": true,
+          "sharedLength": true
+        }
+      }
+    }
+  },
+  "turn": 0,
+  "board": {
+    "height": 11,
+    "width": 11,
+    "food": [],
+    "hazards": [],
+    "snakes": [
+      {
+        "id": "one",
+        "name": "",
+        "health": 0,
+        "body": [
+          {
+            "x": 3,
+            "y": 3
+          }
+        ],
+        "latency": "0",
+        "head": {
+          "x": 3,
+          "y": 3
+        },
+        "length": 1,
+        "shout": "",
+        "squad": ""
+      },
+      {
+        "id": "two",
+        "name": "",
+        "health": 0,
+        "body": [
+          {
+            "x": 4,
+            "y": 3
+          }
+        ],
+        "latency": "0",
+        "head": {
+          "x": 4,
+          "y": 3
+        },
+        "length": 1,
+        "shout": "",
+        "squad": ""
+      }
+    ]
+  },
+  "you": {
+    "id": "one",
+    "name": "",
+    "health": 0,
+    "body": [
+      {
+        "x": 3,
+        "y": 3
+      }
+    ],
+    "latency": "0",
+    "head": {
+      "x": 3,
+      "y": 3
+    },
+    "length": 1,
+    "shout": "",
+    "squad": ""
+  }
+}
