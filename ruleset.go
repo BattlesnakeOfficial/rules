@@ -39,11 +39,12 @@ type Point struct {
 }
 
 type Snake struct {
-	ID              string
-	Body            []Point
-	Health          int32
-	EliminatedCause string
-	EliminatedBy    string
+	ID               string
+	Body             []Point
+	Health           int32
+	EliminatedCause  string
+	EliminatedOnTurn int32
+	EliminatedBy     string
 }
 
 type SnakeMove struct {
