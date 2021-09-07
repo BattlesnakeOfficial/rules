@@ -121,6 +121,7 @@ var GameType string
 var ViewMap bool
 var Seed int64
 var TurnDelay int32
+var DebugRequests bool
 
 var FoodSpawnChance int32
 var MinimumFood int32
@@ -148,6 +149,7 @@ func init() {
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
+	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
 
 	playCmd.Flags().Int32Var(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
@@ -283,6 +285,9 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakes []Battlesnake) *rules
 		requestBody := getIndividualBoardStateForSnake(state, snake, ruleset)
 		u, _ := url.ParseRequestURI(snake.URL)
 		u.Path = path.Join(u.Path, "start")
+		if DebugRequests {
+			log.Printf("POST %s: %v", u, string(requestBody))
+		}
 		_, err = HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 		if err != nil {
 			log.Printf("[WARN]: Request to %v failed", u.String())
@@ -346,6 +351,9 @@ func getMoveForSnake(ruleset rules.Ruleset, state *rules.BoardState, snake Battl
 	requestBody := getIndividualBoardStateForSnake(state, snake, ruleset)
 	u, _ := url.ParseRequestURI(snake.URL)
 	u.Path = path.Join(u.Path, "move")
+	if DebugRequests {
+		log.Printf("POST %s: %v", u, string(requestBody))
+	}
 	res, err := HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 	move := snake.LastMove
 	if err != nil {
@@ -373,6 +381,9 @@ func sendEndRequest(ruleset rules.Ruleset, state *rules.BoardState, snake Battle
 	requestBody := getIndividualBoardStateForSnake(state, snake, ruleset)
 	u, _ := url.ParseRequestURI(snake.URL)
 	u.Path = path.Join(u.Path, "end")
+	if DebugRequests {
+		log.Printf("POST %s: %v", u, string(requestBody))
+	}
 	_, err := HttpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Printf("[WARN]: Request to %v failed", u.String())
@@ -421,7 +432,6 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 		log.Panic("[PANIC]: Error Marshalling JSON from State")
 		panic(err)
 	}
-	fmt.Printf("%v\n", string(responseJson))
 	return responseJson
 }
 
