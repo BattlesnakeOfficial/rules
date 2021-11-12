@@ -122,6 +122,7 @@ var ViewMap bool
 var Seed int64
 var TurnDelay int32
 var DebugRequests bool
+var OutputFilename string
 
 var FoodSpawnChance int32
 var MinimumFood int32
@@ -150,6 +151,7 @@ func init() {
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
+	playCmd.Flags().StringVarP(&OutputFilename, "output", "o", "game.jsonl", "Filename to output the game to")
 
 	playCmd.Flags().Int32Var(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
