@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strconv"
 	"sync"
@@ -20,13 +21,13 @@ import (
 )
 
 type Battlesnake struct {
-	URL       string
-	Name      string
-	ID        string
-	API       string
-	LastMove  string
-	Squad     string
-	Character rune
+	URL       string `json:"url"`
+	Name      string `json:"name"`
+	ID        string `json:"id"`
+	API       string `json:"api"`
+	LastMove  string `json:"last_move"`
+	Squad     string `json:"squad"`
+	Character rune   `json:"character"`
 }
 
 type Coord struct {
@@ -151,7 +152,7 @@ func init() {
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
-	playCmd.Flags().StringVarP(&OutputFilename, "output", "o", "game.jsonl", "Filename to output the game to")
+	playCmd.Flags().StringVarP(&OutputFilename, "output", "o", "", "Filename to output the game to. (By default, no file will be written)")
 
 	playCmd.Flags().Int32Var(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
@@ -167,6 +168,7 @@ var run = func(cmd *cobra.Command, args []string) {
 	Battlesnakes = make(map[string]Battlesnake)
 	GameId = uuid.New().String()
 	Turn = 0
+	writeToFile := OutputFilename != ""
 
 	snakes := buildSnakesFromOptions()
 
@@ -174,6 +176,10 @@ var run = func(cmd *cobra.Command, args []string) {
 	state := initializeBoardFromArgs(ruleset, snakes)
 	for _, snake := range snakes {
 		Battlesnakes[snake.ID] = snake
+	}
+
+	if writeToFile {
+		writeRulesetToFile(ruleset)
 	}
 
 	for v := false; !v; v, _ = ruleset.IsGameOver(state) {
@@ -186,6 +192,10 @@ var run = func(cmd *cobra.Command, args []string) {
 			log.Printf("[%v]: State: %v\n", Turn, state)
 		}
 
+		if writeToFile {
+			writeBoardStateToFile(state)
+		}
+
 		if TurnDelay > 0 {
 			time.Sleep(time.Duration(TurnDelay) * time.Millisecond)
 		}
@@ -193,22 +203,31 @@ var run = func(cmd *cobra.Command, args []string) {
 
 	if GameType == "solo" {
 		log.Printf("[DONE]: Game completed after %v turns.", Turn)
+		snake := snakes[0]
+		writeFinalStateToFile(snake.Name, snake.ID, false)
 	} else {
-		var winner string
+		var winner Battlesnake
 		isDraw := true
 		for _, snake := range state.Snakes {
 			if snake.EliminatedCause == rules.NotEliminated {
 				isDraw = false
-				winner = Battlesnakes[snake.ID].Name
+				winner = Battlesnakes[snake.ID]
 			}
 			sendEndRequest(ruleset, state, Battlesnakes[snake.ID])
 		}
 
 		if isDraw {
 			log.Printf("[DONE]: Game completed after %v turns. It was a draw.", Turn)
+			if writeToFile {
+				writeFinalStateToFile("", "", true)
+			}
 		} else {
-			log.Printf("[DONE]: Game completed after %v turns. %v is the winner.", Turn, winner)
+			log.Printf("[DONE]: Game completed after %v turns. %v is the winner.", Turn, winner.Name)
+			if writeToFile {
+				writeFinalStateToFile(winner.Name, winner.ID, false)
+			}
 		}
+
 	}
 }
 
@@ -586,4 +605,60 @@ func printMap(state *rules.BoardState, gameTurn int32) {
 		o.WriteString("\n")
 	}
 	log.Print(o.String())
+}
+
+func writeRulesetToFile(ruleset rules.Ruleset) error {
+	// Convert struct to JSON and write it to the file
+	serialisedRuleset, err := json.Marshal(ruleset)
+	if err != nil {
+		return err
+	}
+	err = writeOutputToFile(string(serialisedRuleset), false)
+	return err
+}
+
+func writeBoardStateToFile(state *rules.BoardState) error {
+	// Convert struct to JSON and write it to the file
+	serialisedState, err := json.Marshal(state)
+	if err != nil {
+		return err
+	}
+	err = writeOutputToFile(string(serialisedState), false)
+	return err
+}
+
+func writeFinalStateToFile(winnerName string, winnerID string, isDraw bool) error {
+	// Convert struct to JSON and write it to the file
+	serialisedState, err := json.Marshal(map[string]interface{}{
+		"winner_name": winnerName,
+		"winner_id":   winnerID,
+		"is_draw":     isDraw,
+	})
+	if err != nil {
+		return err
+	}
+	err = writeOutputToFile(string(serialisedState), true)
+	return err
+}
+
+func writeOutputToFile(line string, isLast bool) error {
+	// _, err := os.Stat(filename)
+	// fileDoesNotExist := errors.Is(err, os.ErrNotExist)
+
+	f, err := os.OpenFile(OutputFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(line)
+	if err != nil {
+		return err
+	}
+	if !isLast {
+		_, err = f.WriteString("\n")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

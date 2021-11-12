@@ -1,7 +1,7 @@
 package rules
 
 type ConstrictorRuleset struct {
-	StandardRuleset
+	StandardRuleset `json:"standard_ruleset"`
 }
 
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {

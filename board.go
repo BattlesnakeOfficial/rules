@@ -3,12 +3,12 @@ package rules
 import "math/rand"
 
 type BoardState struct {
-	Turn    int32
-	Height  int32
-	Width   int32
-	Food    []Point
-	Snakes  []Snake
-	Hazards []Point
+	Turn    int32   `json:"turn"`
+	Height  int32   `json:"height"`
+	Width   int32   `json:"width"`
+	Food    []Point `json:"food"`
+	Snakes  []Snake `json:"snakes"`
+	Hazards []Point `json:"hazards"`
 }
 
 // NewBoardState returns an empty but fully initialized BoardState

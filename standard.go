@@ -6,9 +6,9 @@ import (
 )
 
 type StandardRuleset struct {
-	FoodSpawnChance     int32 // [0, 100]
-	MinimumFood         int32
-	HazardDamagePerTurn int32
+	FoodSpawnChance     int32 `json:"food_spawn_chance"` // [0, 100]
+	MinimumFood         int32 `json:"minimum_food"`
+	HazardDamagePerTurn int32 `json:"hazard_damage_per_turn"`
 }
 
 func (r *StandardRuleset) Name() string { return "standard" }
@@ -219,9 +219,9 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 	// Next, look for any collisions. Note we apply collision eliminations
 	// after this check so that snakes can collide with each other and be properly eliminated.
 	type CollisionElimination struct {
-		ID    string
-		Cause string
-		By    string
+		ID    string `json:"id"`
+		Cause string `json:"cause"`
+		By    string `json:"by"`
 	}
 	collisionEliminations := []CollisionElimination{}
 	for i := 0; i < len(b.Snakes); i++ {

@@ -1,7 +1,7 @@
 package rules
 
 type SoloRuleset struct {
-	StandardRuleset
+	StandardRuleset `json:"standard_ruleset"`
 }
 
 func (r *SoloRuleset) Name() string { return "solo" }

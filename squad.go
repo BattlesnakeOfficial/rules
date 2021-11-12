@@ -7,13 +7,13 @@ import (
 type SquadRuleset struct {
 	StandardRuleset
 
-	SquadMap map[string]string
+	SquadMap map[string]string `json:"squad_map"`
 
 	// These are intentionally designed so that they default to a standard game.
-	AllowBodyCollisions bool
-	SharedElimination   bool
-	SharedHealth        bool
-	SharedLength        bool
+	AllowBodyCollisions bool `json:"allow_body_collisions"`
+	SharedElimination   bool `json:"shared_elimination"`
+	SharedHealth        bool `json:"shared_health"`
+	SharedLength        bool `json:"shared_length"`
 }
 
 const EliminatedBySquad = "squad-eliminated"

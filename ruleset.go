@@ -34,22 +34,22 @@ const (
 )
 
 type Point struct {
-	X int32
-	Y int32
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
 }
 
 type Snake struct {
-	ID               string
-	Body             []Point
-	Health           int32
-	EliminatedCause  string
-	EliminatedOnTurn int32
-	EliminatedBy     string
+	ID               string  `json:"id"`
+	Body             []Point `json:"body"`
+	Health           int32   `json:"health"`
+	EliminatedCause  string  `json:"eliminated_cause"`
+	EliminatedOnTurn int32   `json:"eliminated_on_turn"`
+	EliminatedBy     string  `json:"eliminated_by"`
 }
 
 type SnakeMove struct {
-	ID   string
-	Move string
+	ID   string `json:"id"`
+	Move string `json:"move"`
 }
 
 type Ruleset interface {

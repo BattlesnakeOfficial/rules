@@ -6,11 +6,11 @@ import (
 )
 
 type RoyaleRuleset struct {
-	StandardRuleset
+	StandardRuleset `json:"standard_ruleset"`
 
-	Seed int64
+	Seed int64 `json:"seed"`
 
-	ShrinkEveryNTurns int32
+	ShrinkEveryNTurns int32 `json:"shrink_every_n_turns"`
 }
 
 func (r *RoyaleRuleset) Name() string { return "royale" }
