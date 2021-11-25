@@ -44,7 +44,12 @@
         },
         "length": 1,
         "shout": "",
-        "squad": ""
+        "squad": "",
+        "customizations": {
+          "color": "",
+          "head": "",
+          "tail": ""
+        }
       },
       {
         "id": "two",
@@ -63,7 +68,12 @@
         },
         "length": 1,
         "shout": "",
-        "squad": ""
+        "squad": "",
+        "customizations": {
+          "color": "",
+          "head": "",
+          "tail": ""
+        }
       }
     ],
     "food": [],
@@ -86,6 +96,11 @@
     },
     "length": 1,
     "shout": "",
-    "squad": ""
+    "squad": "",
+    "customizations": {
+      "color": "",
+      "head": "",
+      "tail": ""
+    }
   }
 }

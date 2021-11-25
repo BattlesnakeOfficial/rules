@@ -27,6 +27,11 @@ func exampleSnakeRequest() SnakeRequest {
 					Length:  3,
 					Shout:   "snake-0-shout",
 					Squad:   "",
+					Customizations: Customizations{
+						Head:  "safe",
+						Tail:  "curled",
+						Color: "#123456",
+					},
 				},
 				{
 					ID:      "snake-1",
@@ -38,6 +43,11 @@ func exampleSnakeRequest() SnakeRequest {
 					Length:  3,
 					Shout:   "snake-1-shout",
 					Squad:   "snake-1-squad",
+					Customizations: Customizations{
+						Head:  "silly",
+						Tail:  "bolt",
+						Color: "#654321",
+					},
 				},
 			},
 			Food:    []Coord{{X: 2, Y: 2}},
@@ -53,6 +63,11 @@ func exampleSnakeRequest() SnakeRequest {
 			Length:  3,
 			Shout:   "snake-1-shout",
 			Squad:   "snake-1-squad",
+			Customizations: Customizations{
+				Head:  "silly",
+				Tail:  "bolt",
+				Color: "#654321",
+			},
 		},
 	}
 }

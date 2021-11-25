@@ -29,15 +29,22 @@ type Board struct {
 
 // Snake represents information about a snake in the game
 type Snake struct {
-	ID      string  `json:"id"`
-	Name    string  `json:"name"`
-	Latency string  `json:"latency"`
-	Health  int32   `json:"health"`
-	Body    []Coord `json:"body"`
-	Head    Coord   `json:"head"`
-	Length  int32   `json:"length"`
-	Shout   string  `json:"shout"`
-	Squad   string  `json:"squad"`
+	ID             string         `json:"id"`
+	Name           string         `json:"name"`
+	Latency        string         `json:"latency"`
+	Health         int32          `json:"health"`
+	Body           []Coord        `json:"body"`
+	Head           Coord          `json:"head"`
+	Length         int32          `json:"length"`
+	Shout          string         `json:"shout"`
+	Squad          string         `json:"squad"`
+	Customizations Customizations `json:"customizations"`
+}
+
+type Customizations struct {
+	Color string `json:"color"`
+	Head  string `json:"head"`
+	Tail  string `json:"tail"`
 }
 
 type Ruleset struct {
