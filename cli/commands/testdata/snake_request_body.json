@@ -29,7 +29,7 @@
     "snakes": [
       {
         "id": "one",
-        "name": "",
+        "name": "ONE",
         "latency": "0",
         "health": 0,
         "body": [
@@ -46,14 +46,14 @@
         "shout": "",
         "squad": "",
         "customizations": {
-          "color": "",
-          "head": "",
-          "tail": ""
+          "color": "#123456",
+          "head": "safe",
+          "tail": "curled"
         }
       },
       {
         "id": "two",
-        "name": "",
+        "name": "TWO",
         "latency": "0",
         "health": 0,
         "body": [
@@ -70,9 +70,9 @@
         "shout": "",
         "squad": "",
         "customizations": {
-          "color": "",
-          "head": "",
-          "tail": ""
+          "color": "#654321",
+          "head": "silly",
+          "tail": "bolt"
         }
       }
     ],
@@ -81,7 +81,7 @@
   },
   "you": {
     "id": "one",
-    "name": "",
+    "name": "ONE",
     "latency": "0",
     "health": 0,
     "body": [
@@ -98,9 +98,9 @@
     "shout": "",
     "squad": "",
     "customizations": {
-      "color": "",
-      "head": "",
-      "tail": ""
+      "color": "#123456",
+      "head": "safe",
+      "tail": "curled"
     }
   }
 }
