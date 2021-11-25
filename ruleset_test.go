@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	// included to allow using -update-fixtures for every package without errors
+	_ "github.com/BattlesnakeOfficial/rules/test"
 )
 
 func TestRulesetError(t *testing.T) {

@@ -1,0 +1,144 @@
+{
+  "game": {
+    "id": "game-id",
+    "ruleset": {
+      "name": "test-ruleset-name",
+      "version": "cli",
+      "settings": {
+        "foodSpawnChance": 0,
+        "minimumFood": 0,
+        "hazardDamagePerTurn": 0,
+        "royale": {
+          "shrinkEveryNTurns": 0
+        },
+        "squad": {
+          "allowBodyCollisions": false,
+          "sharedElimination": false,
+          "sharedHealth": false,
+          "sharedLength": false
+        }
+      }
+    },
+    "timeout": 33,
+    "source": "league"
+  },
+  "turn": 11,
+  "board": {
+    "height": 22,
+    "width": 11,
+    "snakes": [
+      {
+        "id": "snake-0",
+        "name": "snake-0-name",
+        "latency": "snake-0-latency",
+        "health": 100,
+        "body": [
+          {
+            "x": 1,
+            "y": 2
+          },
+          {
+            "x": 1,
+            "y": 3
+          },
+          {
+            "x": 1,
+            "y": 4
+          }
+        ],
+        "head": {
+          "x": 1,
+          "y": 2
+        },
+        "length": 3,
+        "shout": "snake-0-shout",
+        "squad": "",
+        "customizations": {
+          "color": "#123456",
+          "head": "safe",
+          "tail": "curled"
+        }
+      },
+      {
+        "id": "snake-1",
+        "name": "snake-1-name",
+        "latency": "snake-1-latency",
+        "health": 200,
+        "body": [
+          {
+            "x": 2,
+            "y": 2
+          },
+          {
+            "x": 2,
+            "y": 3
+          },
+          {
+            "x": 2,
+            "y": 4
+          }
+        ],
+        "head": {
+          "x": 2,
+          "y": 2
+        },
+        "length": 3,
+        "shout": "snake-1-shout",
+        "squad": "snake-1-squad",
+        "customizations": {
+          "color": "#654321",
+          "head": "silly",
+          "tail": "bolt"
+        }
+      }
+    ],
+    "food": [
+      {
+        "x": 2,
+        "y": 2
+      }
+    ],
+    "hazards": [
+      {
+        "x": 8,
+        "y": 8
+      },
+      {
+        "x": 9,
+        "y": 9
+      }
+    ]
+  },
+  "you": {
+    "id": "snake-1",
+    "name": "snake-1-name",
+    "latency": "snake-1-latency",
+    "health": 200,
+    "body": [
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 3
+      },
+      {
+        "x": 2,
+        "y": 4
+      }
+    ],
+    "head": {
+      "x": 2,
+      "y": 2
+    },
+    "length": 3,
+    "shout": "snake-1-shout",
+    "squad": "snake-1-squad",
+    "customizations": {
+      "color": "#654321",
+      "head": "silly",
+      "tail": "bolt"
+    }
+  }
+}

@@ -1,10 +1,11 @@
-package rules
+package test
 
 import (
 	"bytes"
 	"encoding/json"
 	"flag"
 	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,6 +27,8 @@ func RequireJSONMatchesFixture(t *testing.T, filename string, actual string) {
 		require.NoError(t, err, "Failed to indent JSON")
 		err = ioutil.WriteFile(filename, indented.Bytes(), 0644)
 		require.NoError(t, err, "Failed to update fixture", filename)
+
+		log.Printf("Updating fixture file %#v", filename)
 	}
 
 	expectedData, err := ioutil.ReadFile(filename)
