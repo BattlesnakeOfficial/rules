@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/test"
 )
 
 func TestGetIndividualBoardStateForSnake(t *testing.T) {
@@ -17,5 +18,5 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	snake := Battlesnake{Name: "one", URL: "", ID: "one"}
 	requestBody := getIndividualBoardStateForSnake(state, snake, &rules.StandardRuleset{})
 
-	rules.RequireJSONMatchesFixture(t, "testdata/snake_request_body.json", string(requestBody))
+	test.RequireJSONMatchesFixture(t, "testdata/snake_request_body.json", string(requestBody))
 }

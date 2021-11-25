@@ -15,10 +15,12 @@ import (
 	"time"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/client"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
+// Used to store state for each Battlesnake while running a local game
 type Battlesnake struct {
 	URL       string
 	Name      string
@@ -27,83 +29,6 @@ type Battlesnake struct {
 	LastMove  string
 	Squad     string
 	Character rune
-}
-
-type Coord struct {
-	X int32 `json:"x"`
-	Y int32 `json:"y"`
-}
-
-type SnakeResponse struct {
-	Id      string  `json:"id"`
-	Name    string  `json:"name"`
-	Health  int32   `json:"health"`
-	Body    []Coord `json:"body"`
-	Latency string  `json:"latency"`
-	Head    Coord   `json:"head"`
-	Length  int32   `json:"length"`
-	Shout   string  `json:"shout"`
-	Squad   string  `json:"squad"`
-}
-
-type BoardResponse struct {
-	Height  int32           `json:"height"`
-	Width   int32           `json:"width"`
-	Food    []Coord         `json:"food"`
-	Hazards []Coord         `json:"hazards"`
-	Snakes  []SnakeResponse `json:"snakes"`
-}
-
-type GameResponseRulesetSettings struct {
-	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
-	FoodSpawnChance     int32          `json:"foodSpawnChance"`
-	MinimumFood         int32          `json:"minimumFood"`
-	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"`
-}
-
-type RoyaleSettings struct {
-	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
-}
-
-type SquadSettings struct {
-	AllowBodyCollisions bool `json:"allowBodyCollisions"`
-	SharedElimination   bool `json:"sharedElimination"`
-	SharedHealth        bool `json:"sharedHealth"`
-	SharedLength        bool `json:"sharedLength"`
-}
-
-type GameResponseRuleset struct {
-	Name     string                      `json:"name"`
-	Version  string                      `json:"version"`
-	Settings GameResponseRulesetSettings `json:"settings"`
-}
-
-type GameResponse struct {
-	Id      string              `json:"id"`
-	Timeout int32               `json:"timeout"`
-	Ruleset GameResponseRuleset `json:"ruleset"`
-}
-
-type ResponsePayload struct {
-	Game  GameResponse  `json:"game"`
-	Turn  int32         `json:"turn"`
-	Board BoardResponse `json:"board"`
-	You   SnakeResponse `json:"you"`
-}
-
-type PlayerResponse struct {
-	Move  string `json:"move"`
-	Shout string `json:"shout"`
-}
-
-type PingResponse struct {
-	APIVersion string `json:"apiversion"`
-	Author     string `json:"author"`
-	Color      string `json:"color"`
-	Head       string `json:"head"`
-	Tail       string `json:"tail"`
-	Version    string `json:"version"`
 }
 
 var GameId string
@@ -365,7 +290,7 @@ func getMoveForSnake(ruleset rules.Ruleset, state *rules.BoardState, snake Battl
 		if readErr != nil {
 			log.Fatal(readErr)
 		} else {
-			playerResponse := PlayerResponse{}
+			playerResponse := client.MoveResponse{}
 			jsonErr := json.Unmarshal(body, &playerResponse)
 			if jsonErr != nil {
 				log.Fatal(jsonErr)
@@ -398,18 +323,18 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 			break
 		}
 	}
-	response := ResponsePayload{
-		Game: GameResponse{Id: GameId, Timeout: Timeout, Ruleset: GameResponseRuleset{
+	request := client.SnakeRequest{
+		Game: client.Game{ID: GameId, Timeout: Timeout, Ruleset: client.Ruleset{
 			Name:    ruleset.Name(),
 			Version: "cli", // TODO: Use GitHub Release Version
-			Settings: GameResponseRulesetSettings{
+			Settings: client.RulesetSettings{
 				HazardDamagePerTurn: HazardDamagePerTurn,
 				FoodSpawnChance:     FoodSpawnChance,
 				MinimumFood:         MinimumFood,
-				RoyaleSettings: RoyaleSettings{
+				RoyaleSettings: client.RoyaleSettings{
 					ShrinkEveryNTurns: ShrinkEveryNTurns,
 				},
-				SquadSettings: SquadSettings{
+				SquadSettings: client.SquadSettings{
 					AllowBodyCollisions: true,
 					SharedElimination:   true,
 					SharedHealth:        true,
@@ -418,55 +343,43 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snake Battlesnake,
 			},
 		}},
 		Turn: Turn,
-		Board: BoardResponse{
+		Board: client.Board{
 			Height:  state.Height,
 			Width:   state.Width,
-			Food:    coordFromPointArray(state.Food),
-			Hazards: coordFromPointArray(state.Hazards),
-			Snakes:  buildSnakesResponse(state.Snakes),
+			Food:    client.CoordFromPointArray(state.Food),
+			Hazards: client.CoordFromPointArray(state.Hazards),
+			Snakes:  convertRulesSnakes(state.Snakes),
 		},
-		You: snakeResponseFromSnake(youSnake),
+		You: convertRulesSnake(youSnake),
 	}
-	responseJson, err := json.Marshal(response)
+	requestJSON, err := json.Marshal(request)
 	if err != nil {
 		log.Panic("[PANIC]: Error Marshalling JSON from State")
 		panic(err)
 	}
-	return responseJson
+	return requestJSON
 }
 
-func snakeResponseFromSnake(snake rules.Snake) SnakeResponse {
-	return SnakeResponse{
-		Id:      snake.ID,
+func convertRulesSnake(snake rules.Snake) client.Snake {
+	return client.Snake{
+		ID:      snake.ID,
 		Name:    Battlesnakes[snake.ID].Name,
 		Health:  snake.Health,
-		Body:    coordFromPointArray(snake.Body),
+		Body:    client.CoordFromPointArray(snake.Body),
 		Latency: "0",
-		Head:    coordFromPoint(snake.Body[0]),
+		Head:    client.CoordFromPoint(snake.Body[0]),
 		Length:  int32(len(snake.Body)),
 		Shout:   "",
 		Squad:   Battlesnakes[snake.ID].Squad,
 	}
 }
 
-func buildSnakesResponse(snakes []rules.Snake) []SnakeResponse {
-	var a []SnakeResponse
+func convertRulesSnakes(snakes []rules.Snake) []client.Snake {
+	var a []client.Snake
 	for _, snake := range snakes {
 		if snake.EliminatedCause == rules.NotEliminated {
-			a = append(a, snakeResponseFromSnake(snake))
+			a = append(a, convertRulesSnake(snake))
 		}
-	}
-	return a
-}
-
-func coordFromPoint(pt rules.Point) Coord {
-	return Coord{X: pt.X, Y: pt.Y}
-}
-
-func coordFromPointArray(ptArray []rules.Point) []Coord {
-	a := make([]Coord, 0)
-	for _, pt := range ptArray {
-		a = append(a, coordFromPoint(pt))
 	}
 	return a
 }
@@ -532,7 +445,7 @@ func buildSnakesFromOptions() []Battlesnake {
 				log.Fatal(readErr)
 			}
 
-			pingResponse := PingResponse{}
+			pingResponse := client.SnakeMetadataResponse{}
 			jsonErr := json.Unmarshal(body, &pingResponse)
 			if jsonErr != nil {
 				log.Fatal(jsonErr)
