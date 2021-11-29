@@ -17,9 +17,9 @@ type GameExporter struct {
 }
 
 type result struct {
-	winnerID   string `json:"winnerId"`
-	winnerName string `json:"winnerName"`
-	isDraw     bool   `json:"isDraw"`
+	WinnerID   string `json:"winnerId"`
+	WinnerName string `json:"winnerName"`
+	IsDraw     bool   `json:"isDraw"`
 }
 
 func (ge *GameExporter) FlushToFile(filepath string, format string) error {
@@ -47,6 +47,8 @@ func (ge *GameExporter) FlushToFile(filepath string, format string) error {
 		f.WriteString(fmt.Sprintf("%s\n", line))
 	}
 
+	log.Printf("Written %d lines of output to file: %s\n", len(formattedOutput), filepath)
+
 	return nil
 }
 
@@ -65,9 +67,9 @@ func (ge *GameExporter) ConvertToJSON() ([]string, error) {
 		output = append(output, string(serialisedBoard))
 	}
 	serialisedResult, err := json.Marshal(result{
-		winnerID:   ge.winner.ID,
-		winnerName: ge.winner.Name,
-		isDraw:     ge.isDraw,
+		WinnerID:   ge.winner.ID,
+		WinnerName: ge.winner.Name,
+		IsDraw:     ge.isDraw,
 	})
 	if err != nil {
 		return output, err

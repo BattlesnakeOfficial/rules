@@ -124,7 +124,6 @@ var run = func(cmd *cobra.Command, args []string) {
 		}
 
 		if exportGame {
-			log.Printf("Storing for export...\n")
 			// Pick first snake state
 			// TODO: Document this decision in both code and readme
 			snakeState := snakeStates[state.Snakes[0].ID]
@@ -142,11 +141,12 @@ var run = func(cmd *cobra.Command, args []string) {
 	} else {
 		var winner SnakeState
 		for _, snake := range state.Snakes {
+			snakeState := snakeStates[snake.ID]
 			if snake.EliminatedCause == rules.NotEliminated {
 				isDraw = false
-				winner = snakeStates[snake.ID]
+				winner = snakeState
 			}
-			sendEndRequest(ruleset, state, winner, snakeStates)
+			sendEndRequest(ruleset, state, snakeState, snakeStates)
 		}
 
 		if isDraw {
