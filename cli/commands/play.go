@@ -360,7 +360,7 @@ func getIndividualBoardStateForSnake(state *rules.BoardState, snakeState SnakeSt
 	request := client.SnakeRequest{
 		Game:  createClientGame(ruleset),
 		Turn:  Turn,
-		Board: convertStateToBoard(*state, snakeStates),
+		Board: convertStateToBoard(state, snakeStates),
 		You:   convertRulesSnake(youSnake, snakeStates[youSnake.ID]),
 	}
 	return request
@@ -425,7 +425,7 @@ func convertRulesSnakes(snakes []rules.Snake, snakeStates map[string]SnakeState)
 	return a
 }
 
-func convertStateToBoard(state rules.BoardState, snakeStates map[string]SnakeState) client.Board {
+func convertStateToBoard(state *rules.BoardState, snakeStates map[string]SnakeState) client.Board {
 	return client.Board{
 		Height:  state.Height,
 		Width:   state.Width,
