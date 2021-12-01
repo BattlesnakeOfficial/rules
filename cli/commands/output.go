@@ -37,7 +37,7 @@ func (ge *GameExporter) FlushToFile(filepath string, format string) error {
 		return formattingErr
 	}
 
-	f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
