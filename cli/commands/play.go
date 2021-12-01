@@ -99,14 +99,11 @@ var run = func(cmd *cobra.Command, args []string) {
 	state := initializeBoardFromArgs(ruleset, snakeStates)
 	exportGame := Output != ""
 
-	var gameExporter GameExporter
-	if exportGame {
-		gameExporter = GameExporter{
-			game:          createClientGame(ruleset),
-			snakeRequests: make([]client.SnakeRequest, 0),
-			winner:        SnakeState{},
-			isDraw:        false,
-		}
+	gameExporter := GameExporter{
+		game:          createClientGame(ruleset),
+		snakeRequests: make([]client.SnakeRequest, 0),
+		winner:        SnakeState{},
+		isDraw:        false,
 	}
 
 	for v := false; !v; v, _ = ruleset.IsGameOver(state) {
