@@ -44,7 +44,10 @@ func (ge *GameExporter) FlushToFile(filepath string, format string) error {
 	defer f.Close()
 
 	for _, line := range formattedOutput {
-		f.WriteString(fmt.Sprintf("%s\n", line))
+		_, err := f.WriteString(fmt.Sprintf("%s\n", line))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Printf("Written %d lines of output to file: %s\n", len(formattedOutput), filepath)
