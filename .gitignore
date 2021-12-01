@@ -5,5 +5,7 @@
 
 # General
 .DS_Store
-battlesnake-dev
-test.jsonl
+
+# Build and Output 
+/battlesnake
+*.jsonl
