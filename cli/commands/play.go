@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strconv"
 	"sync"
@@ -162,7 +163,11 @@ var run = func(cmd *cobra.Command, args []string) {
 	}
 
 	if exportGame {
-		gameExporter.FlushToFile(Output, "JSONL")
+		err := gameExporter.FlushToFile(Output, "JSONL")
+		if err != nil {
+			log.Printf("[WARN]: Unable to export game. Reason: %v\n", err.Error())
+			os.Exit(1)
+		}
 	}
 }
 
