@@ -126,10 +126,10 @@ var run = func(cmd *cobra.Command, args []string) {
 		if exportGame {
 			// The output file was designed in a way so that (nearly) every entry is equivalent to a valid API request.
 			// This is meant to help unlock further development of tools such as replaying a saved game by simply copying each line and sending it as a POST request.
-			// There was a design choice to be made here: the difference between SnakeResponse and BoardState is the `you` key.
-			// We could choose to either store the SnakeResponse of each snake OR to omit the `you` key OR fill the `you` key with one of the snakes
-			// In all cases the API request is technically non-compliant with how the actual API response should be.
-			// The third option (filling the `you` key with an arbitrary snake) is the closest to the actual API response that would need the least manipulation to
+			// There was a design choice to be made here: the difference between SnakeRequest and BoardState is the `you` key.
+			// We could choose to either store the SnakeRequest of each snake OR to omit the `you` key OR fill the `you` key with one of the snakes
+			// In all cases the API request is technically non-compliant with how the actual API request should be.
+			// The third option (filling the `you` key with an arbitrary snake) is the closest to the actual API request that would need the least manipulation to
 			// be adjusted to look like an API call for a specific snake in the game.
 			snakeState := snakeStates[state.Snakes[0].ID]
 			snakeRequest := getIndividualBoardStateForSnake(state, snakeState, snakeStates, ruleset)
