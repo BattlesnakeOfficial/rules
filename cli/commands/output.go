@@ -79,9 +79,5 @@ func (ge *GameExporter) ConvertToJSON() ([]string, error) {
 }
 
 func (ge *GameExporter) AddSnakeRequest(snakeRequest client.SnakeRequest) {
-	if ge.snakeRequests == nil {
-		ge.snakeRequests = []client.SnakeRequest{snakeRequest}
-	} else {
-		ge.snakeRequests = append(ge.snakeRequests, snakeRequest)
-	}
+	ge.snakeRequests = append(ge.snakeRequests, snakeRequest)
 }
