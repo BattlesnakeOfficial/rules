@@ -139,6 +139,7 @@ var run = func(cmd *cobra.Command, args []string) {
 	if GameType == "solo" {
 		log.Printf("[DONE]: Game completed after %v turns.", Turn)
 		if exportGame {
+			// These checks for exportGame are present to avoid vacuuming up RAM when an export is not requred.
 			gameExporter.winner = snakeStates[state.Snakes[0].ID]
 		}
 	} else {
