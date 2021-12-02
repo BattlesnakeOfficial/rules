@@ -35,7 +35,8 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 		s1State.ID: s1State,
 		s2State.ID: s2State,
 	}
-	requestBody := getIndividualBoardStateForSnake(state, s1State, snakeStates, &rules.StandardRuleset{})
+	snakeRequest := getIndividualBoardStateForSnake(state, s1State, snakeStates, &rules.StandardRuleset{})
+	requestBody := serialiseSnakeRequest(snakeRequest)
 
 	test.RequireJSONMatchesFixture(t, "testdata/snake_request_body.json", string(requestBody))
 }
