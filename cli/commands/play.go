@@ -562,9 +562,15 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
         o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
     }
 	for _, s := range state.Snakes {
-        red, _ := strconv.ParseUint(snakeStates[s.ID].Color[1:3], 16, 64)
-        green, _ := strconv.ParseUint(snakeStates[s.ID].Color[3:5], 16, 64)
-        blue, _ := strconv.ParseUint(snakeStates[s.ID].Color[5:], 16, 64)
+        var red, green, blue int64 = 136, 136, 136
+        if len(snakeStates[s.ID].Color) == 7 {
+            snake_red, err_r := strconv.ParseInt(snakeStates[s.ID].Color[1:3], 16, 64)
+            snake_green, err_g := strconv.ParseInt(snakeStates[s.ID].Color[3:5], 16, 64)
+            snake_blue, err_b := strconv.ParseInt(snakeStates[s.ID].Color[5:], 16, 64)
+            if err_r == nil && err_g == nil && err_b == nil {
+                red, green, blue = snake_red, snake_green, snake_blue
+            }
+        }
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
                 if UseColor {
