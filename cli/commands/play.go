@@ -46,6 +46,7 @@ var Timeout int32
 var Sequential bool
 var GameType string
 var ViewMap bool
+var UseColor bool
 var Seed int64
 var TurnDelay int32
 var DebugRequests bool
@@ -75,6 +76,7 @@ func init() {
 	playCmd.Flags().BoolVarP(&Sequential, "sequential", "s", false, "Use Sequential Processing")
 	playCmd.Flags().StringVarP(&GameType, "gametype", "g", "standard", "Type of Game Rules")
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
+	playCmd.Flags().BoolVarP(&UseColor, "color", "c", false, "Use color to draw the map")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
@@ -439,7 +441,7 @@ func convertStateToBoard(state *rules.BoardState, snakeStates map[string]SnakeSt
 }
 
 func buildSnakesFromOptions() map[string]SnakeState {
-	bodyChars := []rune{'■', '⌀', '●', '⍟', '◘', '☺', '□', '☻'}
+	bodyChars := []rune{'■', '⌀', '●', '☻', '◘', '☺', '□', '⍟'}
 	var numSnakes int
 	snakes := map[string]SnakeState{}
 	numNames := len(Names)
@@ -522,35 +524,72 @@ func buildSnakesFromOptions() map[string]SnakeState {
 func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int32) {
 	var o bytes.Buffer
 	o.WriteString(fmt.Sprintf("Ruleset: %s, Seed: %d, Turn: %v\n", GameType, Seed, gameTurn))
-	board := make([][]rune, state.Width)
+	board := make([][]string, state.Width)
 	for i := range board {
-		board[i] = make([]rune, state.Height)
+		board[i] = make([]string, state.Height)
 	}
 	for y := int32(0); y < state.Height; y++ {
 		for x := int32(0); x < state.Width; x++ {
-			board[x][y] = '◦'
+            if UseColor {
+                board[x][y] = "\033[38;2;200;200;200m□"
+            } else {
+                board[x][y] = "◦"
+            }
 		}
 	}
 	for _, oob := range state.Hazards {
-		board[oob.X][oob.Y] = '░'
+        if UseColor {
+            board[oob.X][oob.Y] = "\033[48;2;127;127;127m \033[107m"
+        } else {
+            board[oob.X][oob.Y] = "░"
+        }
 	}
-	o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
+    if UseColor {
+        o.WriteString(fmt.Sprintf("Hazards \033[48;2;127;127;127m \033[0m: %v\n", state.Hazards))
+    } else {
+        o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
+    }
 	for _, f := range state.Food {
-		board[f.X][f.Y] = '⚕'
+        if UseColor {
+            board[f.X][f.Y] = "\033[38;2;255;92;117m●"
+        } else {
+            board[f.X][f.Y] = "⚕"
+        }
 	}
-	o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
+    if UseColor {
+        o.WriteString(fmt.Sprintf("Food \033[38;2;255;92;117m\033[107m●\033[0m: %v\n", state.Food))
+    } else {
+        o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
+    }
 	for _, s := range state.Snakes {
+        red, _ := strconv.ParseUint(snakeStates[s.ID].Color[1:3], 16, 64)
+        green, _ := strconv.ParseUint(snakeStates[s.ID].Color[3:5], 16, 64)
+        blue, _ := strconv.ParseUint(snakeStates[s.ID].Color[5:], 16, 64)
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
-				board[b.X][b.Y] = snakeStates[s.ID].Character
+                if UseColor {
+                    board[b.X][b.Y] = fmt.Sprintf("\033[38;2;%d;%d;%dm■", red, green, blue)
+                } else {
+				    board[b.X][b.Y] = string(snakeStates[s.ID].Character)
+                }
 			}
 		}
-		o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
+        if UseColor {
+            o.WriteString(fmt.Sprintf("%v \033[38;2;%d;%d;%dm\033[107m■■■\033[0m: %v\n", snakeStates[s.ID].Name, red, green, blue, s))
+        } else {
+            o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
+        }
 	}
 	for y := state.Height - 1; y >= 0; y-- {
+        if UseColor {
+            o.WriteString("\033[107m")
+        }
 		for x := int32(0); x < state.Width; x++ {
-			o.WriteRune(board[x][y])
+			o.WriteString(board[x][y])
 		}
+        if UseColor {
+            o.WriteString("\033[0m")
+        }
 		o.WriteString("\n")
 	}
 	log.Print(o.String())
