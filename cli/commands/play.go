@@ -521,6 +521,21 @@ func buildSnakesFromOptions() map[string]SnakeState {
 	return snakes
 }
 
+// Parses a color string like "#ef03d3" to rgb values from 0 to 255 or returns 
+// the default gray if any errors occure
+func parseSnakeColor(color string) (int64, int64, int64) {
+    if len(color) == 7 {
+        red, err_r := strconv.ParseInt(color[1:3], 16, 64)
+        green, err_g := strconv.ParseInt(color[3:5], 16, 64)
+        blue, err_b := strconv.ParseInt(color[5:], 16, 64)
+        if err_r == nil && err_g == nil && err_b == nil {
+            return red, green, blue
+        }
+    }
+    // Default gray color from Battlesnake board
+    return 136, 136, 136
+}
+
 func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int32) {
 	var o bytes.Buffer
 	o.WriteString(fmt.Sprintf("Ruleset: %s, Seed: %d, Turn: %v\n", GameType, Seed, gameTurn))
@@ -531,7 +546,7 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
 	for y := int32(0); y < state.Height; y++ {
 		for x := int32(0); x < state.Width; x++ {
 			if UseColor {
-				board[x][y] = "\033[38;2;200;200;200m□"
+				board[x][y] = TERM_FG_LIGHTGRAY + "□"
 			} else {
 				board[x][y] = "◦"
 			}
@@ -539,62 +554,54 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
 	}
 	for _, oob := range state.Hazards {
 		if UseColor {
-			board[oob.X][oob.Y] = "\033[48;2;127;127;127m \033[107m"
+			board[oob.X][oob.Y] = TERM_BG_GRAY + " " + TERM_BG_WHITE
 		} else {
 			board[oob.X][oob.Y] = "░"
 		}
 	}
 	if UseColor {
-		o.WriteString(fmt.Sprintf("Hazards \033[48;2;127;127;127m \033[0m: %v\n", state.Hazards))
+		o.WriteString(fmt.Sprintf("Hazards " + TERM_BG_GRAY + " " + TERM_RESET + ": %v\n", state.Hazards))
 	} else {
 		o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
 	}
 	for _, f := range state.Food {
 		if UseColor {
-			board[f.X][f.Y] = "\033[38;2;255;92;117m●"
+			board[f.X][f.Y] = TERM_FG_FOOD + "●"
 		} else {
 			board[f.X][f.Y] = "⚕"
 		}
 	}
 	if UseColor {
-		o.WriteString(fmt.Sprintf("Food \033[38;2;255;92;117m\033[107m●\033[0m: %v\n", state.Food))
+		o.WriteString(fmt.Sprintf("Food " + TERM_FG_FOOD + TERM_BG_WHITE + "●" + TERM_RESET + ": %v\n", state.Food))
 	} else {
 		o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
 	}
 	for _, s := range state.Snakes {
-		var red, green, blue int64 = 136, 136, 136
-		if len(snakeStates[s.ID].Color) == 7 {
-			snake_red, err_r := strconv.ParseInt(snakeStates[s.ID].Color[1:3], 16, 64)
-			snake_green, err_g := strconv.ParseInt(snakeStates[s.ID].Color[3:5], 16, 64)
-			snake_blue, err_b := strconv.ParseInt(snakeStates[s.ID].Color[5:], 16, 64)
-			if err_r == nil && err_g == nil && err_b == nil {
-				red, green, blue = snake_red, snake_green, snake_blue
-			}
-		}
+        red, green, blue := parseSnakeColor(snakeStates[s.ID].Color)
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
 				if UseColor {
-					board[b.X][b.Y] = fmt.Sprintf("\033[38;2;%d;%d;%dm■", red, green, blue)
+					board[b.X][b.Y] = fmt.Sprintf(TERM_FG_RGB + "■", red, green, blue)
 				} else {
 					board[b.X][b.Y] = string(snakeStates[s.ID].Character)
 				}
 			}
 		}
 		if UseColor {
-			o.WriteString(fmt.Sprintf("%v \033[38;2;%d;%d;%dm\033[107m■■■\033[0m: %v\n", snakeStates[s.ID].Name, red, green, blue, s))
+			o.WriteString(fmt.Sprintf("%v " + TERM_FG_RGB + TERM_BG_WHITE + "■■■" + TERM_RESET + ": %v\n", snakeStates[s.ID].Name, red, green, blue, s))
 		} else {
 			o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
 		}
 	}
 	for y := state.Height - 1; y >= 0; y-- {
 		if UseColor {
-			o.WriteString("\033[107m")
+			o.WriteString(TERM_BG_WHITE)
 		}
 		for x := int32(0); x < state.Width; x++ {
 			o.WriteString(board[x][y])
 		}
 		if UseColor {
-			o.WriteString("\033[0m")
+			o.WriteString(TERM_RESET)
 		}
 		o.WriteString("\n")
 	}
