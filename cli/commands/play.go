@@ -46,6 +46,7 @@ var Timeout int32
 var Sequential bool
 var GameType string
 var ViewMap bool
+var UseColor bool
 var Seed int64
 var TurnDelay int32
 var DebugRequests bool
@@ -75,6 +76,7 @@ func init() {
 	playCmd.Flags().BoolVarP(&Sequential, "sequential", "s", false, "Use Sequential Processing")
 	playCmd.Flags().StringVarP(&GameType, "gametype", "g", "standard", "Type of Game Rules")
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
+	playCmd.Flags().BoolVarP(&UseColor, "color", "c", false, "Use color to draw the map")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
@@ -439,7 +441,7 @@ func convertStateToBoard(state *rules.BoardState, snakeStates map[string]SnakeSt
 }
 
 func buildSnakesFromOptions() map[string]SnakeState {
-	bodyChars := []rune{'■', '⌀', '●', '⍟', '◘', '☺', '□', '☻'}
+	bodyChars := []rune{'■', '⌀', '●', '☻', '◘', '☺', '□', '⍟'}
 	var numSnakes int
 	snakes := map[string]SnakeState{}
 	numNames := len(Names)
@@ -519,37 +521,87 @@ func buildSnakesFromOptions() map[string]SnakeState {
 	return snakes
 }
 
+// Parses a color string like "#ef03d3" to rgb values from 0 to 255 or returns
+// the default gray if any errors occure
+func parseSnakeColor(color string) (int64, int64, int64) {
+	if len(color) == 7 {
+		red, err_r := strconv.ParseInt(color[1:3], 16, 64)
+		green, err_g := strconv.ParseInt(color[3:5], 16, 64)
+		blue, err_b := strconv.ParseInt(color[5:], 16, 64)
+		if err_r == nil && err_g == nil && err_b == nil {
+			return red, green, blue
+		}
+	}
+	// Default gray color from Battlesnake board
+	return 136, 136, 136
+}
+
 func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int32) {
 	var o bytes.Buffer
 	o.WriteString(fmt.Sprintf("Ruleset: %s, Seed: %d, Turn: %v\n", GameType, Seed, gameTurn))
-	board := make([][]rune, state.Width)
+	board := make([][]string, state.Width)
 	for i := range board {
-		board[i] = make([]rune, state.Height)
+		board[i] = make([]string, state.Height)
 	}
 	for y := int32(0); y < state.Height; y++ {
 		for x := int32(0); x < state.Width; x++ {
-			board[x][y] = '◦'
+			if UseColor {
+				board[x][y] = TERM_FG_LIGHTGRAY + "□"
+			} else {
+				board[x][y] = "◦"
+			}
 		}
 	}
 	for _, oob := range state.Hazards {
-		board[oob.X][oob.Y] = '░'
+		if UseColor {
+			board[oob.X][oob.Y] = TERM_BG_GRAY + " " + TERM_BG_WHITE
+		} else {
+			board[oob.X][oob.Y] = "░"
+		}
 	}
-	o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
+	if UseColor {
+		o.WriteString(fmt.Sprintf("Hazards "+TERM_BG_GRAY+" "+TERM_RESET+": %v\n", state.Hazards))
+	} else {
+		o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
+	}
 	for _, f := range state.Food {
-		board[f.X][f.Y] = '⚕'
+		if UseColor {
+			board[f.X][f.Y] = TERM_FG_FOOD + "●"
+		} else {
+			board[f.X][f.Y] = "⚕"
+		}
 	}
-	o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
+	if UseColor {
+		o.WriteString(fmt.Sprintf("Food "+TERM_FG_FOOD+TERM_BG_WHITE+"●"+TERM_RESET+": %v\n", state.Food))
+	} else {
+		o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
+	}
 	for _, s := range state.Snakes {
+		red, green, blue := parseSnakeColor(snakeStates[s.ID].Color)
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
-				board[b.X][b.Y] = snakeStates[s.ID].Character
+				if UseColor {
+					board[b.X][b.Y] = fmt.Sprintf(TERM_FG_RGB+"■", red, green, blue)
+				} else {
+					board[b.X][b.Y] = string(snakeStates[s.ID].Character)
+				}
 			}
 		}
-		o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
+		if UseColor {
+			o.WriteString(fmt.Sprintf("%v "+TERM_FG_RGB+TERM_BG_WHITE+"■■■"+TERM_RESET+": %v\n", snakeStates[s.ID].Name, red, green, blue, s))
+		} else {
+			o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
+		}
 	}
 	for y := state.Height - 1; y >= 0; y-- {
+		if UseColor {
+			o.WriteString(TERM_BG_WHITE)
+		}
 		for x := int32(0); x < state.Width; x++ {
-			o.WriteRune(board[x][y])
+			o.WriteString(board[x][y])
+		}
+		if UseColor {
+			o.WriteString(TERM_RESET)
 		}
 		o.WriteString("\n")
 	}
