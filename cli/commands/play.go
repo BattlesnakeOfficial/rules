@@ -521,19 +521,19 @@ func buildSnakesFromOptions() map[string]SnakeState {
 	return snakes
 }
 
-// Parses a color string like "#ef03d3" to rgb values from 0 to 255 or returns 
+// Parses a color string like "#ef03d3" to rgb values from 0 to 255 or returns
 // the default gray if any errors occure
 func parseSnakeColor(color string) (int64, int64, int64) {
-    if len(color) == 7 {
-        red, err_r := strconv.ParseInt(color[1:3], 16, 64)
-        green, err_g := strconv.ParseInt(color[3:5], 16, 64)
-        blue, err_b := strconv.ParseInt(color[5:], 16, 64)
-        if err_r == nil && err_g == nil && err_b == nil {
-            return red, green, blue
-        }
-    }
-    // Default gray color from Battlesnake board
-    return 136, 136, 136
+	if len(color) == 7 {
+		red, err_r := strconv.ParseInt(color[1:3], 16, 64)
+		green, err_g := strconv.ParseInt(color[3:5], 16, 64)
+		blue, err_b := strconv.ParseInt(color[5:], 16, 64)
+		if err_r == nil && err_g == nil && err_b == nil {
+			return red, green, blue
+		}
+	}
+	// Default gray color from Battlesnake board
+	return 136, 136, 136
 }
 
 func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int32) {
@@ -560,7 +560,7 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
 		}
 	}
 	if UseColor {
-		o.WriteString(fmt.Sprintf("Hazards " + TERM_BG_GRAY + " " + TERM_RESET + ": %v\n", state.Hazards))
+		o.WriteString(fmt.Sprintf("Hazards "+TERM_BG_GRAY+" "+TERM_RESET+": %v\n", state.Hazards))
 	} else {
 		o.WriteString(fmt.Sprintf("Hazards ░: %v\n", state.Hazards))
 	}
@@ -572,23 +572,23 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
 		}
 	}
 	if UseColor {
-		o.WriteString(fmt.Sprintf("Food " + TERM_FG_FOOD + TERM_BG_WHITE + "●" + TERM_RESET + ": %v\n", state.Food))
+		o.WriteString(fmt.Sprintf("Food "+TERM_FG_FOOD+TERM_BG_WHITE+"●"+TERM_RESET+": %v\n", state.Food))
 	} else {
 		o.WriteString(fmt.Sprintf("Food ⚕: %v\n", state.Food))
 	}
 	for _, s := range state.Snakes {
-        red, green, blue := parseSnakeColor(snakeStates[s.ID].Color)
+		red, green, blue := parseSnakeColor(snakeStates[s.ID].Color)
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < state.Width && b.Y >= 0 && b.Y < state.Height {
 				if UseColor {
-					board[b.X][b.Y] = fmt.Sprintf(TERM_FG_RGB + "■", red, green, blue)
+					board[b.X][b.Y] = fmt.Sprintf(TERM_FG_RGB+"■", red, green, blue)
 				} else {
 					board[b.X][b.Y] = string(snakeStates[s.ID].Character)
 				}
 			}
 		}
 		if UseColor {
-			o.WriteString(fmt.Sprintf("%v " + TERM_FG_RGB + TERM_BG_WHITE + "■■■" + TERM_RESET + ": %v\n", snakeStates[s.ID].Name, red, green, blue, s))
+			o.WriteString(fmt.Sprintf("%v "+TERM_FG_RGB+TERM_BG_WHITE+"■■■"+TERM_RESET+": %v\n", snakeStates[s.ID].Name, red, green, blue, s))
 		} else {
 			o.WriteString(fmt.Sprintf("%v %c: %v\n", snakeStates[s.ID].Name, snakeStates[s.ID].Character, s))
 		}
