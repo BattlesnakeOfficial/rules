@@ -73,6 +73,7 @@ type RoyaleSettings struct {
 }
 
 type SquadSettings struct {
+	squadMap            map[string]string
 	AllowBodyCollisions bool `json:"allowBodyCollisions"`
 	SharedElimination   bool `json:"sharedElimination"`
 	SharedHealth        bool `json:"sharedHealth"`

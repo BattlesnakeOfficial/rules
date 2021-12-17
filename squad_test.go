@@ -101,8 +101,8 @@ func TestSquadAllowBodyCollisions(t *testing.T) {
 func TestSquadAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
 	boardState := &BoardState{
 		Snakes: []Snake{
-			Snake{ID: "1", EliminatedCause: EliminatedByCollision},
-			Snake{ID: "2"},
+			{ID: "1", EliminatedCause: EliminatedByCollision},
+			{ID: "2"},
 		},
 	}
 	r := SquadRuleset{
@@ -279,8 +279,8 @@ func TestSquadSharedElimination(t *testing.T) {
 func TestSquadSharedAttributesErrorLengthZero(t *testing.T) {
 	boardState := &BoardState{
 		Snakes: []Snake{
-			Snake{ID: "1"},
-			Snake{ID: "2"},
+			{ID: "1"},
+			{ID: "2"},
 		},
 	}
 	r := SquadRuleset{
