@@ -11,21 +11,24 @@ func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardSta
 	if err != nil {
 		return nil, err
 	}
-	newBoardState := initialBoardState.Clone()
-	err = r.applyConstrictorRules(newBoardState)
+
+	r.removeFood(initialBoardState)
+
+	err = r.applyConstrictorRules(initialBoardState)
 	if err != nil {
 		return nil, err
 	}
 
-	return newBoardState, nil
+	return initialBoardState, nil
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-
 	nextState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
 	if err != nil {
 		return nil, err
 	}
+
+	r.removeFood(prevState)
 
 	err = r.applyConstrictorRules(nextState)
 	if err != nil {
@@ -35,10 +38,23 @@ func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves [
 	return nextState, nil
 }
 
-func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
+func (r *ConstrictorRuleset) removeFood(b *BoardState) {
+	_, _ = r.callStageFunc(RemoveFoodConstrictor, b, []SnakeMove{})
+}
+
+func RemoveFoodConstrictor(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
 	// Remove all food from the board
 	b.Food = []Point{}
 
+	return false, nil
+}
+
+func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
+	_, err := r.callStageFunc(GrowSnakesConstrictor, b, []SnakeMove{})
+	return err
+}
+
+func GrowSnakesConstrictor(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
 	// Set all snakes to max health and ensure they grow next turn
 	for i := 0; i < len(b.Snakes); i++ {
 		b.Snakes[i].Health = SnakeMaxHealth
@@ -50,5 +66,5 @@ func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
 		}
 	}
 
-	return nil
+	return false, nil
 }
