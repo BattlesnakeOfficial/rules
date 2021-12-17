@@ -58,3 +58,35 @@ type Ruleset interface {
 	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 	IsGameOver(state *BoardState) (bool, error)
 }
+
+type RulesetSettings struct {
+	FoodSpawnChance     int32          `json:"foodSpawnChance"`
+	MinimumFood         int32          `json:"minimumFood"`
+	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
+	RoyaleSettings      RoyaleSettings `json:"royale"`
+	SquadSettings       SquadSettings  `json:"squad"`
+}
+
+type RoyaleSettings struct {
+	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
+}
+
+type SquadSettings struct {
+	AllowBodyCollisions bool `json:"allowBodyCollisions"`
+	SharedElimination   bool `json:"sharedElimination"`
+	SharedHealth        bool `json:"sharedHealth"`
+	SharedLength        bool `json:"sharedLength"`
+}
+
+// Represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
+// modifyBoardState is expected to modify the boardState directly, not copy it.
+type Stage interface {
+	ModifyBoardState(boardState *BoardState, settings RulesetSettings, snakeIDs []string, moves []SnakeMove) (gameOver bool, err error)
+}
+
+// Allows converting a plain function to a RulesStage
+type StageFunc func(*BoardState, RulesetSettings, []string, []SnakeMove) (bool, error)
+
+func (f StageFunc) ModifyBoardState(boardState *BoardState, settings RulesetSettings, snakeIDs []string, moves []SnakeMove) (bool, error) {
+	return f(boardState, settings, snakeIDs, moves)
+}

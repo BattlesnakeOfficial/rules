@@ -46,7 +46,7 @@ func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
 		tail := b.Snakes[i].Body[len(b.Snakes[i].Body)-1]
 		subTail := b.Snakes[i].Body[len(b.Snakes[i].Body)-2]
 		if tail != subTail {
-			r.growSnake(&b.Snakes[i])
+			growSnake(&b.Snakes[i])
 		}
 	}
 

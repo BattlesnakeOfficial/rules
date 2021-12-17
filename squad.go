@@ -94,7 +94,7 @@ func (r *SquadRuleset) shareSquadAttributes(b *BoardState) error {
 						return errors.New("found snake of zero length")
 					}
 					for len(snake.Body) < len(other.Body) {
-						r.growSnake(snake)
+						growSnake(snake)
 					}
 				}
 				if r.SharedElimination {

@@ -384,14 +384,14 @@ func createClientGame(ruleset rules.Ruleset) client.Game {
 	return client.Game{ID: GameId, Timeout: Timeout, Ruleset: client.Ruleset{
 		Name:    ruleset.Name(),
 		Version: "cli", // TODO: Use GitHub Release Version
-		Settings: client.RulesetSettings{
+		Settings: rules.RulesetSettings{
 			HazardDamagePerTurn: HazardDamagePerTurn,
 			FoodSpawnChance:     FoodSpawnChance,
 			MinimumFood:         MinimumFood,
-			RoyaleSettings: client.RoyaleSettings{
+			RoyaleSettings: rules.RoyaleSettings{
 				ShrinkEveryNTurns: ShrinkEveryNTurns,
 			},
-			SquadSettings: client.SquadSettings{
+			SquadSettings: rules.SquadSettings{
 				AllowBodyCollisions: true,
 				SharedElimination:   true,
 				SharedHealth:        true,

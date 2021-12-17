@@ -48,28 +48,9 @@ type Customizations struct {
 }
 
 type Ruleset struct {
-	Name     string          `json:"name"`
-	Version  string          `json:"version"`
-	Settings RulesetSettings `json:"settings"`
-}
-
-type RulesetSettings struct {
-	FoodSpawnChance     int32          `json:"foodSpawnChance"`
-	MinimumFood         int32          `json:"minimumFood"`
-	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
-	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"`
-}
-
-type RoyaleSettings struct {
-	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
-}
-
-type SquadSettings struct {
-	AllowBodyCollisions bool `json:"allowBodyCollisions"`
-	SharedElimination   bool `json:"sharedElimination"`
-	SharedHealth        bool `json:"sharedHealth"`
-	SharedLength        bool `json:"sharedLength"`
+	Name     string                `json:"name"`
+	Version  string                `json:"version"`
+	Settings rules.RulesetSettings `json:"settings"`
 }
 
 // Coord represents a point on the board
