@@ -82,12 +82,12 @@ type SquadSettings struct {
 // Represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
 // modifyBoardState is expected to modify the boardState directly, not copy it.
 type Stage interface {
-	ModifyBoardState(boardState *BoardState, settings RulesetSettings, snakeIDs []string, moves []SnakeMove) (gameOver bool, err error)
+	ModifyBoardState(boardState *BoardState, settings RulesetSettings, moves []SnakeMove) (gameOver bool, err error)
 }
 
 // Allows converting a plain function to a RulesStage
-type StageFunc func(*BoardState, RulesetSettings, []string, []SnakeMove) (bool, error)
+type StageFunc func(*BoardState, RulesetSettings, []SnakeMove) (bool, error)
 
-func (f StageFunc) ModifyBoardState(boardState *BoardState, settings RulesetSettings, snakeIDs []string, moves []SnakeMove) (bool, error) {
-	return f(boardState, settings, snakeIDs, moves)
+func (f StageFunc) ModifyBoardState(boardState *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+	return f(boardState, settings, moves)
 }
