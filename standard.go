@@ -451,12 +451,14 @@ func GameOverStandard(b *BoardState, settings RulesetSettings, snakeIDs []string
 
 // Adaptor for integrating stages into StandardRuleset
 func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	settings := RulesetSettings{
+	return callStageFunc(stage, RulesetSettings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
-	}
+	}, boardState, moves)
+}
 
+func callStageFunc(stage StageFunc, settings RulesetSettings, boardState *BoardState, moves []SnakeMove) (bool, error) {
 	snakeIDs := make([]string, len(boardState.Snakes))
 	for _, snake := range boardState.Snakes {
 		snakeIDs = append(snakeIDs, snake.ID)

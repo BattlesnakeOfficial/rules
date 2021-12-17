@@ -89,7 +89,7 @@ func TestRoyaleHazards(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{
-			Turn:   test.Turn,
+			Turn:   test.Turn - 1,
 			Width:  test.Width,
 			Height: test.Height,
 		}
@@ -101,7 +101,7 @@ func TestRoyaleHazards(t *testing.T) {
 			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 		}
 
-		err := r.populateHazards(b, test.Turn)
+		err := r.populateHazards(b)
 		require.Equal(t, test.Error, err)
 		if err == nil {
 			// Obstacles should match
@@ -130,7 +130,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	stateAfterTurn := func(prevState *BoardState, turn int32) *BoardState {
 		nextState := prevState.Clone()
 		nextState.Turn = turn - 1
-		err := r.populateHazards(nextState, turn)
+		err := r.populateHazards(nextState)
 		require.NoError(t, err)
 		nextState.Turn = turn
 		return nextState

@@ -26,7 +26,7 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	}
 
 	// Royale's only job is now to populate the hazards for next turn - StandardRuleset takes care of applying hazard damage.
-	err = r.populateHazards(nextBoardState, prevState.Turn+1)
+	err = r.populateHazards(nextBoardState)
 	if err != nil {
 		return nil, err
 	}
@@ -34,20 +34,28 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	return nextBoardState, nil
 }
 
-func (r *RoyaleRuleset) populateHazards(b *BoardState, turn int32) error {
+func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
+	_, err := r.callStageFunc(PopulateHazardsRoyale, b, []SnakeMove{})
+	return err
+}
+
+func PopulateHazardsRoyale(b *BoardState, settings RulesetSettings, snakeIDs []string, moves []SnakeMove) (bool, error) {
 	b.Hazards = []Point{}
 
-	if r.ShrinkEveryNTurns < 1 {
-		return errors.New("royale game can't shrink more frequently than every turn")
+	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
+	turn := b.Turn + 1
+
+	if settings.RoyaleSettings.ShrinkEveryNTurns < 1 {
+		return false, errors.New("royale game can't shrink more frequently than every turn")
 	}
 
-	if turn < r.ShrinkEveryNTurns {
-		return nil
+	if turn < settings.RoyaleSettings.ShrinkEveryNTurns {
+		return false, nil
 	}
 
-	randGenerator := rand.New(rand.NewSource(r.Seed))
+	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
 
-	numShrinks := turn / r.ShrinkEveryNTurns
+	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
 	minX, maxX := int32(0), b.Width-1
 	minY, maxY := int32(0), b.Height-1
 	for i := int32(0); i < numShrinks; i++ {
@@ -71,5 +79,18 @@ func (r *RoyaleRuleset) populateHazards(b *BoardState, turn int32) error {
 		}
 	}
 
-	return nil
+	return false, nil
+}
+
+// Adaptor for integrating stages into RoyaleRuleset
+func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	return callStageFunc(stage, RulesetSettings{
+		FoodSpawnChance:     r.FoodSpawnChance,
+		MinimumFood:         r.MinimumFood,
+		HazardDamagePerTurn: r.HazardDamagePerTurn,
+		RoyaleSettings: RoyaleSettings{
+			seed:              r.Seed,
+			ShrinkEveryNTurns: r.ShrinkEveryNTurns,
+		},
+	}, boardState, moves)
 }

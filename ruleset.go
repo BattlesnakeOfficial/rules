@@ -68,6 +68,7 @@ type RulesetSettings struct {
 }
 
 type RoyaleSettings struct {
+	seed              int64
 	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
 }
 
