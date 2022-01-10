@@ -1,11 +1,12 @@
 # Editors
 .cmd
+.devcontainer
 .vscode
 .idea
 
 # General
 .DS_Store
 
-# Build and Output 
+# Build and Output
 /battlesnake
 *.jsonl
