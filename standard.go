@@ -98,8 +98,20 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 
 		for _, move := range moves {
 			if move.ID == snake.ID {
-				var newHead = Point{}
+				appliedMove := move.Move
 				switch move.Move {
+				case MoveUp, MoveDown, MoveRight, MoveLeft:
+					break
+				default:
+					appliedMove = r.getDefaultMove(snake.Body)
+				}
+
+				newHead := Point{}
+				switch appliedMove {
+				// Guaranteed to be one of these options given the clause above
+				case MoveUp:
+					newHead.X = snake.Body[0].X
+					newHead.Y = snake.Body[0].Y + 1
 				case MoveDown:
 					newHead.X = snake.Body[0].X
 					newHead.Y = snake.Body[0].Y - 1
@@ -109,24 +121,6 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 				case MoveRight:
 					newHead.X = snake.Body[0].X + 1
 					newHead.Y = snake.Body[0].Y
-				case MoveUp:
-					newHead.X = snake.Body[0].X
-					newHead.Y = snake.Body[0].Y + 1
-				default:
-					// Default to UP
-					var dX int32 = 0
-					var dY int32 = 1
-					// If neck is available, use neck to determine last direction
-					if len(snake.Body) >= 2 {
-						dX = snake.Body[0].X - snake.Body[1].X
-						dY = snake.Body[0].Y - snake.Body[1].Y
-						if dX == 0 && dY == 0 {
-							dY = 1 // Move up if no last move was made
-						}
-					}
-					// Apply
-					newHead.X = snake.Body[0].X + dX
-					newHead.Y = snake.Body[0].Y + dY
 				}
 
 				// Append new head, pop old tail
@@ -135,6 +129,34 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 	}
 	return nil
+}
+
+func (r *StandardRuleset) getDefaultMove(snakeBody []Point) string {
+	if len(snakeBody) >= 2 {
+		// Use neck to determine last move made
+		head, neck := snakeBody[0], snakeBody[1]
+		// Situations where neck is next to head
+		if head.X == neck.X+1 {
+			return MoveRight
+		} else if head.X == neck.X-1 {
+			return MoveLeft
+		} else if head.Y == neck.Y+1 {
+			return MoveUp
+		} else if head.Y == neck.Y-1 {
+			return MoveDown
+		}
+		// Consider the wrapped cases using zero axis to anchor
+		if head.X == 0 && neck.X > 0 {
+			return MoveRight
+		} else if neck.X == 0 && head.X > 0 {
+			return MoveLeft
+		} else if head.Y == 0 && neck.Y > 0 {
+			return MoveUp
+		} else if neck.Y == 0 && head.Y > 0 {
+			return MoveDown
+		}
+	}
+	return MoveUp
 }
 
 func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {

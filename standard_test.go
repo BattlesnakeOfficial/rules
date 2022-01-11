@@ -658,6 +658,72 @@ func TestMoveSnakesDefault(t *testing.T) {
 	}
 }
 
+func TestGetDefaultMove(t *testing.T) {
+	tests := []struct {
+		SnakeBody    []Point
+		ExpectedMove string
+	}{
+		// Default is always up
+		{
+			SnakeBody:    []Point{},
+			ExpectedMove: MoveUp,
+		},
+		{
+			SnakeBody:    []Point{{0, 0}},
+			ExpectedMove: MoveUp,
+		},
+		{
+			SnakeBody:    []Point{{-1, -1}},
+			ExpectedMove: MoveUp,
+		},
+		// Stacked (fallback to default)
+		{
+			SnakeBody:    []Point{{2, 2}, {2, 2}},
+			ExpectedMove: MoveUp,
+		},
+		// Neck next to head
+		{
+			SnakeBody:    []Point{{2, 2}, {2, 1}},
+			ExpectedMove: MoveUp,
+		},
+		{
+			SnakeBody:    []Point{{2, 2}, {2, 3}},
+			ExpectedMove: MoveDown,
+		},
+		{
+			SnakeBody:    []Point{{2, 2}, {1, 2}},
+			ExpectedMove: MoveRight,
+		},
+		{
+			SnakeBody:    []Point{{2, 2}, {3, 2}},
+			ExpectedMove: MoveLeft,
+		},
+		// Board wrap cases
+		{
+			SnakeBody:    []Point{{0, 0}, {0, 2}},
+			ExpectedMove: MoveUp,
+		},
+		{
+			SnakeBody:    []Point{{0, 0}, {2, 0}},
+			ExpectedMove: MoveRight,
+		},
+		{
+			SnakeBody:    []Point{{0, 2}, {0, 0}},
+			ExpectedMove: MoveDown,
+		},
+		{
+			SnakeBody:    []Point{{2, 0}, {0, 0}},
+			ExpectedMove: MoveLeft,
+		},
+	}
+
+	r := StandardRuleset{}
+	for _, test := range tests {
+		actualMove := r.getDefaultMove(test.SnakeBody)
+		require.Equal(t, test.ExpectedMove, actualMove)
+	}
+}
+
 func TestReduceSnakeHealth(t *testing.T) {
 	b := &BoardState{
 		Snakes: []Snake{
