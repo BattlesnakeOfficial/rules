@@ -2,13 +2,21 @@ package rules
 
 import "math/rand"
 
+type HazardSides struct {
+	MinX int32
+	MaxX int32
+	MinY int32
+	MaxY int32
+}
+
 type BoardState struct {
-	Turn    int32
-	Height  int32
-	Width   int32
-	Food    []Point
-	Snakes  []Snake
-	Hazards []Point
+	Turn        int32
+	Height      int32
+	Width       int32
+	Food        []Point
+	Snakes      []Snake
+	Hazards     []Point
+	HazardSides *HazardSides
 }
 
 // NewBoardState returns an empty but fully initialized BoardState

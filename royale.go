@@ -71,5 +71,12 @@ func (r *RoyaleRuleset) populateHazards(b *BoardState, turn int32) error {
 		}
 	}
 
+	b.HazardSides = &HazardSides{
+		MinX: minX,
+		MaxX: maxX,
+		MinY: minY,
+		MaxY: maxY,
+	}
+
 	return nil
 }

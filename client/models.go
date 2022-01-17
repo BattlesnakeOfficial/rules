@@ -20,11 +20,20 @@ type Game struct {
 
 // Board provides information about the game board
 type Board struct {
-	Height  int32   `json:"height"`
-	Width   int32   `json:"width"`
-	Snakes  []Snake `json:"snakes"`
-	Food    []Coord `json:"food"`
-	Hazards []Coord `json:"hazards"`
+	Height      int32        `json:"height"`
+	Width       int32        `json:"width"`
+	Snakes      []Snake      `json:"snakes"`
+	Food        []Coord      `json:"food"`
+	Hazards     []Coord      `json:"hazards"`
+	HazardSides *HazardSides `json:"hazardSides,omitempty"`
+}
+
+// What sides the hazards have spawned in from
+type HazardSides struct {
+	MinX int32 `json:"minX"`
+	MaxX int32 `json:"maxX"`
+	MinY int32 `json:"minY"`
+	MaxY int32 `json:"maxY"`
 }
 
 // Snake represents information about a snake in the game

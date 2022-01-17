@@ -431,12 +431,24 @@ func convertRulesSnakes(snakes []rules.Snake, snakeStates map[string]SnakeState)
 }
 
 func convertStateToBoard(state *rules.BoardState, snakeStates map[string]SnakeState) client.Board {
+	var clSides *client.HazardSides
+	fmt.Println(state.HazardSides)
+	if state.HazardSides != nil {
+		clSides = &client.HazardSides{
+			MinX: state.HazardSides.MinX,
+			MaxX: state.HazardSides.MaxX,
+			MinY: state.HazardSides.MinY,
+			MaxY: state.HazardSides.MaxY,
+		}
+	}
+	fmt.Println(clSides)
 	return client.Board{
-		Height:  state.Height,
-		Width:   state.Width,
-		Food:    client.CoordFromPointArray(state.Food),
-		Hazards: client.CoordFromPointArray(state.Hazards),
-		Snakes:  convertRulesSnakes(state.Snakes, snakeStates),
+		Height:      state.Height,
+		Width:       state.Width,
+		Food:        client.CoordFromPointArray(state.Food),
+		Hazards:     client.CoordFromPointArray(state.Hazards),
+		HazardSides: clSides,
+		Snakes:      convertRulesSnakes(state.Snakes, snakeStates),
 	}
 }
 
