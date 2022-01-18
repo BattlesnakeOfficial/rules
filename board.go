@@ -183,11 +183,19 @@ func PlaceFoodFixed(b *BoardState) error {
 			if isOccupiedAlready {
 				continue
 			}
-			// availableFoodLocations = append(availableFoodLocations, p)
 
-			snakeHeadToCenter := getDistanceBetweenPoints(snakeHead, centerCoord)
-			foodToCenter := getDistanceBetweenPoints(p, centerCoord)
-			if snakeHeadToCenter <= foodToCenter {
+			// Food must be away from center on at least one axis
+			isFarFromCenter := false
+			if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
+				isFarFromCenter = true
+			} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
+				isFarFromCenter = true
+			} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
+				isFarFromCenter = true
+			} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
+				isFarFromCenter = true
+			}
+			if isFarFromCenter {
 				availableFoodLocations = append(availableFoodLocations, p)
 			}
 		}
