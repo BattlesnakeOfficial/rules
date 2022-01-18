@@ -1,6 +1,8 @@
 package rules
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type BoardState struct {
 	Turn    int32
@@ -156,7 +158,9 @@ func PlaceFoodAutomatically(b *BoardState) error {
 }
 
 func PlaceFoodFixed(b *BoardState) error {
-	// Place 1 food within exactly 2 moves of each snake
+	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
+
+	// Place 1 food within exactly 2 moves of each snake, but never towards the center
 	for i := 0; i < len(b.Snakes); i++ {
 		snakeHead := b.Snakes[i].Body[0]
 		possibleFoodLocations := []Point{
@@ -165,8 +169,9 @@ func PlaceFoodFixed(b *BoardState) error {
 			{snakeHead.X + 1, snakeHead.Y - 1},
 			{snakeHead.X + 1, snakeHead.Y + 1},
 		}
-		availableFoodLocations := []Point{}
 
+		// Remove any positions already occupied by food or closer to center
+		availableFoodLocations := []Point{}
 		for _, p := range possibleFoodLocations {
 			isOccupiedAlready := false
 			for _, food := range b.Food {
@@ -175,8 +180,14 @@ func PlaceFoodFixed(b *BoardState) error {
 					break
 				}
 			}
+			if isOccupiedAlready {
+				continue
+			}
+			// availableFoodLocations = append(availableFoodLocations, p)
 
-			if !isOccupiedAlready {
+			snakeHeadToCenter := getDistanceBetweenPoints(snakeHead, centerCoord)
+			foodToCenter := getDistanceBetweenPoints(p, centerCoord)
+			if snakeHeadToCenter <= foodToCenter {
 				availableFoodLocations = append(availableFoodLocations, p)
 			}
 		}
@@ -192,7 +203,6 @@ func PlaceFoodFixed(b *BoardState) error {
 
 	// Finally, always place 1 food in center of board for dramatic purposes
 	isCenterOccupied := true
-	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 	unoccupiedPoints := getUnoccupiedPoints(b, true)
 	for _, point := range unoccupiedPoints {
 		if point == centerCoord {
@@ -220,17 +230,26 @@ func PlaceFoodRandomly(b *BoardState, n int32) error {
 	return nil
 }
 
-func isKnownBoardSize(b *BoardState) bool {
-	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
-		return true
+func absInt32(n int32) int32 {
+	if n < 0 {
+		return -n
 	}
-	if b.Height == BoardSizeMedium && b.Width == BoardSizeMedium {
-		return true
+	return n
+}
+
+func getEvenUnoccupiedPoints(b *BoardState) []Point {
+	// Start by getting unoccupied points
+	unoccupiedPoints := getUnoccupiedPoints(b, true)
+
+	// Create a new array to hold points that are  even
+	evenUnoccupiedPoints := []Point{}
+
+	for _, point := range unoccupiedPoints {
+		if ((point.X + point.Y) % 2) == 0 {
+			evenUnoccupiedPoints = append(evenUnoccupiedPoints, point)
+		}
 	}
-	if b.Height == BoardSizeLarge && b.Width == BoardSizeLarge {
-		return true
-	}
-	return false
+	return evenUnoccupiedPoints
 }
 
 func getUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
@@ -284,17 +303,19 @@ func getUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	return unoccupiedPoints
 }
 
-func getEvenUnoccupiedPoints(b *BoardState) []Point {
-	// Start by getting unoccupied points
-	unoccupiedPoints := getUnoccupiedPoints(b, true)
+func getDistanceBetweenPoints(a, b Point) int32 {
+	return absInt32(a.X-b.X) + absInt32(a.Y-b.Y)
+}
 
-	// Create a new array to hold points that are  even
-	evenUnoccupiedPoints := []Point{}
-
-	for _, point := range unoccupiedPoints {
-		if ((point.X + point.Y) % 2) == 0 {
-			evenUnoccupiedPoints = append(evenUnoccupiedPoints, point)
-		}
+func isKnownBoardSize(b *BoardState) bool {
+	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
+		return true
 	}
-	return evenUnoccupiedPoints
+	if b.Height == BoardSizeMedium && b.Width == BoardSizeMedium {
+		return true
+	}
+	if b.Height == BoardSizeLarge && b.Width == BoardSizeLarge {
+		return true
+	}
+	return false
 }

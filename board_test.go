@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -390,6 +391,8 @@ func TestPlaceFoodFixed(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, len(test.BoardState.Snakes)+1, len(test.BoardState.Food))
 
+		midPoint := Point{(test.BoardState.Width - 1) / 2, (test.BoardState.Height - 1) / 2}
+
 		// Make sure every snake has food within 2 moves of it
 		for _, snake := range test.BoardState.Snakes {
 			head := snake.Body[0]
@@ -403,6 +406,8 @@ func TestPlaceFoodFixed(t *testing.T) {
 			for _, food := range test.BoardState.Food {
 				if food == bottomLeft || food == topLeft || food == bottomRight || food == topRight {
 					foundFoodInTwoMoves = true
+					// Ensure it's not closer to the center than snake
+					require.True(t, getDistanceBetweenPoints(head, midPoint) <= getDistanceBetweenPoints(food, midPoint))
 					break
 				}
 			}
@@ -411,7 +416,6 @@ func TestPlaceFoodFixed(t *testing.T) {
 
 		// Make sure one food exists in center of board
 		foundFoodInCenter := false
-		midPoint := Point{(test.BoardState.Width - 1) / 2, (test.BoardState.Height - 1) / 2}
 		for _, food := range test.BoardState.Food {
 			if food == midPoint {
 				foundFoodInCenter = true
@@ -442,6 +446,9 @@ func TestPlaceFoodFixedNoRoom(t *testing.T) {
 		},
 		Food: []Point{},
 	}
+
+	// There are 3 possible spawn locations: {0, 0}, {0, 2}, {2, 0}
+	// So repeat calls to place food should fail after 3 successes
 	err = PlaceFoodFixed(boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
@@ -457,14 +464,41 @@ func TestPlaceFoodFixedNoRoom(t *testing.T) {
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 3, len(boardState.Food))
 
-	err = PlaceFoodFixed(boardState)
-	require.NoError(t, err)
-	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
-	require.Equal(t, 4, len(boardState.Food))
-
 	// And now there should be no more room.
 	err = PlaceFoodFixed(boardState)
 	require.Error(t, err)
+
+	expectedFood := []Point{{0, 0}, {0, 2}, {2, 0}}
+	sort.Slice(boardState.Food, func(i, j int) bool {
+		if boardState.Food[i].X != boardState.Food[j].X {
+			return boardState.Food[i].X < boardState.Food[j].X
+		}
+		return boardState.Food[i].Y < boardState.Food[j].Y
+	})
+	require.Equal(t, expectedFood, boardState.Food)
+}
+
+func TestGetDistanceBetweenPoints(t *testing.T) {
+	tests := []struct {
+		A        Point
+		B        Point
+		Expected int32
+	}{
+		{Point{0, 0}, Point{0, 0}, 0},
+		{Point{0, 0}, Point{1, 0}, 1},
+		{Point{0, 0}, Point{0, 1}, 1},
+		{Point{0, 0}, Point{1, 1}, 2},
+		{Point{0, 0}, Point{4, 4}, 8},
+		{Point{0, 0}, Point{4, 6}, 10},
+		{Point{8, 0}, Point{8, 0}, 0},
+		{Point{8, 0}, Point{8, 8}, 8},
+		{Point{8, 0}, Point{0, 8}, 16},
+	}
+
+	for _, test := range tests {
+		require.Equal(t, getDistanceBetweenPoints(test.A, test.B), test.Expected)
+		require.Equal(t, getDistanceBetweenPoints(test.B, test.A), test.Expected)
+	}
 }
 
 func TestIsKnownBoardSize(t *testing.T) {
