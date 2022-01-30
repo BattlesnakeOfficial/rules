@@ -4,6 +4,8 @@ type WrappedRuleset struct {
 	StandardRuleset
 }
 
+func (r *WrappedRuleset) Name() string { return "wrapped" }
+
 func replace(value, min, max int32) int32 {
 	if value < min {
 		return max
