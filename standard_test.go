@@ -719,9 +719,8 @@ func TestGetDefaultMove(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
-		actualMove := r.getDefaultMove(test.SnakeBody)
+		actualMove := getDefaultMove(test.SnakeBody)
 		require.Equal(t, test.ExpectedMove, actualMove)
 	}
 }

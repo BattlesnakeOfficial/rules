@@ -106,7 +106,7 @@ func MoveSnakesStandard(b *BoardState, settings RulesetSettings, moves []SnakeMo
 				case MoveUp, MoveDown, MoveRight, MoveLeft:
 					break
 				default:
-					appliedMove = r.getDefaultMove(snake.Body)
+					appliedMove = getDefaultMove(snake.Body)
 				}
 
 				newHead := Point{}
@@ -134,7 +134,7 @@ func MoveSnakesStandard(b *BoardState, settings RulesetSettings, moves []SnakeMo
 	return false, nil
 }
 
-func (r *StandardRuleset) getDefaultMove(snakeBody []Point) string {
+func getDefaultMove(snakeBody []Point) string {
 	if len(snakeBody) >= 2 {
 		// Use neck to determine last move made
 		head, neck := snakeBody[0], snakeBody[1]
