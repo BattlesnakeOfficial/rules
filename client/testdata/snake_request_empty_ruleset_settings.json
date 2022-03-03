@@ -8,6 +8,8 @@
         "foodSpawnChance": 0,
         "minimumFood": 0,
         "hazardDamagePerTurn": 0,
+        "hazardMap": "",
+        "hazardMapAuthor": "",
         "royale": {
           "shrinkEveryNTurns": 0
         },

@@ -57,6 +57,8 @@ type RulesetSettings struct {
 	FoodSpawnChance     int32          `json:"foodSpawnChance"`
 	MinimumFood         int32          `json:"minimumFood"`
 	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
+	HazardMap           string         `json:"hazardMap"`
+	HazardMapAuthor     string         `json:"hazardMapAuthor"`
 	RoyaleSettings      RoyaleSettings `json:"royale"`
 	SquadSettings       SquadSettings  `json:"squad"`
 }
