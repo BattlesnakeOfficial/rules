@@ -8,6 +8,8 @@
         "foodSpawnChance": 10,
         "minimumFood": 20,
         "hazardDamagePerTurn": 30,
+        "hazardMap": "hz_spiral",
+        "hazardMapAuthor": "altersaddle",
         "royale": {
           "shrinkEveryNTurns": 40
         },

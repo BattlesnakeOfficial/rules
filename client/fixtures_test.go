@@ -78,6 +78,8 @@ var exampleRulesetSettings = rules.RulesetSettings{
 	FoodSpawnChance:     10,
 	MinimumFood:         20,
 	HazardDamagePerTurn: 30,
+	HazardMap:           "hz_spiral",
+	HazardMapAuthor:     "altersaddle",
 
 	RoyaleSettings: rules.RoyaleSettings{
 		ShrinkEveryNTurns: 40,
