@@ -247,12 +247,70 @@ func TestEdgeCrossingEating(t *testing.T) {
 	}
 }
 
+var wrappedCaseMoveAndWrap = gameTestCase{
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{0, 0}, {1, 0}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 4}, {3, 3}},
+				Health: 100,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedBySelfCollision,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveLeft},
+		{ID: "two", Move: MoveUp},
+		{ID: "three", Move: MoveLeft}, // Should be ignored
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{9, 0}, {0, 0}},
+				Health: 99,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 5}, {3, 4}},
+				Health: 99,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedBySelfCollision,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+}
+
 func TestWrappedCreateNextBoardState(t *testing.T) {
 	cases := []gameTestCase{
 		// inherits these test cases from standard
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
+		wrappedCaseMoveAndWrap,
 	}
 	r := WrappedRuleset{}
 	for i, gc := range cases {
