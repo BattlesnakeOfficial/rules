@@ -311,6 +311,7 @@ func TestWrappedCreateNextBoardState(t *testing.T) {
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
+		standardMoveAndCollideMAD,
 		wrappedCaseMoveAndWrap,
 	}
 	r := WrappedRuleset{}

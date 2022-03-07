@@ -96,6 +96,7 @@ func TestSoloCreateNextBoardState(t *testing.T) {
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
+		standardMoveAndCollideMAD,
 		soloCaseNotOver,
 	}
 	r := SoloRuleset{}

@@ -153,11 +153,61 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 	},
 }
 
+var standardMoveAndCollideMAD = gameTestCase{
+	"Standard Case Move and Collide",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 99,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{1, 2}, {2, 2}},
+				Health: 99,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+		{ID: "two", Move: MoveDown},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:              "one",
+				Body:            []Point{{1, 2}, {1, 1}},
+				Health:          98,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "two",
+			},
+			{
+				ID:              "two",
+				Body:            []Point{{1, 1}, {1, 2}},
+				Health:          98,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "one",
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+}
+
 func TestStandardCreateNextBoardState(t *testing.T) {
 	cases := []gameTestCase{
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
+		standardMoveAndCollideMAD,
 	}
 	r := StandardRuleset{}
 	for _, gc := range cases {

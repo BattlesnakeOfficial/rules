@@ -461,17 +461,80 @@ var squadCaseMoveSquadCollisions = gameTestCase{
 		Hazards: []Point{}},
 }
 
+var squadCaseEatFoodAndShareHealth = gameTestCase{
+	"Squad Case Move Squad Collisions",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 80,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{7, 7}, {7, 8}},
+				Health: 50,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{4, 4}, {4, 5}},
+				Health: 60,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{5, 4}, {5, 5}},
+				Health: 71,
+			},
+		},
+		Food:    []Point{{1, 2}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "snake1squad1", Move: MoveUp},
+		{ID: "snake2squad1", Move: MoveDown},
+		{ID: "snake3squad2", Move: MoveRight},
+		{ID: "snake4squad2", Move: MoveLeft},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 2}, {1, 1}, {1, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{7, 6}, {7, 7}},
+				Health: 100,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{5, 4}, {4, 4}},
+				Health: 70,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{4, 4}, {5, 4}},
+				Health: 70,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{}},
+}
+
 func TestSquadCreateNextBoardState(t *testing.T) {
-	cases := []gameTestCase{
+	standardCases := []gameTestCase{
 		// inherits these test cases from standard
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
-		squadCaseMoveSquadCollisions,
 	}
-	rand.Seed(0)
 	r := SquadRuleset{
-		AllowBodyCollisions: true,
 		SquadMap: map[string]string{
 			"snake1squad1": "squad1",
 			"snake2squad1": "squad1",
@@ -479,7 +542,18 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 			"snake4squad2": "squad2",
 		},
 	}
-	for _, gc := range cases {
+	rand.Seed(0)
+	for _, gc := range standardCases {
+		gc.requireValidNextState(t, &r)
+	}
+
+	extendedCases := []gameTestCase{
+		squadCaseMoveSquadCollisions,
+		squadCaseEatFoodAndShareHealth,
+	}
+	r.SharedHealth = true
+	r.AllowBodyCollisions = true
+	for _, gc := range extendedCases {
 		gc.requireValidNextState(t, &r)
 	}
 }
