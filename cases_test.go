@@ -14,6 +14,16 @@ type gameTestCase struct {
 	expectedState *BoardState
 }
 
+func (gc *gameTestCase) clone() *gameTestCase {
+	return &gameTestCase{
+		name:          gc.name,
+		expectedError: gc.expectedError,
+		moves:         append([]SnakeMove{}, gc.moves...),
+		prevState:     gc.prevState.Clone(),
+		expectedState: gc.expectedState.Clone(),
+	}
+}
+
 // requireValidNextState requires that the ruleset produces a valid next state
 func (gc *gameTestCase) requireValidNextState(t *testing.T, r Ruleset) {
 	t.Run(gc.name, func(t *testing.T) {
