@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -178,12 +179,69 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	require.Equal(t, 20, len(next.Hazards))
 }
 
+var royaleCaseHazardsPlaced = gameTestCase{
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 4}, {3, 3}},
+				Health: 100,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedByOutOfBounds,
+			},
+		},
+		Food:    []Point{{0, 0}, {1, 0}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveDown},
+		{ID: "two", Move: MoveUp},
+		{ID: "three", Move: MoveLeft}, // Should be ignored
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 5}, {3, 4}},
+				Health: 99,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedByOutOfBounds,
+			},
+		},
+		Food:    []Point{{0, 0}},
+		Hazards: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 4, Y: 0}, {X: 5, Y: 0}, {X: 6, Y: 0}, {X: 7, Y: 0}, {X: 8, Y: 0}, {X: 9, Y: 0}},
+	},
+}
+
 func TestRoyaleCreateNextBoardState(t *testing.T) {
 	cases := []gameTestCase{
 		// inherits these test cases from standard
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
-		standardCaseMoveEatAndGrow,
+		royaleCaseHazardsPlaced,
 	}
 	r := RoyaleRuleset{
 		StandardRuleset: StandardRuleset{
@@ -191,6 +249,7 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		},
 		ShrinkEveryNTurns: 1,
 	}
+	rand.Seed(0)
 	for i, gc := range cases {
 		t.Logf("Running test case %d", i)
 		gc.requireCasesEqual(t, &r)

@@ -22,5 +22,6 @@ func (gc *gameTestCase) requireCasesEqual(t *testing.T, r Ruleset) {
 		require.Equal(t, gc.expectedState.Height, nextState.Height)
 		require.Equal(t, gc.expectedState.Food, nextState.Food)
 		require.Equal(t, gc.expectedState.Snakes, nextState.Snakes)
+		require.Equal(t, gc.expectedState.Hazards, nextState.Hazards)
 	}
 }
