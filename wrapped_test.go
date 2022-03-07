@@ -246,3 +246,17 @@ func TestEdgeCrossingEating(t *testing.T) {
 
 	}
 }
+
+func TestWrappedCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+	}
+	r := WrappedRuleset{}
+	for i, gc := range cases {
+		t.Logf("Running test case %d", i)
+		gc.requireCasesEqual(t, &r)
+	}
+}

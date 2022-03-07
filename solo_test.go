@@ -55,3 +55,17 @@ func TestSoloIsGameOver(t *testing.T) {
 		require.Equal(t, test.Expected, actual)
 	}
 }
+
+func TestSoloCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+	}
+	r := SoloRuleset{}
+	for i, gc := range cases {
+		t.Logf("Running test case %d", i)
+		gc.requireCasesEqual(t, &r)
+	}
+}

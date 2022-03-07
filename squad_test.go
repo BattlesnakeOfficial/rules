@@ -394,3 +394,17 @@ func TestRegressionIssue16(t *testing.T) {
 		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
 	}
 }
+
+func TestSquadCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+	}
+	r := SquadRuleset{}
+	for i, gc := range cases {
+		t.Logf("Running test case %d", i)
+		gc.requireCasesEqual(t, &r)
+	}
+}

@@ -177,3 +177,22 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 }
+
+func TestRoyaleCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+	}
+	r := RoyaleRuleset{
+		StandardRuleset: StandardRuleset{
+			HazardDamagePerTurn: 1,
+		},
+		ShrinkEveryNTurns: 1,
+	}
+	for i, gc := range cases {
+		t.Logf("Running test case %d", i)
+		gc.requireCasesEqual(t, &r)
+	}
+}
