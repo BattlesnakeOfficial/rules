@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -395,14 +396,88 @@ func TestRegressionIssue16(t *testing.T) {
 	}
 }
 
+var squadCaseMoveSquadCollisions = gameTestCase{
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{1, 2}, {2, 2}},
+				Health: 100,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{4, 4}, {4, 5}},
+				Health: 100,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{5, 4}, {5, 5}},
+				Health: 100,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "snake1squad1", Move: MoveUp},
+		{ID: "snake2squad1", Move: MoveDown},
+		{ID: "snake3squad2", Move: MoveRight},
+		{ID: "snake4squad2", Move: MoveLeft},
+	},
+	nil,
+	&BoardState{Width: 10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 2}, {1, 1}},
+				Health: 99,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 99,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{5, 4}, {4, 4}},
+				Health: 99,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{4, 4}, {5, 4}},
+				Health: 99,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{}},
+}
+
 func TestSquadCreateNextBoardState(t *testing.T) {
 	cases := []gameTestCase{
 		// inherits these test cases from standard
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
 		standardCaseMoveEatAndGrow,
+		squadCaseMoveSquadCollisions,
 	}
-	r := SquadRuleset{}
+	rand.Seed(0)
+	r := SquadRuleset{
+		AllowBodyCollisions: true,
+		SquadMap: map[string]string{
+			"snake1squad1": "squad1",
+			"snake2squad1": "squad1",
+			"snake3squad2": "squad2",
+			"snake4squad2": "squad2",
+		},
+	}
 	for i, gc := range cases {
 		t.Logf("Running test case %d", i)
 		gc.requireCasesEqual(t, &r)
