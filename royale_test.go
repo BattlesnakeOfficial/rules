@@ -251,8 +251,7 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		ShrinkEveryNTurns: 1,
 	}
 	rand.Seed(0)
-	for i, gc := range cases {
-		t.Logf("Running test case %d", i)
-		gc.requireCasesEqual(t, &r)
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }

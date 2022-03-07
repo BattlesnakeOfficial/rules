@@ -14,7 +14,8 @@ type gameTestCase struct {
 	expectedState *BoardState
 }
 
-func (gc *gameTestCase) requireCasesEqual(t *testing.T, r Ruleset) {
+// requireValidNextState requires that the ruleset produces a valid next state
+func (gc *gameTestCase) requireValidNextState(t *testing.T, r Ruleset) {
 	t.Run(gc.name, func(t *testing.T) {
 		prev := gc.prevState.Clone() // clone to protect against mutation (so we can ru-use test cases)
 		nextState, err := r.CreateNextBoardState(prev, gc.moves)

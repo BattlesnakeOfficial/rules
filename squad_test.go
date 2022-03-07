@@ -479,8 +479,7 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 			"snake4squad2": "squad2",
 		},
 	}
-	for i, gc := range cases {
-		t.Logf("Running test case %d", i)
-		gc.requireCasesEqual(t, &r)
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }

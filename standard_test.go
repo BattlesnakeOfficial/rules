@@ -160,9 +160,8 @@ func TestStandardCreateNextBoardState(t *testing.T) {
 		standardCaseMoveEatAndGrow,
 	}
 	r := StandardRuleset{}
-	for i, gc := range cases {
-		t.Logf("Running test case %d", i)
-		gc.requireCasesEqual(t, &r)
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }
 

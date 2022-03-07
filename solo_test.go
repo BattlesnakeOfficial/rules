@@ -99,8 +99,7 @@ func TestSoloCreateNextBoardState(t *testing.T) {
 		soloCaseNotOver,
 	}
 	r := SoloRuleset{}
-	for i, gc := range cases {
-		t.Logf("Running test case %d", i)
-		gc.requireCasesEqual(t, &r)
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }
