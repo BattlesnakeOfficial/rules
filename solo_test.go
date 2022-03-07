@@ -57,6 +57,7 @@ func TestSoloIsGameOver(t *testing.T) {
 }
 
 var soloCaseNotOver = gameTestCase{
+	"Solo Case Game Not Over",
 	&BoardState{
 		Width:  10,
 		Height: 10,

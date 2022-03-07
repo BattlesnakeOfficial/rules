@@ -397,6 +397,7 @@ func TestRegressionIssue16(t *testing.T) {
 }
 
 var squadCaseMoveSquadCollisions = gameTestCase{
+	"Squad Case Move Squad Collisions",
 	&BoardState{
 		Width:  10,
 		Height: 10,

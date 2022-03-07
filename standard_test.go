@@ -44,6 +44,7 @@ func TestStandardName(t *testing.T) {
 }
 
 var standardCaseErrNoMoveFound = gameTestCase{
+	"Standard Case Error No Move Found",
 	&BoardState{
 		Width:  10,
 		Height: 10,
@@ -67,6 +68,7 @@ var standardCaseErrNoMoveFound = gameTestCase{
 	nil,
 }
 var standardCaseErrZeroLengthSnake = gameTestCase{
+	"Standard Case Error Zero Length Snake",
 	&BoardState{
 		Width:  10,
 		Height: 10,
@@ -94,6 +96,7 @@ var standardCaseErrZeroLengthSnake = gameTestCase{
 }
 
 var standardCaseMoveEatAndGrow = gameTestCase{
+	"Standard Case Move Eat and Grow",
 	&BoardState{
 		Width:  10,
 		Height: 10,

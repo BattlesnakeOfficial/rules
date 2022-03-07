@@ -248,6 +248,7 @@ func TestEdgeCrossingEating(t *testing.T) {
 }
 
 var wrappedCaseMoveAndWrap = gameTestCase{
+	"Wrapped Case Move and Wrap",
 	&BoardState{
 		Width:  10,
 		Height: 10,

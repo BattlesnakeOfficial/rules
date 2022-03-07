@@ -7,6 +7,7 @@ import (
 )
 
 type gameTestCase struct {
+	name          string
 	prevState     *BoardState
 	moves         []SnakeMove
 	expectedError error
@@ -14,14 +15,16 @@ type gameTestCase struct {
 }
 
 func (gc *gameTestCase) requireCasesEqual(t *testing.T, r Ruleset) {
-	prev := gc.prevState.Clone() // clone to protect against mutation (so we can ru-use test cases)
-	nextState, err := r.CreateNextBoardState(prev, gc.moves)
-	require.Equal(t, gc.expectedError, err)
-	if gc.expectedState != nil {
-		require.Equal(t, gc.expectedState.Width, nextState.Width)
-		require.Equal(t, gc.expectedState.Height, nextState.Height)
-		require.Equal(t, gc.expectedState.Food, nextState.Food)
-		require.Equal(t, gc.expectedState.Snakes, nextState.Snakes)
-		require.Equal(t, gc.expectedState.Hazards, nextState.Hazards)
-	}
+	t.Run(gc.name, func(t *testing.T) {
+		prev := gc.prevState.Clone() // clone to protect against mutation (so we can ru-use test cases)
+		nextState, err := r.CreateNextBoardState(prev, gc.moves)
+		require.Equal(t, gc.expectedError, err)
+		if gc.expectedState != nil {
+			require.Equal(t, gc.expectedState.Width, nextState.Width)
+			require.Equal(t, gc.expectedState.Height, nextState.Height)
+			require.Equal(t, gc.expectedState.Food, nextState.Food)
+			require.Equal(t, gc.expectedState.Snakes, nextState.Snakes)
+			require.Equal(t, gc.expectedState.Hazards, nextState.Hazards)
+		}
+	})
 }

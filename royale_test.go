@@ -180,6 +180,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 }
 
 var royaleCaseHazardsPlaced = gameTestCase{
+	"Royale Case Hazards Placed",
 	&BoardState{
 		Width:  10,
 		Height: 10,
