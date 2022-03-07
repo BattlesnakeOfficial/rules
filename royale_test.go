@@ -179,6 +179,12 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	require.Equal(t, 20, len(next.Hazards))
 }
 
+// Checks that hazards get placed
+// also that:
+// - snakes move properly
+// - snake gets health from eating
+// - food gets consumed
+// - health is decreased
 var royaleCaseHazardsPlaced = gameTestCase{
 	"Royale Case Hazards Placed",
 	&BoardState{

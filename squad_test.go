@@ -396,6 +396,9 @@ func TestRegressionIssue16(t *testing.T) {
 	}
 }
 
+// Checks that snakes on the same squad don't get eliminated
+// when the allow squad collisions setting is enabled
+// Both squads have snakes that move into each other.
 var squadCaseMoveSquadCollisions = gameTestCase{
 	"Squad Case Move Squad Collisions",
 	&BoardState{
@@ -461,6 +464,7 @@ var squadCaseMoveSquadCollisions = gameTestCase{
 		Hazards: []Point{}},
 }
 
+// Checks snakes on the same squad share health (assuming the setting is enabled)
 var squadCaseEatFoodAndShareHealth = gameTestCase{
 	"Squad Case Move Squad Collisions",
 	&BoardState{

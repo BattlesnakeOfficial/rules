@@ -56,6 +56,11 @@ func TestSoloIsGameOver(t *testing.T) {
 	}
 }
 
+// Checks that a single snake doesn't end the game
+// also that:
+// - snake moves okay
+// - food gets consumed
+// - snake grows and gets health from food
 var soloCaseNotOver = gameTestCase{
 	"Solo Case Game Not Over",
 	&BoardState{

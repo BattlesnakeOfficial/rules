@@ -43,6 +43,7 @@ func TestStandardName(t *testing.T) {
 	require.Equal(t, "standard", r.Name())
 }
 
+// Checks that the error for a snake missing a move is returned
 var standardCaseErrNoMoveFound = gameTestCase{
 	"Standard Case Error No Move Found",
 	&BoardState{
@@ -67,6 +68,8 @@ var standardCaseErrNoMoveFound = gameTestCase{
 	ErrorNoMoveFound,
 	nil,
 }
+
+// Checks that the error for a snake with no points is returned
 var standardCaseErrZeroLengthSnake = gameTestCase{
 	"Standard Case Error Zero Length Snake",
 	&BoardState{
@@ -95,6 +98,7 @@ var standardCaseErrZeroLengthSnake = gameTestCase{
 	nil,
 }
 
+// Checks a basic state where a snake moves, eats and grows
 var standardCaseMoveEatAndGrow = gameTestCase{
 	"Standard Case Move Eat and Grow",
 	&BoardState{
@@ -153,6 +157,8 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 	},
 }
 
+// Checks a basic state where two snakes of equal sizes collide, and both should
+// be eliminated as a result.
 var standardMoveAndCollideMAD = gameTestCase{
 	"Standard Case Move and Collide",
 	&BoardState{

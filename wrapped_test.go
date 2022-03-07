@@ -247,6 +247,7 @@ func TestEdgeCrossingEating(t *testing.T) {
 	}
 }
 
+// Checks that snakes moving out of bounds get wrapped to the other side.
 var wrappedCaseMoveAndWrap = gameTestCase{
 	"Wrapped Case Move and Wrap",
 	&BoardState{
