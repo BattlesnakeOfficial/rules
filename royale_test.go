@@ -238,10 +238,18 @@ var royaleCaseHazardsPlaced = gameTestCase{
 }
 
 func TestRoyaleCreateNextBoardState(t *testing.T) {
+	// add expected hazards to the standard cases that need them
+	s1 := standardCaseMoveEatAndGrow.clone()
+	s1.expectedState.Hazards = []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 4, Y: 0}, {X: 5, Y: 0}, {X: 6, Y: 0}, {X: 7, Y: 0}, {X: 8, Y: 0}, {X: 9, Y: 0}}
+	s2 := standardMoveAndCollideMAD.clone()
+	s2.expectedState.Hazards = []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 4, Y: 0}, {X: 5, Y: 0}, {X: 6, Y: 0}, {X: 7, Y: 0}, {X: 8, Y: 0}, {X: 9, Y: 0}}
+
 	cases := []gameTestCase{
 		// inherits these test cases from standard
 		standardCaseErrNoMoveFound,
 		standardCaseErrZeroLengthSnake,
+		*s1,
+		*s2,
 		royaleCaseHazardsPlaced,
 	}
 	r := RoyaleRuleset{
