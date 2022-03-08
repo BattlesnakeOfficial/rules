@@ -384,7 +384,7 @@ func createClientGame(ruleset rules.Ruleset) client.Game {
 	return client.Game{ID: GameId, Timeout: Timeout, Ruleset: client.Ruleset{
 		Name:    ruleset.Name(),
 		Version: "cli", // TODO: Use GitHub Release Version
-		Settings: rules.RulesetSettings{
+		Settings: rules.Settings{
 			HazardDamagePerTurn: HazardDamagePerTurn,
 			FoodSpawnChance:     FoodSpawnChance,
 			MinimumFood:         MinimumFood,

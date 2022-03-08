@@ -39,7 +39,7 @@ func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
 	return err
 }
 
-func PopulateHazardsRoyale(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	b.Hazards = []Point{}
 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
@@ -84,7 +84,7 @@ func PopulateHazardsRoyale(b *BoardState, settings RulesetSettings, moves []Snak
 
 // Adaptor for integrating stages into RoyaleRuleset
 func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, RulesetSettings{
+	return stage(boardState, Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,

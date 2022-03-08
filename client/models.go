@@ -48,9 +48,9 @@ type Customizations struct {
 }
 
 type Ruleset struct {
-	Name     string                `json:"name"`
-	Version  string                `json:"version"`
-	Settings rules.RulesetSettings `json:"settings"`
+	Name     string         `json:"name"`
+	Version  string         `json:"version"`
+	Settings rules.Settings `json:"settings"`
 }
 
 // Coord represents a point on the board

@@ -74,7 +74,7 @@ func exampleSnakeRequest() SnakeRequest {
 	}
 }
 
-var exampleRulesetSettings = rules.RulesetSettings{
+var exampleRulesetSettings = rules.Settings{
 	FoodSpawnChance:     10,
 	MinimumFood:         20,
 	HazardDamagePerTurn: 30,

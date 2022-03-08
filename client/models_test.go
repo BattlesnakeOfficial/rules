@@ -19,7 +19,7 @@ func TestBuildSnakeRequestJSON(t *testing.T) {
 
 func TestBuildSnakeRequestJSONEmptyRulesetSettings(t *testing.T) {
 	snakeRequest := exampleSnakeRequest()
-	snakeRequest.Game.Ruleset.Settings = rules.RulesetSettings{}
+	snakeRequest.Game.Ruleset.Settings = rules.Settings{}
 	data, err := json.MarshalIndent(snakeRequest, "", "  ")
 	require.NoError(t, err)
 

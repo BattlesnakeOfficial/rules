@@ -42,7 +42,7 @@ func (r *ConstrictorRuleset) removeFood(b *BoardState) {
 	_, _ = r.callStageFunc(RemoveFoodConstrictor, b, []SnakeMove{})
 }
 
-func RemoveFoodConstrictor(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Remove all food from the board
 	b.Food = []Point{}
 
@@ -54,7 +54,7 @@ func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
 	return err
 }
 
-func GrowSnakesConstrictor(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func GrowSnakesConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Set all snakes to max health and ensure they grow next turn
 	for i := 0; i < len(b.Snakes); i++ {
 		b.Snakes[i].Health = SnakeMaxHealth

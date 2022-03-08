@@ -52,7 +52,7 @@ func (r *SquadRuleset) resurrectSquadBodyCollisions(b *BoardState) error {
 	return err
 }
 
-func ResurrectSnakesSquad(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	if !settings.SquadSettings.AllowBodyCollisions {
 		return false, nil
 	}
@@ -78,7 +78,7 @@ func (r *SquadRuleset) shareSquadAttributes(b *BoardState) error {
 	return err
 }
 
-func ShareAttributesSquad(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	squadSettings := settings.SquadSettings
 
 	if !(squadSettings.SharedElimination || squadSettings.SharedLength || squadSettings.SharedHealth) {
@@ -125,7 +125,7 @@ func (r *SquadRuleset) IsGameOver(b *BoardState) (bool, error) {
 	return r.callStageFunc(GameOverSquad, b, []SnakeMove{})
 }
 
-func GameOverSquad(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	snakesRemaining := []*Snake{}
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
@@ -145,7 +145,7 @@ func GameOverSquad(b *BoardState, settings RulesetSettings, moves []SnakeMove) (
 
 // Adaptor for integrating stages into SquadRuleset
 func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, RulesetSettings{
+	return stage(boardState, Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,

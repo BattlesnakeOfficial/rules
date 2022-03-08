@@ -47,7 +47,7 @@ func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 	return err
 }
 
-func MoveSnakesWrapped(b *BoardState, settings RulesetSettings, moves []SnakeMove) (bool, error) {
+func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	_, err := MoveSnakesStandard(b, settings, moves)
 	if err != nil {
 		return false, err
