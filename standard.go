@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"encoding/json"
 	"math/rand"
 	"sort"
 )
@@ -452,11 +453,19 @@ func GameOverStandard(b *BoardState, settings SettingsJSON, moves []SnakeMove) (
 	return numSnakesRemaining <= 1, nil
 }
 
-// Adaptor for integrating stages into StandardRuleset
-func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
+func (r *StandardRuleset) getSettingsJSON() (SettingsJSON, error) {
+	return json.Marshal(Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
-	}, moves)
+	})
+}
+
+// Adaptor for integrating stages into StandardRuleset
+func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	j, err := r.getSettingsJSON()
+	if err != nil {
+		return false, err
+	}
+	return stage(boardState, j, moves)
 }

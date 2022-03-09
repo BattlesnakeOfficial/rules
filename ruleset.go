@@ -92,9 +92,22 @@ type SquadSettings struct {
 	SharedLength        bool `json:"sharedLength"`
 }
 
+type StageSettings interface {
+	GetJSON() SettingsJSON
+}
+
 // SettingsJSON contains settings for game rules in JSON format
 type SettingsJSON []byte
 
+// // SettingsJSON contains settings for game rules in JSON format
+// type SettingsJSON struct {
+// 	Settings []byte            // JSON encoded game settings
+// 	seed     int64             // seed for generating random numbers
+// 	squadMap map[string]string // mapping of snake ids to squad ids
+// }
+
+// GetInt32 returns the int32 at the specified path.
+// Path format is "foo.bar[0].baz" == ["foo","bar", "[0]","baz"].
 func (s SettingsJSON) GetInt32(keys ...string) int32 {
 	v, err := jsonparser.GetInt(s, keys...)
 
@@ -111,6 +124,20 @@ func (s SettingsJSON) GetInt32(keys ...string) int32 {
 	return int32(v)
 }
 
+// GetInt64 returns the int64 at the specified path.
+// Path format is "foo.bar[0].baz" == ["foo","bar", "[0]","baz"].
+func (s SettingsJSON) GetInt64(keys ...string) int64 {
+	v, err := jsonparser.GetInt(s, keys...)
+
+	// errors default to zero value
+	if err != nil {
+		return 0
+	}
+	return v
+}
+
+// GetBool returns the bool at the specified path.
+// Path format is "foo.bar[0].baz" == ["foo","bar", "[0]","baz"].
 func (s SettingsJSON) GetBool(keys ...string) bool {
 	v, err := jsonparser.GetBoolean(s, keys...)
 
@@ -121,6 +148,8 @@ func (s SettingsJSON) GetBool(keys ...string) bool {
 	return v
 }
 
+// GetString gets the string at the specified path.
+// Path format is "foo.bar[0].baz" == ["foo","bar", "[0]","baz"].
 func (s SettingsJSON) GetString(keys ...string) string {
 	v, err := jsonparser.GetString(s, keys...)
 
@@ -133,4 +162,4 @@ func (s SettingsJSON) GetString(keys ...string) string {
 
 // StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
 // It is expected to modify the boardState directly.
-type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
+type StageFunc func(*BoardState, SettingsJSON, []SnakeMove) (bool, error)

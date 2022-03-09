@@ -3,6 +3,8 @@ package rules
 import (
 	"errors"
 	"math/rand"
+
+	"github.com/tidwall/sjson"
 )
 
 type RoyaleRuleset struct {
@@ -41,7 +43,7 @@ func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
 
 func PopulateHazardsRoyale(b *BoardState, settings SettingsJSON, moves []SnakeMove) (bool, error) {
 	b.Hazards = []Point{}
-	shrinkEveryNTurns := settings.GetInt32("royaleSettings", "shrinkEveryNTurns")
+	shrinkEveryNTurns := settings.GetInt32("royale", "shrinkEveryNTurns")
 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := b.Turn + 1
@@ -54,7 +56,7 @@ func PopulateHazardsRoyale(b *BoardState, settings SettingsJSON, moves []SnakeMo
 		return false, nil
 	}
 
-	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
+	randGenerator := rand.New(rand.NewSource(settings.GetInt64("royale", "seed")))
 
 	numShrinks := turn / shrinkEveryNTurns
 	minX, maxX := int32(0), b.Width-1
@@ -83,15 +85,31 @@ func PopulateHazardsRoyale(b *BoardState, settings SettingsJSON, moves []SnakeMo
 	return false, nil
 }
 
+func (r *RoyaleRuleset) getSettingsJSON() (SettingsJSON, error) {
+	j, err := r.StandardRuleset.getSettingsJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	// apply royale public API settings
+	j, err = sjson.SetBytes(j, "royale", RoyaleSettings{
+		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// patch in seed value
+	j, err = sjson.SetBytes(j, "royale.seed", r.Seed)
+
+	return j, err
+}
+
 // Adaptor for integrating stages into RoyaleRuleset
 func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
-		FoodSpawnChance:     r.FoodSpawnChance,
-		MinimumFood:         r.MinimumFood,
-		HazardDamagePerTurn: r.HazardDamagePerTurn,
-		RoyaleSettings: RoyaleSettings{
-			seed:              r.Seed,
-			ShrinkEveryNTurns: r.ShrinkEveryNTurns,
-		},
-	}, moves)
+	settings, err := r.getSettingsJSON()
+	if err != nil {
+		return false, err
+	}
+	return stage(boardState, settings, moves)
 }

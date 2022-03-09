@@ -2,6 +2,8 @@ package rules
 
 import (
 	"errors"
+
+	"github.com/tidwall/sjson"
 )
 
 type SquadRuleset struct {
@@ -39,12 +41,20 @@ func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []Snake
 	return nextBoardState, nil
 }
 
-func areSnakesOnSameSquad(squadMap map[string]string, snake *Snake, other *Snake) bool {
-	return areSnakeIDsOnSameSquad(squadMap, snake.ID, other.ID)
+func areSnakesOnSameSquad(settings SettingsJSON, snake *Snake, other *Snake) bool {
+	return areSnakeIDsOnSameSquad(settings, snake.ID, other.ID)
 }
 
-func areSnakeIDsOnSameSquad(squadMap map[string]string, snakeID string, otherID string) bool {
-	return squadMap[snakeID] == squadMap[otherID]
+func areSnakeIDsOnSameSquad(settings SettingsJSON, snakeID string, otherID string) bool {
+	s1 := settings.GetString("squad", "squadMap", snakeID)
+	if s1 == "" {
+		// snake not on a squad, so they can't be on the same squad
+		return false
+	}
+
+	s2 := settings.GetString("squad", "squadMap", otherID)
+
+	return s1 == s2
 }
 
 func (r *SquadRuleset) resurrectSquadBodyCollisions(b *BoardState) error {
@@ -53,7 +63,7 @@ func (r *SquadRuleset) resurrectSquadBodyCollisions(b *BoardState) error {
 }
 
 func ResurrectSnakesSquad(b *BoardState, settings SettingsJSON, moves []SnakeMove) (bool, error) {
-	if !settings.GetBool("allowBodyCollisions") {
+	if !settings.GetBool("squad", "allowBodyCollisions") {
 		return false, nil
 	}
 
@@ -63,7 +73,7 @@ func ResurrectSnakesSquad(b *BoardState, settings SettingsJSON, moves []SnakeMov
 			if snake.EliminatedBy == "" {
 				return false, errors.New("snake eliminated by collision and eliminatedby is not set")
 			}
-			if snake.ID != snake.EliminatedBy && areSnakeIDsOnSameSquad(settings.SquadSettings.squadMap, snake.ID, snake.EliminatedBy) {
+			if snake.ID != snake.EliminatedBy && areSnakeIDsOnSameSquad(settings, snake.ID, snake.EliminatedBy) {
 				snake.EliminatedCause = NotEliminated
 				snake.EliminatedBy = ""
 			}
@@ -79,9 +89,11 @@ func (r *SquadRuleset) shareSquadAttributes(b *BoardState) error {
 }
 
 func ShareAttributesSquad(b *BoardState, settings SettingsJSON, moves []SnakeMove) (bool, error) {
-	squadSettings := settings.SquadSettings
+	sharedElimination := settings.GetBool("squad", "sharedElimination")
+	sharedLength := settings.GetBool("squad", "sharedLength")
+	sharedHealth := settings.GetBool("squad", "sharedHealth")
 
-	if !(squadSettings.SharedElimination || squadSettings.SharedLength || squadSettings.SharedHealth) {
+	if !(sharedElimination || sharedLength || sharedHealth) {
 		return false, nil
 	}
 
@@ -93,13 +105,13 @@ func ShareAttributesSquad(b *BoardState, settings SettingsJSON, moves []SnakeMov
 
 		for j := 0; j < len(b.Snakes); j++ {
 			other := &b.Snakes[j]
-			if areSnakesOnSameSquad(squadSettings.squadMap, snake, other) {
-				if squadSettings.SharedHealth {
+			if areSnakesOnSameSquad(settings, snake, other) {
+				if sharedHealth {
 					if snake.Health < other.Health {
 						snake.Health = other.Health
 					}
 				}
-				if squadSettings.SharedLength {
+				if sharedLength {
 					if len(snake.Body) == 0 || len(other.Body) == 0 {
 						return false, errors.New("found snake of zero length")
 					}
@@ -107,7 +119,7 @@ func ShareAttributesSquad(b *BoardState, settings SettingsJSON, moves []SnakeMov
 						growSnake(snake)
 					}
 				}
-				if squadSettings.SharedElimination {
+				if sharedElimination {
 					if snake.EliminatedCause == NotEliminated && other.EliminatedCause != NotEliminated {
 						snake.EliminatedCause = EliminatedBySquad
 						// We intentionally do not set snake.EliminatedBy because there might be multiple culprits.
@@ -134,7 +146,7 @@ func GameOverSquad(b *BoardState, settings SettingsJSON, moves []SnakeMove) (boo
 	}
 
 	for i := 0; i < len(snakesRemaining); i++ {
-		if !areSnakesOnSameSquad(settings.SquadSettings.squadMap, snakesRemaining[i], snakesRemaining[0]) {
+		if !areSnakesOnSameSquad(settings, snakesRemaining[i], snakesRemaining[0]) {
 			// There are multiple squads remaining
 			return false, nil
 		}
@@ -143,18 +155,34 @@ func GameOverSquad(b *BoardState, settings SettingsJSON, moves []SnakeMove) (boo
 	return true, nil
 }
 
+func (r *SquadRuleset) getSettingsJSON() (SettingsJSON, error) {
+	j, err := r.StandardRuleset.getSettingsJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	// add all the public API squad settings
+	j, err = sjson.SetBytes(j, "squad", SquadSettings{
+		AllowBodyCollisions: r.AllowBodyCollisions,
+		SharedElimination:   r.SharedElimination,
+		SharedHealth:        r.SharedHealth,
+		SharedLength:        r.SharedLength,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// patch in the squad map
+	j, err = sjson.SetBytes(j, "squad.squadMap", r.SquadMap)
+
+	return j, err
+}
+
 // Adaptor for integrating stages into SquadRuleset
 func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
-		FoodSpawnChance:     r.FoodSpawnChance,
-		MinimumFood:         r.MinimumFood,
-		HazardDamagePerTurn: r.HazardDamagePerTurn,
-		SquadSettings: SquadSettings{
-			squadMap:            r.SquadMap,
-			AllowBodyCollisions: r.AllowBodyCollisions,
-			SharedElimination:   r.SharedElimination,
-			SharedHealth:        r.SharedHealth,
-			SharedLength:        r.SharedLength,
-		},
-	}, moves)
+	settings, err := r.getSettingsJSON()
+	if err != nil {
+		return false, err
+	}
+	return stage(boardState, settings, moves)
 }
