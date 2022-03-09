@@ -59,6 +59,8 @@ type Ruleset interface {
 	IsGameOver(state *BoardState) (bool, error)
 }
 
+// Settings contains all settings relevant to a game.
+// It is used by game logic to take a previous game state and produce a next game state.
 type Settings struct {
 	FoodSpawnChance     int32          `json:"foodSpawnChance"`
 	MinimumFood         int32          `json:"minimumFood"`
@@ -69,11 +71,13 @@ type Settings struct {
 	SquadSettings       SquadSettings  `json:"squad"`
 }
 
+// RoyaleSettings contains settings that are specific to the "royale" game mode
 type RoyaleSettings struct {
 	seed              int64
 	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
 }
 
+// SquadSettings contains settings that are specific to the "squad" game mode
 type SquadSettings struct {
 	squadMap            map[string]string
 	AllowBodyCollisions bool `json:"allowBodyCollisions"`
@@ -82,15 +86,6 @@ type SquadSettings struct {
 	SharedLength        bool `json:"sharedLength"`
 }
 
-// Represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
-// modifyBoardState is expected to modify the boardState directly, not copy it.
-type Stage interface {
-	ModifyBoardState(boardState *BoardState, settings Settings, moves []SnakeMove) (gameOver bool, err error)
-}
-
-// Allows converting a plain function to a RulesStage
+// StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
+// It is expected to modify the boardState directly.
 type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
-
-func (f StageFunc) ModifyBoardState(boardState *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	return f(boardState, settings, moves)
-}
