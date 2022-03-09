@@ -53,6 +53,15 @@ type Ruleset struct {
 	Settings rules.Settings `json:"settings"`
 }
 
+// RulesetSettings is deprecated: use rules.Settings instead
+type RulesetSettings rules.Settings
+
+// RoyaleSettings is deprecated: use rules.RoyaleSettings instead
+type RoyaleSettings rules.RoyaleSettings
+
+// SquadSettings is deprecated: use rules.SquadSettings instead
+type SquadSettings rules.SquadSettings
+
 // Coord represents a point on the board
 type Coord struct {
 	X int32 `json:"x"`
