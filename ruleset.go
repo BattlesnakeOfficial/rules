@@ -1,5 +1,11 @@
 package rules
 
+import (
+	"math"
+
+	"github.com/buger/jsonparser"
+)
+
 type RulesetError string
 
 func (err RulesetError) Error() string { return string(err) }
@@ -85,12 +91,51 @@ type SquadSettings struct {
 // Represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
 // modifyBoardState is expected to modify the boardState directly, not copy it.
 type Stage interface {
-	ModifyBoardState(boardState *BoardState, settings Settings, moves []SnakeMove) (gameOver bool, err error)
+	ModifyBoardState(boardState *BoardState, settings SettingsJSON, moves []SnakeMove) (gameOver bool, err error)
 }
 
 // Allows converting a plain function to a RulesStage
-type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
+type StageFunc func(*BoardState, SettingsJSON, []SnakeMove) (bool, error)
 
-func (f StageFunc) ModifyBoardState(boardState *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+func (f StageFunc) ModifyBoardState(boardState *BoardState, settings SettingsJSON, moves []SnakeMove) (bool, error) {
 	return f(boardState, settings, moves)
+}
+
+// SettingsJSON contains settings for game rules in JSON format
+type SettingsJSON []byte
+
+func (s SettingsJSON) GetInt32(keys ...string) int32 {
+	v, err := jsonparser.GetInt(s, keys...)
+
+	// errors default to zero value
+	if err != nil {
+		return 0
+	}
+
+	// overflows will default to zero value
+	if v < math.MinInt32 || v > math.MaxInt32 {
+		return 0
+	}
+
+	return int32(v)
+}
+
+func (s SettingsJSON) GetBool(keys ...string) bool {
+	v, err := jsonparser.GetBoolean(s, keys...)
+
+	// errors default to zero value
+	if err != nil {
+		return false
+	}
+	return v
+}
+
+func (s SettingsJSON) GetString(keys ...string) string {
+	v, err := jsonparser.GetString(s, keys...)
+
+	// errors default to zero value
+	if err != nil {
+		return ""
+	}
+	return v
 }

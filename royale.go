@@ -39,23 +39,24 @@ func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
 	return err
 }
 
-func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+func PopulateHazardsRoyale(b *BoardState, settings SettingsJSON, moves []SnakeMove) (bool, error) {
 	b.Hazards = []Point{}
+	shrinkEveryNTurns := settings.GetInt32("royaleSettings", "shrinkEveryNTurns")
 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := b.Turn + 1
 
-	if settings.RoyaleSettings.ShrinkEveryNTurns < 1 {
+	if shrinkEveryNTurns < 1 {
 		return false, errors.New("royale game can't shrink more frequently than every turn")
 	}
 
-	if turn < settings.RoyaleSettings.ShrinkEveryNTurns {
+	if turn < shrinkEveryNTurns {
 		return false, nil
 	}
 
 	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
 
-	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
+	numShrinks := turn / shrinkEveryNTurns
 	minX, maxX := int32(0), b.Width-1
 	minY, maxY := int32(0), b.Height-1
 	for i := int32(0); i < numShrinks; i++ {
