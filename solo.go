@@ -4,7 +4,7 @@ type SoloRuleset struct {
 	StandardRuleset
 }
 
-func (r *SoloRuleset) Name() string { return "solo" }
+func (r *SoloRuleset) Name() string { return Solo }
 
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
 	return r.callStageFunc(GameOverSolo, b, []SnakeMove{})

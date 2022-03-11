@@ -13,7 +13,7 @@ type RoyaleRuleset struct {
 	ShrinkEveryNTurns int32
 }
 
-func (r *RoyaleRuleset) Name() string { return "royale" }
+func (r *RoyaleRuleset) Name() string { return Royale }
 
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.StandardRuleset.HazardDamagePerTurn < 1 {
@@ -82,9 +82,8 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	return false, nil
 }
 
-// Adaptor for integrating stages into RoyaleRuleset
-func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
+func (r RoyaleRuleset) Settings() Settings {
+	return Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
@@ -92,5 +91,10 @@ func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, m
 			seed:              r.Seed,
 			ShrinkEveryNTurns: r.ShrinkEveryNTurns,
 		},
-	}, moves)
+	}
+}
+
+// Adaptor for integrating stages into RoyaleRuleset
+func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	return stage(boardState, r.Settings(), moves)
 }

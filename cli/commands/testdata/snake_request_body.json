@@ -11,13 +11,13 @@
         "hazardMap": "",
         "hazardMapAuthor": "",
         "royale": {
-          "shrinkEveryNTurns": 25
+          "shrinkEveryNTurns": 0
         },
         "squad": {
-          "allowBodyCollisions": true,
-          "sharedElimination": true,
-          "sharedHealth": true,
-          "sharedLength": true
+          "allowBodyCollisions": false,
+          "sharedElimination": false,
+          "sharedHealth": false,
+          "sharedLength": false
         }
       }
     },

@@ -34,6 +34,14 @@ type SnakeState struct {
 	Tail      string
 }
 
+func (ss SnakeState) GetID() string {
+	return ss.ID
+}
+
+func (ss SnakeState) GetSquad() string {
+	return ss.Squad
+}
+
 var GameId string
 var Turn int32
 var HttpClient http.Client
@@ -56,6 +64,16 @@ var FoodSpawnChance int32
 var MinimumFood int32
 var HazardDamagePerTurn int32
 var ShrinkEveryNTurns int32
+
+var defaultConfig = map[client.ConfigParameter]string{
+	// default to standard ruleset
+	client.GameType: "standard",
+	// squad settings default to true (not zero value)
+	client.SharedElimination:   "true",
+	client.SharedHealth:        "true",
+	client.SharedLength:        "true",
+	client.AllowBodyCollisions: "true",
+}
 
 var playCmd = &cobra.Command{
 	Use:   "play",
@@ -86,6 +104,12 @@ func init() {
 	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
 	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
 	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
+
+	defaultConfig[client.GameType] = GameType
+	defaultConfig[client.FoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
+	defaultConfig[client.MinimumFood] = fmt.Sprint(MinimumFood)
+	defaultConfig[client.HazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
+	defaultConfig[client.ShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
 
 	playCmd.Flags().SortFlags = false
 }
@@ -175,53 +199,11 @@ var run = func(cmd *cobra.Command, args []string) {
 }
 
 func getRuleset(seed int64, snakeStates map[string]SnakeState) rules.Ruleset {
-	var ruleset rules.Ruleset
-	var royale rules.RoyaleRuleset
-
-	standard := rules.StandardRuleset{
-		FoodSpawnChance:     FoodSpawnChance,
-		MinimumFood:         MinimumFood,
-		HazardDamagePerTurn: 0,
+	var snakes []client.SquadSnake
+	for _, s := range snakeStates {
+		snakes = append(snakes, s)
 	}
-
-	switch GameType {
-	case "royale":
-		standard.HazardDamagePerTurn = HazardDamagePerTurn
-		royale = rules.RoyaleRuleset{
-			StandardRuleset:   standard,
-			Seed:              seed,
-			ShrinkEveryNTurns: ShrinkEveryNTurns,
-		}
-		ruleset = &royale
-	case "squad":
-		squadMap := map[string]string{}
-		for _, snakeState := range snakeStates {
-			squadMap[snakeState.ID] = snakeState.Squad
-		}
-		ruleset = &rules.SquadRuleset{
-			StandardRuleset:     standard,
-			SquadMap:            squadMap,
-			AllowBodyCollisions: true,
-			SharedElimination:   true,
-			SharedHealth:        true,
-			SharedLength:        true,
-		}
-	case "solo":
-		ruleset = &rules.SoloRuleset{
-			StandardRuleset: standard,
-		}
-	case "wrapped":
-		ruleset = &rules.WrappedRuleset{
-			StandardRuleset: standard,
-		}
-	case "constrictor":
-		ruleset = &rules.ConstrictorRuleset{
-			StandardRuleset: standard,
-		}
-	default:
-		ruleset = &standard
-	}
-	return ruleset
+	return client.GetRuleset(seed, defaultConfig, snakes)
 }
 
 func initializeBoardFromArgs(ruleset rules.Ruleset, snakeStates map[string]SnakeState) *rules.BoardState {
@@ -382,22 +364,9 @@ func serialiseSnakeRequest(snakeRequest client.SnakeRequest) []byte {
 
 func createClientGame(ruleset rules.Ruleset) client.Game {
 	return client.Game{ID: GameId, Timeout: Timeout, Ruleset: client.Ruleset{
-		Name:    ruleset.Name(),
-		Version: "cli", // TODO: Use GitHub Release Version
-		Settings: rules.Settings{
-			HazardDamagePerTurn: HazardDamagePerTurn,
-			FoodSpawnChance:     FoodSpawnChance,
-			MinimumFood:         MinimumFood,
-			RoyaleSettings: rules.RoyaleSettings{
-				ShrinkEveryNTurns: ShrinkEveryNTurns,
-			},
-			SquadSettings: rules.SquadSettings{
-				AllowBodyCollisions: true,
-				SharedElimination:   true,
-				SharedHealth:        true,
-				SharedLength:        true,
-			},
-		},
+		Name:     ruleset.Name(),
+		Version:  "cli", // TODO: Use GitHub Release Version
+		Settings: ruleset.Settings(),
 	}}
 }
 

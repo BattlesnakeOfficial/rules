@@ -11,7 +11,7 @@ type StandardRuleset struct {
 	HazardDamagePerTurn int32
 }
 
-func (r *StandardRuleset) Name() string { return "standard" }
+func (r *StandardRuleset) Name() string { return Stanadard }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
 	// No-op
@@ -449,11 +449,15 @@ func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool
 	return numSnakesRemaining <= 1, nil
 }
 
-// Adaptor for integrating stages into StandardRuleset
-func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
+func (r StandardRuleset) Settings() Settings {
+	return Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
-	}, moves)
+	}
+}
+
+// Adaptor for integrating stages into StandardRuleset
+func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	return stage(boardState, r.Settings(), moves)
 }

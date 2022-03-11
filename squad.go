@@ -16,9 +16,7 @@ type SquadRuleset struct {
 	SharedLength        bool
 }
 
-const EliminatedBySquad = "squad-eliminated"
-
-func (r *SquadRuleset) Name() string { return "squad" }
+func (r *SquadRuleset) Name() string { return Squad }
 
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
@@ -143,9 +141,8 @@ func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, e
 	return true, nil
 }
 
-// Adaptor for integrating stages into SquadRuleset
-func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, Settings{
+func (r SquadRuleset) Settings() Settings {
+	return Settings{
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
@@ -156,5 +153,10 @@ func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, mo
 			SharedHealth:        r.SharedHealth,
 			SharedLength:        r.SharedLength,
 		},
-	}, moves)
+	}
+}
+
+// Adaptor for integrating stages into SquadRuleset
+func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	return stage(boardState, r.Settings(), moves)
 }

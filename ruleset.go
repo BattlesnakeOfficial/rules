@@ -24,6 +24,7 @@ const (
 	EliminatedByOutOfHealth         = "out-of-health"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
+	EliminatedBySquad               = "squad-eliminated"
 
 	// TODO - Error consts
 	ErrorTooManySnakes   = RulesetError("too many snakes for fixed start positions")
@@ -31,6 +32,14 @@ const (
 	ErrorNoRoomForFood   = RulesetError("not enough space to place food")
 	ErrorNoMoveFound     = RulesetError("move not provided for snake")
 	ErrorZeroLengthSnake = RulesetError("snake is length zero")
+
+	// Ruleset names
+	Constrictor = "constrictor"
+	Royale      = "royale"
+	Solo        = "solo"
+	Squad       = "squad"
+	Stanadard   = "standard"
+	Wrapped     = "wrapped"
 )
 
 type Point struct {
@@ -57,6 +66,8 @@ type Ruleset interface {
 	ModifyInitialBoardState(initialState *BoardState) (*BoardState, error)
 	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
 	IsGameOver(state *BoardState) (bool, error)
+	// Settings provides the game settings that are relevant to the ruleset.
+	Settings() Settings
 }
 
 // Settings contains all settings relevant to a game.
