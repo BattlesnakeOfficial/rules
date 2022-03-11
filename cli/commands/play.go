@@ -65,14 +65,14 @@ var MinimumFood int32
 var HazardDamagePerTurn int32
 var ShrinkEveryNTurns int32
 
-var defaultConfig = map[client.ConfigParameter]string{
+var defaultConfig = map[string]string{
 	// default to standard ruleset
-	client.GameType: "standard",
+	client.SettingGameType: "standard",
 	// squad settings default to true (not zero value)
-	client.SharedElimination:   "true",
-	client.SharedHealth:        "true",
-	client.SharedLength:        "true",
-	client.AllowBodyCollisions: "true",
+	client.SettingSharedElimination:   "true",
+	client.SettingSharedHealth:        "true",
+	client.SettingSharedLength:        "true",
+	client.SettingAllowBodyCollisions: "true",
 }
 
 var playCmd = &cobra.Command{
@@ -105,11 +105,11 @@ func init() {
 	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
 	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
 
-	defaultConfig[client.GameType] = GameType
-	defaultConfig[client.FoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
-	defaultConfig[client.MinimumFood] = fmt.Sprint(MinimumFood)
-	defaultConfig[client.HazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
-	defaultConfig[client.ShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
+	defaultConfig[client.SettingGameType] = GameType
+	defaultConfig[client.SettingFoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
+	defaultConfig[client.SettingMinimumFood] = fmt.Sprint(MinimumFood)
+	defaultConfig[client.SettingHazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
+	defaultConfig[client.SettingShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
 
 	playCmd.Flags().SortFlags = false
 }

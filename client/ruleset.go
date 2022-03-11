@@ -6,31 +6,29 @@ import (
 	"github.com/BattlesnakeOfficial/rules"
 )
 
-type ConfigParameter string
-
 const (
-	GameType            ConfigParameter = "name"
-	FoodSpawnChance     ConfigParameter = "foodSpawnChance"
-	MinimumFood         ConfigParameter = "minimumFood"
-	HazardDamagePerTurn ConfigParameter = "damagePerTurn"
-	ShrinkEveryNTurns   ConfigParameter = "shrinkEveryNTurns"
-	AllowBodyCollisions ConfigParameter = "allowBodyCollisions"
-	SharedElimination   ConfigParameter = "sharedElimination"
-	SharedHealth        ConfigParameter = "sharedHealth"
-	SharedLength        ConfigParameter = "sharedLength"
+	SettingGameType            = "name"
+	SettingFoodSpawnChance     = "foodSpawnChance"
+	SettingMinimumFood         = "minimumFood"
+	SettingHazardDamagePerTurn = "damagePerTurn"
+	SettingShrinkEveryNTurns   = "shrinkEveryNTurns"
+	SettingAllowBodyCollisions = "allowBodyCollisions"
+	SettingSharedElimination   = "sharedElimination"
+	SettingSharedHealth        = "sharedHealth"
+	SettingSharedLength        = "sharedLength"
 )
 
 // GetRuleset constructs a ruleset from the parameters passed when creating a
 // new game, and returns a ruleset customised by those parameters.
-func GetRuleset(seed int64, config map[ConfigParameter]string, snakes []SquadSnake) rules.Ruleset {
+func GetRuleset(seed int64, config map[string]string, snakes []SquadSnake) rules.Ruleset {
 
 	standardRuleset := &rules.StandardRuleset{
-		FoodSpawnChance:     optionFromRulesetInt(config, FoodSpawnChance, 0),
-		MinimumFood:         optionFromRulesetInt(config, MinimumFood, 0),
-		HazardDamagePerTurn: optionFromRulesetInt(config, HazardDamagePerTurn, 0),
+		FoodSpawnChance:     optionFromRulesetInt(config, SettingFoodSpawnChance, 0),
+		MinimumFood:         optionFromRulesetInt(config, SettingMinimumFood, 0),
+		HazardDamagePerTurn: optionFromRulesetInt(config, SettingHazardDamagePerTurn, 0),
 	}
 
-	name, ok := config[GameType]
+	name, ok := config[SettingGameType]
 	if !ok {
 		return standardRuleset
 	}
@@ -44,7 +42,7 @@ func GetRuleset(seed int64, config map[ConfigParameter]string, snakes []SquadSna
 		return &rules.RoyaleRuleset{
 			StandardRuleset:   *standardRuleset,
 			Seed:              seed,
-			ShrinkEveryNTurns: optionFromRulesetInt(config, ShrinkEveryNTurns, 0),
+			ShrinkEveryNTurns: optionFromRulesetInt(config, SettingShrinkEveryNTurns, 0),
 		}
 	case rules.GameTypeSolo:
 		return &rules.SoloRuleset{
@@ -62,23 +60,23 @@ func GetRuleset(seed int64, config map[ConfigParameter]string, snakes []SquadSna
 		return &rules.SquadRuleset{
 			StandardRuleset:     *standardRuleset,
 			SquadMap:            squadMap,
-			AllowBodyCollisions: optionFromRulesetBool(config, AllowBodyCollisions, true),
-			SharedElimination:   optionFromRulesetBool(config, SharedElimination, true),
-			SharedHealth:        optionFromRulesetBool(config, SharedHealth, true),
-			SharedLength:        optionFromRulesetBool(config, SharedLength, true),
+			AllowBodyCollisions: optionFromRulesetBool(config, SettingAllowBodyCollisions, true),
+			SharedElimination:   optionFromRulesetBool(config, SettingSharedElimination, true),
+			SharedHealth:        optionFromRulesetBool(config, SettingSharedHealth, true),
+			SharedLength:        optionFromRulesetBool(config, SettingSharedLength, true),
 		}
 	}
 	return standardRuleset
 }
 
-func optionFromRulesetBool(ruleset map[ConfigParameter]string, optionName ConfigParameter, defaultValue bool) bool {
+func optionFromRulesetBool(ruleset map[string]string, optionName string, defaultValue bool) bool {
 	if val, ok := ruleset[optionName]; ok {
 		return val == "true"
 	}
 	return defaultValue
 }
 
-func optionFromRulesetInt(ruleset map[ConfigParameter]string, optionName ConfigParameter, defaultValue int32) int32 {
+func optionFromRulesetInt(ruleset map[string]string, optionName string, defaultValue int32) int32 {
 	if val, ok := ruleset[optionName]; ok {
 		i, err := strconv.Atoi(val)
 		if err == nil {

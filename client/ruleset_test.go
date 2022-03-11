@@ -35,8 +35,8 @@ func TestGetRuleset(t *testing.T) {
 		{GameType: rules.GameTypeConstrictor},
 	} {
 		t.Run(expected.GameType, func(t *testing.T) {
-			rs = client.GetRuleset(0, map[client.ConfigParameter]string{
-				client.GameType: expected.GameType,
+			rs = client.GetRuleset(0, map[string]string{
+				client.SettingGameType: expected.GameType,
 			}, nil)
 			require.NotNil(t, rs)
 		})
