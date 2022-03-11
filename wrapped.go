@@ -4,7 +4,7 @@ type WrappedRuleset struct {
 	StandardRuleset
 }
 
-func (r *WrappedRuleset) Name() string { return Wrapped }
+func (r *WrappedRuleset) Name() string { return GameTypeWrapped }
 
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextState := prevState.Clone()

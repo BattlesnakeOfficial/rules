@@ -36,25 +36,25 @@ func GetRuleset(seed int64, config map[ConfigParameter]string, snakes []SquadSna
 	}
 
 	switch name {
-	case rules.Constrictor:
+	case rules.GameTypeConstrictor:
 		return &rules.ConstrictorRuleset{
 			StandardRuleset: *standardRuleset,
 		}
-	case rules.Royale:
+	case rules.GameTypeRoyale:
 		return &rules.RoyaleRuleset{
 			StandardRuleset:   *standardRuleset,
 			Seed:              seed,
 			ShrinkEveryNTurns: optionFromRulesetInt(config, ShrinkEveryNTurns, 0),
 		}
-	case rules.Solo:
+	case rules.GameTypeSolo:
 		return &rules.SoloRuleset{
 			StandardRuleset: *standardRuleset,
 		}
-	case rules.Wrapped:
+	case rules.GameTypeWrapped:
 		return &rules.WrappedRuleset{
 			StandardRuleset: *standardRuleset,
 		}
-	case rules.Squad:
+	case rules.GameTypeSquad:
 		squadMap := map[string]string{}
 		for _, snake := range snakes {
 			squadMap[snake.GetID()] = snake.GetSquad()

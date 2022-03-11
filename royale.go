@@ -13,7 +13,7 @@ type RoyaleRuleset struct {
 	ShrinkEveryNTurns int32
 }
 
-func (r *RoyaleRuleset) Name() string { return Royale }
+func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.StandardRuleset.HazardDamagePerTurn < 1 {

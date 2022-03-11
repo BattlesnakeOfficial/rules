@@ -4,7 +4,7 @@ type ConstrictorRuleset struct {
 	StandardRuleset
 }
 
-func (r *ConstrictorRuleset) Name() string { return Constrictor }
+func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
 	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)

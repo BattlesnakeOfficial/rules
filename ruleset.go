@@ -34,12 +34,12 @@ const (
 	ErrorZeroLengthSnake = RulesetError("snake is length zero")
 
 	// Ruleset names
-	Constrictor = "constrictor"
-	Royale      = "royale"
-	Solo        = "solo"
-	Squad       = "squad"
-	Stanadard   = "standard"
-	Wrapped     = "wrapped"
+	GameTypeConstrictor = "constrictor"
+	GameTypeRoyale      = "royale"
+	GameTypeSolo        = "solo"
+	GameTypeSquad       = "squad"
+	GameTypeStanadard   = "standard"
+	GameTypeWrapped     = "wrapped"
 )
 
 type Point struct {

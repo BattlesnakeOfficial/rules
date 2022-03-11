@@ -16,7 +16,7 @@ type SquadRuleset struct {
 	SharedLength        bool
 }
 
-func (r *SquadRuleset) Name() string { return Squad }
+func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
