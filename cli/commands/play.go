@@ -34,14 +34,6 @@ type SnakeState struct {
 	Tail      string
 }
 
-func (ss SnakeState) GetID() string {
-	return ss.ID
-}
-
-func (ss SnakeState) GetSquad() string {
-	return ss.Squad
-}
-
 var GameId string
 var Turn int32
 var HttpClient http.Client

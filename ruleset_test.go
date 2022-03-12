@@ -61,5 +61,4 @@ func TestRulesBuilder(t *testing.T) {
 			require.Equal(t, len(expected.Snakes), len(rsb.squads))
 		})
 	}
-
 }

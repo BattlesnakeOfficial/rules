@@ -41,14 +41,6 @@ type Snake struct {
 	Customizations Customizations `json:"customizations"`
 }
 
-func (s Snake) GetID() string {
-	return s.ID
-}
-
-func (s Snake) GetSquad() string {
-	return s.Squad
-}
-
 type Customizations struct {
 	Color string `json:"color"`
 	Head  string `json:"head"`

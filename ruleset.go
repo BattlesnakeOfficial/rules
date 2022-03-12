@@ -159,11 +159,6 @@ func optionFromRulesetInt(ruleset map[string]string, optionName string, defaultV
 	return defaultValue
 }
 
-type SquadSnake interface {
-	GetID() string
-	GetSquad() string
-}
-
 type Point struct {
 	X int32
 	Y int32
