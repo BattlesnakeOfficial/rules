@@ -1,5 +1,10 @@
 package rules
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type RulesetError string
 
 func (err RulesetError) Error() string { return string(err) }
@@ -40,7 +45,124 @@ const (
 	GameTypeSquad       = "squad"
 	GameTypeStanadard   = "standard"
 	GameTypeWrapped     = "wrapped"
+
+	// Game creation parameter names
+	ParamGameType            = "name"
+	ParamFoodSpawnChance     = "foodSpawnChance"
+	ParamMinimumFood         = "minimumFood"
+	ParamHazardDamagePerTurn = "damagePerTurn"
+	ParamShrinkEveryNTurns   = "shrinkEveryNTurns"
+	ParamAllowBodyCollisions = "allowBodyCollisions"
+	ParamSharedElimination   = "sharedElimination"
+	ParamSharedHealth        = "sharedHealth"
+	ParamSharedLength        = "sharedLength"
 )
+
+type builder struct {
+	params map[string]string
+	seed   int64
+	squads map[string]string
+}
+
+func NewBuilder() *builder {
+	return &builder{
+		params: map[string]string{},
+		squads: map[string]string{},
+	}
+}
+
+func (rb *builder) WithParams(params map[string]string) *builder {
+	for k, v := range params {
+		rb.params[k] = v
+	}
+	fmt.Printf("wp %v\n", rb)
+	return rb
+}
+
+func (rb *builder) WithSeed(seed int64) *builder {
+	rb.seed = seed
+	fmt.Printf("ws %v\n", rb)
+	return rb
+}
+
+func (rb *builder) AddSnakeToSquad(snakeID, squadName string) *builder {
+	rb.squads[snakeID] = squadName
+	fmt.Printf("asts %v\n", rb)
+	return rb
+}
+
+// Build constructs a ruleset from the parameters passed when creating a
+// new game, and returns a ruleset customised by those parameters.
+func (rb builder) Ruleset() Ruleset {
+	standardRuleset := &StandardRuleset{
+		FoodSpawnChance:     optionFromRulesetInt(rb.params, ParamFoodSpawnChance, 0),
+		MinimumFood:         optionFromRulesetInt(rb.params, ParamMinimumFood, 0),
+		HazardDamagePerTurn: optionFromRulesetInt(rb.params, ParamHazardDamagePerTurn, 0),
+	}
+
+	name, ok := rb.params[ParamGameType]
+	if !ok {
+		fmt.Printf("%v\n", rb.params)
+		return standardRuleset
+	}
+
+	switch name {
+	case GameTypeConstrictor:
+		return &ConstrictorRuleset{
+			StandardRuleset: *standardRuleset,
+		}
+	case GameTypeRoyale:
+		return &RoyaleRuleset{
+			StandardRuleset:   *standardRuleset,
+			Seed:              rb.seed,
+			ShrinkEveryNTurns: optionFromRulesetInt(rb.params, ParamShrinkEveryNTurns, 0),
+		}
+	case GameTypeSolo:
+		return &SoloRuleset{
+			StandardRuleset: *standardRuleset,
+		}
+	case GameTypeWrapped:
+		return &WrappedRuleset{
+			StandardRuleset: *standardRuleset,
+		}
+	case GameTypeSquad:
+		squadMap := map[string]string{}
+		for id, squad := range rb.squads {
+			squadMap[id] = squad
+		}
+		return &SquadRuleset{
+			StandardRuleset:     *standardRuleset,
+			SquadMap:            squadMap,
+			AllowBodyCollisions: optionFromRulesetBool(rb.params, ParamAllowBodyCollisions, true),
+			SharedElimination:   optionFromRulesetBool(rb.params, ParamSharedElimination, true),
+			SharedHealth:        optionFromRulesetBool(rb.params, ParamSharedHealth, true),
+			SharedLength:        optionFromRulesetBool(rb.params, ParamSharedLength, true),
+		}
+	}
+	return standardRuleset
+}
+
+func optionFromRulesetBool(ruleset map[string]string, optionName string, defaultValue bool) bool {
+	if val, ok := ruleset[optionName]; ok {
+		return val == "true"
+	}
+	return defaultValue
+}
+
+func optionFromRulesetInt(ruleset map[string]string, optionName string, defaultValue int32) int32 {
+	if val, ok := ruleset[optionName]; ok {
+		i, err := strconv.Atoi(val)
+		if err == nil {
+			return int32(i)
+		}
+	}
+	return defaultValue
+}
+
+type SquadSnake interface {
+	GetID() string
+	GetSquad() string
+}
 
 type Point struct {
 	X int32

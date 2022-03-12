@@ -67,12 +67,12 @@ var ShrinkEveryNTurns int32
 
 var defaultConfig = map[string]string{
 	// default to standard ruleset
-	client.SettingGameType: "standard",
+	rules.ParamGameType: "standard",
 	// squad settings default to true (not zero value)
-	client.SettingSharedElimination:   "true",
-	client.SettingSharedHealth:        "true",
-	client.SettingSharedLength:        "true",
-	client.SettingAllowBodyCollisions: "true",
+	rules.ParamSharedElimination:   "true",
+	rules.ParamSharedHealth:        "true",
+	rules.ParamSharedLength:        "true",
+	rules.ParamAllowBodyCollisions: "true",
 }
 
 var playCmd = &cobra.Command{
@@ -105,11 +105,11 @@ func init() {
 	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
 	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
 
-	defaultConfig[client.SettingGameType] = GameType
-	defaultConfig[client.SettingFoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
-	defaultConfig[client.SettingMinimumFood] = fmt.Sprint(MinimumFood)
-	defaultConfig[client.SettingHazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
-	defaultConfig[client.SettingShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
+	defaultConfig[rules.ParamGameType] = GameType
+	defaultConfig[rules.ParamFoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
+	defaultConfig[rules.ParamMinimumFood] = fmt.Sprint(MinimumFood)
+	defaultConfig[rules.ParamHazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
+	defaultConfig[rules.ParamShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
 
 	playCmd.Flags().SortFlags = false
 }
@@ -199,11 +199,14 @@ var run = func(cmd *cobra.Command, args []string) {
 }
 
 func getRuleset(seed int64, snakeStates map[string]SnakeState) rules.Ruleset {
-	var snakes []client.SquadSnake
+	rb := rules.NewBuilder().WithSeed(seed).WithParams(defaultConfig)
+
 	for _, s := range snakeStates {
-		snakes = append(snakes, s)
+		rb.AddSnakeToSquad(s.ID, s.Squad)
 	}
-	return client.GetRuleset(seed, defaultConfig, snakes)
+
+	return rb.Ruleset()
+
 }
 
 func initializeBoardFromArgs(ruleset rules.Ruleset, snakeStates map[string]SnakeState) *rules.BoardState {

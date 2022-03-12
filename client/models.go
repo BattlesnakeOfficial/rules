@@ -49,11 +49,6 @@ func (s Snake) GetSquad() string {
 	return s.Squad
 }
 
-type SquadSnake interface {
-	GetID() string
-	GetSquad() string
-}
-
 type Customizations struct {
 	Color string `json:"color"`
 	Head  string `json:"head"`
