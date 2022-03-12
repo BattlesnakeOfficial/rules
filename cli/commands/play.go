@@ -191,7 +191,7 @@ var run = func(cmd *cobra.Command, args []string) {
 }
 
 func getRuleset(seed int64, snakeStates map[string]SnakeState) rules.Ruleset {
-	rb := rules.NewBuilder().WithSeed(seed).WithParams(defaultConfig)
+	rb := rules.NewRulesetBuilder().WithSeed(seed).WithParams(defaultConfig)
 
 	for _, s := range snakeStates {
 		rb.AddSnakeToSquad(s.ID, s.Squad)

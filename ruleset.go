@@ -58,20 +58,20 @@ const (
 	ParamSharedLength        = "sharedLength"
 )
 
-type builder struct {
+type rulesetBuilder struct {
 	params map[string]string
 	seed   int64
 	squads map[string]string
 }
 
-func NewBuilder() *builder {
-	return &builder{
+func NewRulesetBuilder() *rulesetBuilder {
+	return &rulesetBuilder{
 		params: map[string]string{},
 		squads: map[string]string{},
 	}
 }
 
-func (rb *builder) WithParams(params map[string]string) *builder {
+func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	for k, v := range params {
 		rb.params[k] = v
 	}
@@ -79,13 +79,13 @@ func (rb *builder) WithParams(params map[string]string) *builder {
 	return rb
 }
 
-func (rb *builder) WithSeed(seed int64) *builder {
+func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
 	fmt.Printf("ws %v\n", rb)
 	return rb
 }
 
-func (rb *builder) AddSnakeToSquad(snakeID, squadName string) *builder {
+func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBuilder {
 	rb.squads[snakeID] = squadName
 	fmt.Printf("asts %v\n", rb)
 	return rb
@@ -93,7 +93,7 @@ func (rb *builder) AddSnakeToSquad(snakeID, squadName string) *builder {
 
 // Build constructs a ruleset from the parameters passed when creating a
 // new game, and returns a ruleset customised by those parameters.
-func (rb builder) Ruleset() Ruleset {
+func (rb rulesetBuilder) Ruleset() Ruleset {
 	standardRuleset := &StandardRuleset{
 		FoodSpawnChance:     optionFromRulesetInt(rb.params, ParamFoodSpawnChance, 0),
 		MinimumFood:         optionFromRulesetInt(rb.params, ParamMinimumFood, 0),

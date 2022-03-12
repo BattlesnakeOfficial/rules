@@ -14,12 +14,12 @@ func TestRulesetError(t *testing.T) {
 	require.Equal(t, "test error string", err.Error())
 }
 
-func TestRulesBuilder(t *testing.T) {
+func TestRulesetBuilder(t *testing.T) {
 	// test nil safety / defaults
-	require.NotNil(t, NewBuilder().Ruleset())
+	require.NotNil(t, NewRulesetBuilder().Ruleset())
 
 	// test seed
-	require.Equal(t, int64(3), NewBuilder().WithSeed(3).seed)
+	require.Equal(t, int64(3), NewRulesetBuilder().WithSeed(3).seed)
 
 	// make sure it works okay for lots of game types
 	expectedResults := []struct {
@@ -45,7 +45,7 @@ func TestRulesBuilder(t *testing.T) {
 
 	for _, expected := range expectedResults {
 		t.Run(expected.GameType, func(t *testing.T) {
-			rsb := NewBuilder()
+			rsb := NewRulesetBuilder()
 
 			rsb.WithParams(map[string]string{
 				ParamGameType: expected.GameType,
