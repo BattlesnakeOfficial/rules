@@ -59,11 +59,12 @@ const (
 )
 
 type rulesetBuilder struct {
-	params map[string]string
-	seed   int64
-	squads map[string]string
+	params map[string]string // game customisation parameters
+	seed   int64             // used for random events in games
+	squads map[string]string // Snake ID -> Squad Name
 }
 
+// NewRulesetBuilder returns an instance of a builder for the Ruleset types.
 func NewRulesetBuilder() *rulesetBuilder {
 	return &rulesetBuilder{
 		params: map[string]string{},
@@ -71,6 +72,16 @@ func NewRulesetBuilder() *rulesetBuilder {
 	}
 }
 
+// WithParams accepts a map of game parameters for customizing games.
+//
+// Parameters are copied. If called multiple times, parameters are merged such that:
+//   - existing keys in both maps get overwritten by the new ones
+//   - existing keys not present in the new map will be retained
+//   - non-existing keys only in the new map will be added
+//
+// Unrecognised parameters will be ignored and default values will be used.
+// Invalid parameters (i.e. a non-numerical value where one is expected), will be ignored
+// and default values will be used.
 func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	for k, v := range params {
 		rb.params[k] = v
@@ -79,25 +90,27 @@ func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	return rb
 }
 
+// WithSeed sets the seed used for randomisation by certain game modes.
 func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
 	fmt.Printf("ws %v\n", rb)
 	return rb
 }
 
+// AddSnakeToSquad adds the specified snake (by ID) to a squad with the given name.
+// This configuration may be ignored by game modes if they do not support squads.
 func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBuilder {
 	rb.squads[snakeID] = squadName
 	fmt.Printf("asts %v\n", rb)
 	return rb
 }
 
-// Build constructs a ruleset from the parameters passed when creating a
-// new game, and returns a ruleset customised by those parameters.
+// Ruleset constructs a customised ruleset using the parameters passed to the builder.
 func (rb rulesetBuilder) Ruleset() Ruleset {
 	standardRuleset := &StandardRuleset{
-		FoodSpawnChance:     optionFromRulesetInt(rb.params, ParamFoodSpawnChance, 0),
-		MinimumFood:         optionFromRulesetInt(rb.params, ParamMinimumFood, 0),
-		HazardDamagePerTurn: optionFromRulesetInt(rb.params, ParamHazardDamagePerTurn, 0),
+		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
+		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
+		HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
 	}
 
 	name, ok := rb.params[ParamGameType]
@@ -115,7 +128,7 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		return &RoyaleRuleset{
 			StandardRuleset:   *standardRuleset,
 			Seed:              rb.seed,
-			ShrinkEveryNTurns: optionFromRulesetInt(rb.params, ParamShrinkEveryNTurns, 0),
+			ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
 		}
 	case GameTypeSolo:
 		return &SoloRuleset{
@@ -133,24 +146,30 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		return &SquadRuleset{
 			StandardRuleset:     *standardRuleset,
 			SquadMap:            squadMap,
-			AllowBodyCollisions: optionFromRulesetBool(rb.params, ParamAllowBodyCollisions, true),
-			SharedElimination:   optionFromRulesetBool(rb.params, ParamSharedElimination, true),
-			SharedHealth:        optionFromRulesetBool(rb.params, ParamSharedHealth, true),
-			SharedLength:        optionFromRulesetBool(rb.params, ParamSharedLength, true),
+			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, true),
+			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, true),
+			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, true),
+			SharedLength:        paramsBool(rb.params, ParamSharedLength, true),
 		}
 	}
 	return standardRuleset
 }
 
-func optionFromRulesetBool(ruleset map[string]string, optionName string, defaultValue bool) bool {
-	if val, ok := ruleset[optionName]; ok {
+// paramsBool returns the boolean value for the specified parameter.
+// If the parameter doesn't exist, the default value will be returned.
+// If the parameter does exist, but is not "true", false will be returned.
+func paramsBool(params map[string]string, paramName string, defaultValue bool) bool {
+	if val, ok := params[paramName]; ok {
 		return val == "true"
 	}
 	return defaultValue
 }
 
-func optionFromRulesetInt(ruleset map[string]string, optionName string, defaultValue int32) int32 {
-	if val, ok := ruleset[optionName]; ok {
+// paramsInt32 returns the int32 value for the specified parameter.
+// If the parameter doesn't exist, the default value will be returned.
+// If the parameter does exist, but is not a valid int, the default value will be returned.
+func paramsInt32(params map[string]string, paramName string, defaultValue int32) int32 {
+	if val, ok := params[paramName]; ok {
 		i, err := strconv.Atoi(val)
 		if err == nil {
 			return int32(i)
