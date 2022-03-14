@@ -55,14 +55,14 @@ func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (boo
 
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
-		snake.Body[0].X = replace(snake.Body[0].X, 0, b.Width-1)
-		snake.Body[0].Y = replace(snake.Body[0].Y, 0, b.Height-1)
+		snake.Body[0].X = wrap(snake.Body[0].X, 0, b.Width-1)
+		snake.Body[0].Y = wrap(snake.Body[0].Y, 0, b.Height-1)
 	}
 
 	return false, nil
 }
 
-func replace(value, min, max int32) int32 {
+func wrap(value, min, max int32) int32 {
 	if value < min {
 		return max
 	}
