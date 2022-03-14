@@ -144,3 +144,14 @@ func TestRulesetBuilder(t *testing.T) {
 		})
 	}
 }
+
+func TestStageFuncContract(t *testing.T) {
+	//nolint:gosimple
+	var stage rules.StageFunc
+	stage = func(bs *rules.BoardState, s rules.Settings, sm []rules.SnakeMove) (bool, error) {
+		return true, nil
+	}
+	ended, err := stage(nil, rules.NewRulesetBuilder().Ruleset().Settings(), nil)
+	require.NoError(t, err)
+	require.True(t, ended)
+}

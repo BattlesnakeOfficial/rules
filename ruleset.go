@@ -230,4 +230,8 @@ type SquadSettings struct {
 
 // StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
 // It is expected to modify the boardState directly.
+// The return values are a boolean (to indicate whether the game has ended as a result of the stage)
+// and an error if any errors occurred during the stage.
+//
+// Errors should be treated as meaning the stage failed and the board state is now invalid.
 type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
