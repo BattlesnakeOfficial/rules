@@ -65,4 +65,21 @@ func TestRulesetBuilderInternals(t *testing.T) {
 	require.Equal(t, "squad1", rsb.Ruleset().(*SquadRuleset).SquadMap["snek2"])
 	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek3"])
 	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek4"])
+
+	// test parameter merging
+	rsb = NewRulesetBuilder().
+		WithParams(map[string]string{
+			"someSetting":    "some value",
+			"anotherSetting": "another value",
+		}).
+		WithParams(map[string]string{
+			"anotherSetting": "overridden value",
+			"aNewSetting":    "a new value",
+		})
+
+	require.Equal(t, map[string]string{
+		"someSetting":    "some value",
+		"anotherSetting": "overridden value",
+		"aNewSetting":    "a new value",
+	}, rsb.params, "multiple calls to WithParams should merge parameters")
 }
