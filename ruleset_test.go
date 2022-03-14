@@ -4,8 +4,97 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestStandardRulesetSettings(t *testing.T) {
+	ruleset := rules.StandardRuleset{
+		MinimumFood:         5,
+		FoodSpawnChance:     10,
+		HazardDamagePerTurn: 10,
+	}
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
+
+func TestWrappedRulesetSettings(t *testing.T) {
+	ruleset := rules.WrappedRuleset{
+		StandardRuleset: rules.StandardRuleset{
+			MinimumFood:         5,
+			FoodSpawnChance:     10,
+			HazardDamagePerTurn: 10,
+		},
+	}
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
+
+func TestSoloRulesetSettings(t *testing.T) {
+	ruleset := rules.SoloRuleset{
+		StandardRuleset: rules.StandardRuleset{
+			MinimumFood:         5,
+			FoodSpawnChance:     10,
+			HazardDamagePerTurn: 10,
+		},
+	}
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
+
+func TestRoyaleRulesetSettings(t *testing.T) {
+	ruleset := rules.RoyaleRuleset{
+		Seed:              30,
+		ShrinkEveryNTurns: 12,
+		StandardRuleset: rules.StandardRuleset{
+			MinimumFood:         5,
+			FoodSpawnChance:     10,
+			HazardDamagePerTurn: 10,
+		},
+	}
+	assert.Equal(t, ruleset.ShrinkEveryNTurns, ruleset.Settings().RoyaleSettings.ShrinkEveryNTurns)
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
+
+func TestConstrictorRulesetSettings(t *testing.T) {
+	ruleset := rules.ConstrictorRuleset{
+		StandardRuleset: rules.StandardRuleset{
+			MinimumFood:         5,
+			FoodSpawnChance:     10,
+			HazardDamagePerTurn: 10,
+		},
+	}
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
+
+func TestSquadRulesetSettings(t *testing.T) {
+	ruleset := rules.SquadRuleset{
+		AllowBodyCollisions: true,
+		SharedElimination:   false,
+		SharedHealth:        true,
+		SharedLength:        false,
+		StandardRuleset: rules.StandardRuleset{
+			MinimumFood:         5,
+			FoodSpawnChance:     10,
+			HazardDamagePerTurn: 10,
+		},
+	}
+	assert.Equal(t, ruleset.AllowBodyCollisions, ruleset.Settings().SquadSettings.AllowBodyCollisions)
+	assert.Equal(t, ruleset.SharedElimination, ruleset.Settings().SquadSettings.SharedElimination)
+	assert.Equal(t, ruleset.SharedHealth, ruleset.Settings().SquadSettings.SharedHealth)
+	assert.Equal(t, ruleset.SharedLength, ruleset.Settings().SquadSettings.SharedLength)
+
+	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
+	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
+	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+}
 
 func TestRulesetBuilder(t *testing.T) {
 	// Test that a fresh instance can produce a Ruleset
