@@ -37,7 +37,7 @@ const (
 	ErrorNoMoveFound     = RulesetError("move not provided for snake")
 	ErrorZeroLengthSnake = RulesetError("snake is length zero")
 
-	// Ruleset names
+	// Ruleset / game type names
 	GameTypeConstrictor = "constrictor"
 	GameTypeRoyale      = "royale"
 	GameTypeSolo        = "solo"
