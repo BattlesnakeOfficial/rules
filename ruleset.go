@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -86,14 +85,12 @@ func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	for k, v := range params {
 		rb.params[k] = v
 	}
-	fmt.Printf("wp %v\n", rb)
 	return rb
 }
 
 // WithSeed sets the seed used for randomisation by certain game modes.
 func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
-	fmt.Printf("ws %v\n", rb)
 	return rb
 }
 
@@ -101,7 +98,6 @@ func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 // This configuration may be ignored by game modes if they do not support squads.
 func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBuilder {
 	rb.squads[snakeID] = squadName
-	fmt.Printf("asts %v\n", rb)
 	return rb
 }
 
@@ -115,7 +111,6 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 
 	name, ok := rb.params[ParamGameType]
 	if !ok {
-		fmt.Printf("%v\n", rb.params)
 		return standardRuleset
 	}
 

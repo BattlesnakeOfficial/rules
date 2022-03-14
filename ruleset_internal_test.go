@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	// included to allow using -update-fixtures for every package without errors
+
 	_ "github.com/BattlesnakeOfficial/rules/test"
 )
 
@@ -39,51 +40,29 @@ func TestRulesetError(t *testing.T) {
 	require.Equal(t, "test error string", err.Error())
 }
 
-func TestRulesetBuilder(t *testing.T) {
-	// test nil safety / defaults
-	require.NotNil(t, NewRulesetBuilder().Ruleset())
+func TestRulesetBuilderInternals(t *testing.T) {
 
-	// test seed
-	require.Equal(t, int64(3), NewRulesetBuilder().WithSeed(3).seed)
+	// test Royale with seed
+	rsb := NewRulesetBuilder().WithSeed(3).WithParams(map[string]string{ParamGameType: GameTypeRoyale})
+	require.Equal(t, int64(3), rsb.seed)
+	require.Equal(t, GameTypeRoyale, rsb.Ruleset().Name())
+	require.Equal(t, int64(3), rsb.Ruleset().(*RoyaleRuleset).Seed)
 
-	// make sure it works okay for lots of game types
-	expectedResults := []struct {
-		GameType string
-		Snakes   map[string]string
-	}{
-		{GameType: GameTypeStanadard},
-		{GameType: GameTypeWrapped},
-		{GameType: GameTypeRoyale},
-		{GameType: GameTypeSolo},
-		{GameType: GameTypeSquad, Snakes: map[string]string{
-			"one":   "s1",
-			"two":   "s1",
-			"three": "s2",
-			"four":  "s2",
-			"five":  "s3",
-			"six":   "s3",
-			"seven": "s4",
-			"eight": "s4",
-		}},
-		{GameType: GameTypeConstrictor},
-	}
+	// test squad configuration
+	rsb = NewRulesetBuilder().
+		WithParams(map[string]string{
+			ParamGameType: GameTypeSquad,
+		}).
+		AddSnakeToSquad("snek1", "squad1").
+		AddSnakeToSquad("snek2", "squad1").
+		AddSnakeToSquad("snek3", "squad2").
+		AddSnakeToSquad("snek4", "squad2")
 
-	for _, expected := range expectedResults {
-		t.Run(expected.GameType, func(t *testing.T) {
-			rsb := NewRulesetBuilder()
-
-			rsb.WithParams(map[string]string{
-				ParamGameType: expected.GameType,
-			})
-
-			// add any snake squads
-			for id, squad := range expected.Snakes {
-				rsb = rsb.AddSnakeToSquad(id, squad)
-			}
-
-			require.NotNil(t, rsb.Ruleset())
-			require.Equal(t, expected.GameType, rsb.Ruleset().Name())
-			require.Equal(t, len(expected.Snakes), len(rsb.squads))
-		})
-	}
+	require.NotNil(t, rsb.Ruleset())
+	require.Equal(t, GameTypeSquad, rsb.Ruleset().Name())
+	require.Equal(t, 4, len(rsb.squads))
+	require.Equal(t, "squad1", rsb.Ruleset().(*SquadRuleset).SquadMap["snek1"])
+	require.Equal(t, "squad1", rsb.Ruleset().(*SquadRuleset).SquadMap["snek2"])
+	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek3"])
+	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek4"])
 }
