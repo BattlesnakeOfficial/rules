@@ -42,7 +42,7 @@ const (
 	GameTypeRoyale      = "royale"
 	GameTypeSolo        = "solo"
 	GameTypeSquad       = "squad"
-	GameTypeStanadard   = "standard"
+	GameTypeStandard    = "standard"
 	GameTypeWrapped     = "wrapped"
 
 	// Game creation parameter names

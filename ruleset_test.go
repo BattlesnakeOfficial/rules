@@ -99,7 +99,7 @@ func TestSquadRulesetSettings(t *testing.T) {
 func TestRulesetBuilder(t *testing.T) {
 	// Test that a fresh instance can produce a Ruleset
 	require.NotNil(t, rules.NewRulesetBuilder().Ruleset())
-	require.Equal(t, rules.GameTypeStanadard, rules.NewRulesetBuilder().Ruleset().Name(), "should default to standard game")
+	require.Equal(t, rules.GameTypeStandard, rules.NewRulesetBuilder().Ruleset().Name(), "should default to standard game")
 
 	// test nil safety / defaults
 	require.NotNil(t, rules.NewRulesetBuilder().Ruleset())
@@ -109,7 +109,7 @@ func TestRulesetBuilder(t *testing.T) {
 		GameType string
 		Snakes   map[string]string
 	}{
-		{GameType: rules.GameTypeStanadard},
+		{GameType: rules.GameTypeStandard},
 		{GameType: rules.GameTypeWrapped},
 		{GameType: rules.GameTypeRoyale},
 		{GameType: rules.GameTypeSolo},

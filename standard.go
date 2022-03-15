@@ -11,7 +11,7 @@ type StandardRuleset struct {
 	HazardDamagePerTurn int32
 }
 
-func (r *StandardRuleset) Name() string { return GameTypeStanadard }
+func (r *StandardRuleset) Name() string { return GameTypeStandard }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
 	// No-op
