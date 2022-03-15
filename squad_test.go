@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -392,5 +393,171 @@ func TestRegressionIssue16(t *testing.T) {
 		require.Equal(t, expectedSnakes[i].Body, snake.Body, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedCause, snake.EliminatedCause, snake.ID)
 		require.Equal(t, expectedSnakes[i].EliminatedBy, snake.EliminatedBy, snake.ID)
+	}
+}
+
+// Checks that snakes on the same squad don't get eliminated
+// when the allow squad collisions setting is enabled
+// Both squads have snakes that move into each other.
+var squadCaseMoveSquadCollisions = gameTestCase{
+	"Squad Case Move Squad Collisions",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{1, 2}, {2, 2}},
+				Health: 100,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{4, 4}, {4, 5}},
+				Health: 100,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{5, 4}, {5, 5}},
+				Health: 100,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "snake1squad1", Move: MoveUp},
+		{ID: "snake2squad1", Move: MoveDown},
+		{ID: "snake3squad2", Move: MoveRight},
+		{ID: "snake4squad2", Move: MoveLeft},
+	},
+	nil,
+	&BoardState{Width: 10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 2}, {1, 1}},
+				Health: 99,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 99,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{5, 4}, {4, 4}},
+				Health: 99,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{4, 4}, {5, 4}},
+				Health: 99,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{}},
+}
+
+// Checks snakes on the same squad share health (assuming the setting is enabled)
+var squadCaseEatFoodAndShareHealth = gameTestCase{
+	"Squad Case Move Squad Collisions",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 80,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{7, 7}, {7, 8}},
+				Health: 50,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{4, 4}, {4, 5}},
+				Health: 60,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{5, 4}, {5, 5}},
+				Health: 71,
+			},
+		},
+		Food:    []Point{{1, 2}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "snake1squad1", Move: MoveUp},
+		{ID: "snake2squad1", Move: MoveDown},
+		{ID: "snake3squad2", Move: MoveRight},
+		{ID: "snake4squad2", Move: MoveLeft},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "snake1squad1",
+				Body:   []Point{{1, 2}, {1, 1}, {1, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "snake2squad1",
+				Body:   []Point{{7, 6}, {7, 7}},
+				Health: 100,
+			},
+			{
+				ID:     "snake3squad2",
+				Body:   []Point{{5, 4}, {4, 4}},
+				Health: 70,
+			},
+			{
+				ID:     "snake4squad2",
+				Body:   []Point{{4, 4}, {5, 4}},
+				Health: 70,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{}},
+}
+
+func TestSquadCreateNextBoardState(t *testing.T) {
+	standardCases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+	}
+	r := SquadRuleset{
+		SquadMap: map[string]string{
+			"snake1squad1": "squad1",
+			"snake2squad1": "squad1",
+			"snake3squad2": "squad2",
+			"snake4squad2": "squad2",
+		},
+	}
+	rand.Seed(0)
+	for _, gc := range standardCases {
+		gc.requireValidNextState(t, &r)
+	}
+
+	extendedCases := []gameTestCase{
+		squadCaseMoveSquadCollisions,
+		squadCaseEatFoodAndShareHealth,
+	}
+	r.SharedHealth = true
+	r.AllowBodyCollisions = true
+	for _, gc := range extendedCases {
+		gc.requireValidNextState(t, &r)
 	}
 }

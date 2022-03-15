@@ -55,3 +55,57 @@ func TestSoloIsGameOver(t *testing.T) {
 		require.Equal(t, test.Expected, actual)
 	}
 }
+
+// Checks that a single snake doesn't end the game
+// also that:
+// - snake moves okay
+// - food gets consumed
+// - snake grows and gets health from food
+var soloCaseNotOver = gameTestCase{
+	"Solo Case Game Not Over",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 100,
+			},
+		},
+		Food:    []Point{{0, 0}, {1, 0}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveDown},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Health: 100,
+			},
+		},
+		Food:    []Point{{0, 0}},
+		Hazards: []Point{},
+	},
+}
+
+func TestSoloCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		// inherits these test cases from standard
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+		standardMoveAndCollideMAD,
+		soloCaseNotOver,
+	}
+	r := SoloRuleset{}
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
+	}
+}
