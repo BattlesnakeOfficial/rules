@@ -155,7 +155,13 @@ func TestRulesetBuilder(t *testing.T) {
 			rsb := rules.NewRulesetBuilder()
 
 			rsb.WithParams(map[string]string{
-				rules.ParamGameType: expected.GameType,
+				// apply the standard rule params
+				rules.ParamGameType:            expected.GameType,
+				rules.ParamFoodSpawnChance:     "10",
+				rules.ParamMinimumFood:         "5",
+				rules.ParamHazardDamagePerTurn: "12",
+				rules.ParamHazardMap:           "test",
+				rules.ParamHazardMapAuthor:     "tester",
 			})
 
 			// add any snake squads
@@ -165,6 +171,12 @@ func TestRulesetBuilder(t *testing.T) {
 
 			require.NotNil(t, rsb.Ruleset())
 			require.Equal(t, expected.GameType, rsb.Ruleset().Name())
+			// All the standard settings should always be copied over
+			require.Equal(t, int32(10), rsb.Ruleset().Settings().FoodSpawnChance)
+			require.Equal(t, int32(12), rsb.Ruleset().Settings().HazardDamagePerTurn)
+			require.Equal(t, int32(5), rsb.Ruleset().Settings().MinimumFood)
+			require.Equal(t, "test", rsb.Ruleset().Settings().HazardMap)
+			require.Equal(t, "tester", rsb.Ruleset().Settings().HazardMapAuthor)
 		})
 	}
 }

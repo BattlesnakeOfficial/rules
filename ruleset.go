@@ -50,6 +50,8 @@ const (
 	ParamFoodSpawnChance     = "foodSpawnChance"
 	ParamMinimumFood         = "minimumFood"
 	ParamHazardDamagePerTurn = "damagePerTurn"
+	ParamHazardMap           = "hazardMap"
+	ParamHazardMapAuthor     = "hazardMapAuthor"
 	ParamShrinkEveryNTurns   = "shrinkEveryNTurns"
 	ParamAllowBodyCollisions = "allowBodyCollisions"
 	ParamSharedElimination   = "sharedElimination"
@@ -107,6 +109,8 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
 		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
 		HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
+		HazardMap:           rb.params[ParamHazardMap],
+		HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
 	}
 
 	name, ok := rb.params[ParamGameType]
