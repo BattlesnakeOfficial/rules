@@ -68,10 +68,11 @@ var defaultConfig = map[string]string{
 }
 
 var playCmd = &cobra.Command{
-	Use:   "play",
-	Short: "Play a game of Battlesnake locally.",
-	Long:  "Play a game of Battlesnake locally.",
-	Run:   run,
+	Use:    "play",
+	Short:  "Play a game of Battlesnake locally.",
+	Long:   "Play a game of Battlesnake locally.",
+	Run:    run,
+	PreRun: playPreRun,
 }
 
 func init() {
@@ -97,13 +98,11 @@ func init() {
 	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
 	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
 
-	defaultConfig[rules.ParamGameType] = GameType
-	defaultConfig[rules.ParamFoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
-	defaultConfig[rules.ParamMinimumFood] = fmt.Sprint(MinimumFood)
-	defaultConfig[rules.ParamHazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
-	defaultConfig[rules.ParamShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
-
 	playCmd.Flags().SortFlags = false
+}
+
+func playPreRun(cmd *cobra.Command, args []string) {
+	initialiseGameConfig()
 }
 
 var run = func(cmd *cobra.Command, args []string) {
@@ -188,6 +187,14 @@ var run = func(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 	}
+}
+
+func initialiseGameConfig() {
+	defaultConfig[rules.ParamGameType] = GameType
+	defaultConfig[rules.ParamFoodSpawnChance] = fmt.Sprint(FoodSpawnChance)
+	defaultConfig[rules.ParamMinimumFood] = fmt.Sprint(MinimumFood)
+	defaultConfig[rules.ParamHazardDamagePerTurn] = fmt.Sprint(HazardDamagePerTurn)
+	defaultConfig[rules.ParamShrinkEveryNTurns] = fmt.Sprint(ShrinkEveryNTurns)
 }
 
 func getRuleset(seed int64, snakeStates map[string]SnakeState) rules.Ruleset {

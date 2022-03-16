@@ -36,6 +36,7 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 		s1State.ID: s1State,
 		s2State.ID: s2State,
 	}
+	initialiseGameConfig() // initialise default config
 	snakeRequest := getIndividualBoardStateForSnake(state, s1State, snakeStates, getRuleset(0, snakeStates))
 	requestBody := serialiseSnakeRequest(snakeRequest)
 
