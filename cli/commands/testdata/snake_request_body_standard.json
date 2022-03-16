@@ -1,0 +1,108 @@
+{
+  "game": {
+    "id": "",
+    "ruleset": {
+      "name": "standard",
+      "version": "cli",
+      "settings": {
+        "foodSpawnChance": 11,
+        "minimumFood": 7,
+        "hazardDamagePerTurn": 19,
+        "hazardMap": "hz_spiral",
+        "hazardMapAuthor": "altersaddle",
+        "royale": {
+          "shrinkEveryNTurns": 0
+        },
+        "squad": {
+          "allowBodyCollisions": false,
+          "sharedElimination": false,
+          "sharedHealth": false,
+          "sharedLength": false
+        }
+      }
+    },
+    "timeout": 500,
+    "source": ""
+  },
+  "turn": 0,
+  "board": {
+    "height": 11,
+    "width": 11,
+    "snakes": [
+      {
+        "id": "one",
+        "name": "ONE",
+        "latency": "0",
+        "health": 0,
+        "body": [
+          {
+            "x": 3,
+            "y": 3
+          }
+        ],
+        "head": {
+          "x": 3,
+          "y": 3
+        },
+        "length": 1,
+        "shout": "",
+        "squad": "",
+        "customizations": {
+          "color": "#123456",
+          "head": "safe",
+          "tail": "curled"
+        }
+      },
+      {
+        "id": "two",
+        "name": "TWO",
+        "latency": "0",
+        "health": 0,
+        "body": [
+          {
+            "x": 4,
+            "y": 3
+          }
+        ],
+        "head": {
+          "x": 4,
+          "y": 3
+        },
+        "length": 1,
+        "shout": "",
+        "squad": "",
+        "customizations": {
+          "color": "#654321",
+          "head": "silly",
+          "tail": "bolt"
+        }
+      }
+    ],
+    "food": [],
+    "hazards": []
+  },
+  "you": {
+    "id": "one",
+    "name": "ONE",
+    "latency": "0",
+    "health": 0,
+    "body": [
+      {
+        "x": 3,
+        "y": 3
+      }
+    ],
+    "head": {
+      "x": 3,
+      "y": 3
+    },
+    "length": 1,
+    "shout": "",
+    "squad": "",
+    "customizations": {
+      "color": "#123456",
+      "head": "safe",
+      "tail": "curled"
+    }
+  }
+}
