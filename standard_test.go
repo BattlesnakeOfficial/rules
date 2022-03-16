@@ -64,7 +64,9 @@ var standardCaseErrNoMoveFound = gameTestCase{
 		Food:    []Point{{0, 0}, {1, 0}},
 		Hazards: []Point{},
 	},
-	[]SnakeMove{},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+	},
 	ErrorNoMoveFound,
 	nil,
 }
@@ -767,9 +769,8 @@ func TestGetDefaultMove(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
-		actualMove := r.getDefaultMove(test.SnakeBody)
+		actualMove := getDefaultMove(test.SnakeBody)
 		require.Equal(t, test.ExpectedMove, actualMove)
 	}
 }
@@ -835,10 +836,9 @@ func TestSnakeIsOutOfHealth(t *testing.T) {
 		{Health: math.MaxInt32, Expected: false},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		s := &Snake{Health: test.Health}
-		require.Equal(t, test.Expected, r.snakeIsOutOfHealth(s), "Health: %+v", test.Health)
+		require.Equal(t, test.Expected, snakeIsOutOfHealth(s), "Health: %+v", test.Health)
 	}
 }
 
@@ -877,14 +877,13 @@ func TestSnakeIsOutOfBounds(t *testing.T) {
 		{Point{X: math.MaxInt32, Y: math.MaxInt32}, true},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		// Test with point as head
 		s := Snake{Body: []Point{test.Point}}
-		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Head%+v", test.Point)
+		require.Equal(t, test.Expected, snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Head%+v", test.Point)
 		// Test with point as body
 		s = Snake{Body: []Point{{0, 0}, {0, 0}, test.Point}}
-		require.Equal(t, test.Expected, r.snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Body%+v", test.Point)
+		require.Equal(t, test.Expected, snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Body%+v", test.Point)
 	}
 }
 
@@ -915,10 +914,9 @@ func TestSnakeHasBodyCollidedSelf(t *testing.T) {
 		{[]Point{{3, 3}, {3, 4}, {3, 3}, {4, 4}, {4, 5}}, true},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		s := Snake{Body: test.Body}
-		require.Equal(t, test.Expected, r.snakeHasBodyCollided(&s, &s), "Body%q", s.Body)
+		require.Equal(t, test.Expected, snakeHasBodyCollided(&s, &s), "Body%q", s.Body)
 	}
 }
 
@@ -966,11 +964,10 @@ func TestSnakeHasBodyCollidedOther(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		s := &Snake{Body: test.SnakeBody}
 		o := &Snake{Body: test.OtherBody}
-		require.Equal(t, test.Expected, r.snakeHasBodyCollided(s, o), "Snake%q Other%q", s.Body, o.Body)
+		require.Equal(t, test.Expected, snakeHasBodyCollided(s, o), "Snake%q Other%q", s.Body, o.Body)
 	}
 }
 
@@ -1031,12 +1028,11 @@ func TestSnakeHasLostHeadToHead(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		s := Snake{Body: test.SnakeBody}
 		o := Snake{Body: test.OtherBody}
-		require.Equal(t, test.Expected, r.snakeHasLostHeadToHead(&s, &o), "Snake%q Other%q", s.Body, o.Body)
-		require.Equal(t, test.ExpectedOpposite, r.snakeHasLostHeadToHead(&o, &s), "Snake%q Other%q", s.Body, o.Body)
+		require.Equal(t, test.Expected, snakeHasLostHeadToHead(&s, &o), "Snake%q Other%q", s.Body, o.Body)
+		require.Equal(t, test.ExpectedOpposite, snakeHasLostHeadToHead(&o, &s), "Snake%q Other%q", s.Body, o.Body)
 	}
 
 }

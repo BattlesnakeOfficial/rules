@@ -9,9 +9,11 @@ type StandardRuleset struct {
 	FoodSpawnChance     int32 // [0, 100]
 	MinimumFood         int32
 	HazardDamagePerTurn int32
+	HazardMap           string // optional
+	HazardMapAuthor     string // optional
 }
 
-func (r *StandardRuleset) Name() string { return "standard" }
+func (r *StandardRuleset) Name() string { return GameTypeStandard }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
 	// No-op
@@ -22,15 +24,11 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 	// We specifically want to copy prevState, so as not to alter it directly.
 	nextState := prevState.Clone()
 
-	// TODO: Gut check the BoardState?
-
-	// TODO: LOG?
 	err := r.moveSnakes(nextState, moves)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: LOG?
 	err = r.reduceSnakeHealth(nextState)
 	if err != nil {
 		return nil, err
@@ -41,7 +39,6 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 		return nil, err
 	}
 
-	// TODO: LOG?
 	// bvanvugt: We specifically want this to happen before elimination for two reasons:
 	// 1) We want snakes to be able to eat on their very last turn and still survive.
 	// 2) So that head-to-head collisions on food still remove the food.
@@ -52,13 +49,11 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 		return nil, err
 	}
 
-	// TODO: LOG?
 	err = r.maybeSpawnFood(nextState)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: LOG?
 	err = r.maybeEliminateSnakes(nextState)
 	if err != nil {
 		return nil, err
@@ -68,6 +63,16 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 }
 
 func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
+	_, err := r.callStageFunc(MoveSnakesStandard, b, moves)
+	return err
+}
+
+func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	// If no moves are passed, pass on modifying the initial board state
+	if len(moves) == 0 {
+		return false, nil
+	}
+
 	// Sanity check that all non-eliminated snakes have moves and bodies.
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
@@ -76,7 +81,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 		}
 
 		if len(snake.Body) == 0 {
-			return ErrorZeroLengthSnake
+			return false, ErrorZeroLengthSnake
 		}
 		moveFound := false
 		for _, move := range moves {
@@ -86,7 +91,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 		if !moveFound {
-			return ErrorNoMoveFound
+			return false, ErrorNoMoveFound
 		}
 	}
 
@@ -103,7 +108,7 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 				case MoveUp, MoveDown, MoveRight, MoveLeft:
 					break
 				default:
-					appliedMove = r.getDefaultMove(snake.Body)
+					appliedMove = getDefaultMove(snake.Body)
 				}
 
 				newHead := Point{}
@@ -128,10 +133,10 @@ func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
 			}
 		}
 	}
-	return nil
+	return false, nil
 }
 
-func (r *StandardRuleset) getDefaultMove(snakeBody []Point) string {
+func getDefaultMove(snakeBody []Point) string {
 	if len(snakeBody) >= 2 {
 		// Use neck to determine last move made
 		head, neck := snakeBody[0], snakeBody[1]
@@ -160,15 +165,25 @@ func (r *StandardRuleset) getDefaultMove(snakeBody []Point) string {
 }
 
 func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
+	_, err := r.callStageFunc(ReduceSnakeHealthStandard, b, []SnakeMove{})
+	return err
+}
+
+func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
 			b.Snakes[i].Health = b.Snakes[i].Health - 1
 		}
 	}
-	return nil
+	return false, nil
 }
 
 func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
+	_, err := r.callStageFunc(DamageHazardsStandard, b, []SnakeMove{})
+	return err
+}
+
+func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
@@ -189,21 +204,26 @@ func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
 				}
 
 				// Snake is in a hazard, reduce health
-				snake.Health = snake.Health - r.HazardDamagePerTurn
+				snake.Health = snake.Health - settings.HazardDamagePerTurn
 				if snake.Health < 0 {
 					snake.Health = 0
 				}
-				if r.snakeIsOutOfHealth(snake) {
+				if snakeIsOutOfHealth(snake) {
 					snake.EliminatedCause = EliminatedByOutOfHealth
 				}
 			}
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
 func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
+	_, err := r.callStageFunc(EliminateSnakesStandard, b, []SnakeMove{})
+	return err
+}
+
+func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// First order snake indices by length.
 	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
 	snakeIndicesByLength := make([]int, len(b.Snakes))
@@ -224,15 +244,15 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return ErrorZeroLengthSnake
+			return false, ErrorZeroLengthSnake
 		}
 
-		if r.snakeIsOutOfHealth(snake) {
+		if snakeIsOutOfHealth(snake) {
 			snake.EliminatedCause = EliminatedByOutOfHealth
 			continue
 		}
 
-		if r.snakeIsOutOfBounds(snake, b.Width, b.Height) {
+		if snakeIsOutOfBounds(snake, b.Width, b.Height) {
 			snake.EliminatedCause = EliminatedByOutOfBounds
 			continue
 		}
@@ -252,11 +272,11 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			continue
 		}
 		if len(snake.Body) <= 0 {
-			return ErrorZeroLengthSnake
+			return false, ErrorZeroLengthSnake
 		}
 
 		// Check for self-collisions first
-		if r.snakeHasBodyCollided(snake, snake) {
+		if snakeHasBodyCollided(snake, snake) {
 			collisionEliminations = append(collisionEliminations, CollisionElimination{
 				ID:    snake.ID,
 				Cause: EliminatedBySelfCollision,
@@ -272,7 +292,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			if other.EliminatedCause != NotEliminated {
 				continue
 			}
-			if snake.ID != other.ID && r.snakeHasBodyCollided(snake, other) {
+			if snake.ID != other.ID && snakeHasBodyCollided(snake, other) {
 				collisionEliminations = append(collisionEliminations, CollisionElimination{
 					ID:    snake.ID,
 					Cause: EliminatedByCollision,
@@ -293,7 +313,7 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 			if other.EliminatedCause != NotEliminated {
 				continue
 			}
-			if snake.ID != other.ID && r.snakeHasLostHeadToHead(snake, other) {
+			if snake.ID != other.ID && snakeHasLostHeadToHead(snake, other) {
 				collisionEliminations = append(collisionEliminations, CollisionElimination{
 					ID:    snake.ID,
 					Cause: EliminatedByHeadToHeadCollision,
@@ -320,14 +340,14 @@ func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
-func (r *StandardRuleset) snakeIsOutOfHealth(s *Snake) bool {
+func snakeIsOutOfHealth(s *Snake) bool {
 	return s.Health <= 0
 }
 
-func (r *StandardRuleset) snakeIsOutOfBounds(s *Snake, boardWidth int32, boardHeight int32) bool {
+func snakeIsOutOfBounds(s *Snake, boardWidth int32, boardHeight int32) bool {
 	for _, point := range s.Body {
 		if (point.X < 0) || (point.X >= boardWidth) {
 			return true
@@ -339,7 +359,7 @@ func (r *StandardRuleset) snakeIsOutOfBounds(s *Snake, boardWidth int32, boardHe
 	return false
 }
 
-func (r *StandardRuleset) snakeHasBodyCollided(s *Snake, other *Snake) bool {
+func snakeHasBodyCollided(s *Snake, other *Snake) bool {
 	head := s.Body[0]
 	for i, body := range other.Body {
 		if i == 0 {
@@ -351,7 +371,7 @@ func (r *StandardRuleset) snakeHasBodyCollided(s *Snake, other *Snake) bool {
 	return false
 }
 
-func (r *StandardRuleset) snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
+func snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 	if s.Body[0].X == other.Body[0].X && s.Body[0].Y == other.Body[0].Y {
 		return len(s.Body) <= len(other.Body)
 	}
@@ -359,6 +379,11 @@ func (r *StandardRuleset) snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 }
 
 func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
+	_, err := r.callStageFunc(FeedSnakesStandard, b, []SnakeMove{})
+	return err
+}
+
+func FeedSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	newFood := []Point{}
 	for _, food := range b.Food {
 		foodHasBeenEaten := false
@@ -371,7 +396,7 @@ func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
 			}
 
 			if snake.Body[0].X == food.X && snake.Body[0].Y == food.Y {
-				r.feedSnake(snake)
+				feedSnake(snake)
 				foodHasBeenEaten = true
 			}
 		}
@@ -382,31 +407,41 @@ func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
 	}
 
 	b.Food = newFood
-	return nil
+	return false, nil
 }
 
-func (r *StandardRuleset) feedSnake(snake *Snake) {
-	r.growSnake(snake)
+func feedSnake(snake *Snake) {
+	growSnake(snake)
 	snake.Health = SnakeMaxHealth
 }
 
-func (r *StandardRuleset) growSnake(snake *Snake) {
+func growSnake(snake *Snake) {
 	if len(snake.Body) > 0 {
 		snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
 	}
 }
 
 func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
+	_, err := r.callStageFunc(SpawnFoodStandard, b, []SnakeMove{})
+	return err
+}
+
+func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	numCurrentFood := int32(len(b.Food))
-	if numCurrentFood < r.MinimumFood {
-		return PlaceFoodRandomly(b, r.MinimumFood-numCurrentFood)
-	} else if r.FoodSpawnChance > 0 && int32(rand.Intn(100)) < r.FoodSpawnChance {
-		return PlaceFoodRandomly(b, 1)
+	if numCurrentFood < settings.MinimumFood {
+		return false, PlaceFoodRandomly(b, settings.MinimumFood-numCurrentFood)
 	}
-	return nil
+	if settings.FoodSpawnChance > 0 && int32(rand.Intn(100)) < settings.FoodSpawnChance {
+		return false, PlaceFoodRandomly(b, 1)
+	}
+	return false, nil
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
+	return r.callStageFunc(GameOverStandard, b, []SnakeMove{})
+}
+
+func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	numSnakesRemaining := 0
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
@@ -414,4 +449,19 @@ func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
 		}
 	}
 	return numSnakesRemaining <= 1, nil
+}
+
+func (r StandardRuleset) Settings() Settings {
+	return Settings{
+		FoodSpawnChance:     r.FoodSpawnChance,
+		MinimumFood:         r.MinimumFood,
+		HazardDamagePerTurn: r.HazardDamagePerTurn,
+		HazardMap:           r.HazardMap,
+		HazardMapAuthor:     r.HazardMapAuthor,
+	}
+}
+
+// Adaptor for integrating stages into StandardRuleset
+func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
+	return stage(boardState, r.Settings(), moves)
 }

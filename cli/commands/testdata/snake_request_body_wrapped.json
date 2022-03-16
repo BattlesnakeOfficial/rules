@@ -2,14 +2,14 @@
   "game": {
     "id": "",
     "ruleset": {
-      "name": "standard",
+      "name": "wrapped",
       "version": "cli",
       "settings": {
-        "foodSpawnChance": 15,
-        "minimumFood": 1,
-        "hazardDamagePerTurn": 14,
-        "hazardMap": "",
-        "hazardMapAuthor": "",
+        "foodSpawnChance": 11,
+        "minimumFood": 7,
+        "hazardDamagePerTurn": 19,
+        "hazardMap": "hz_spiral",
+        "hazardMapAuthor": "altersaddle",
         "royale": {
           "shrinkEveryNTurns": 0
         },

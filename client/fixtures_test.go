@@ -1,5 +1,7 @@
 package client
 
+import "github.com/BattlesnakeOfficial/rules"
+
 func exampleSnakeRequest() SnakeRequest {
 	return SnakeRequest{
 		Game: Game{
@@ -72,18 +74,18 @@ func exampleSnakeRequest() SnakeRequest {
 	}
 }
 
-var exampleRulesetSettings = RulesetSettings{
+var exampleRulesetSettings = rules.Settings{
 	FoodSpawnChance:     10,
 	MinimumFood:         20,
 	HazardDamagePerTurn: 30,
 	HazardMap:           "hz_spiral",
 	HazardMapAuthor:     "altersaddle",
 
-	RoyaleSettings: RoyaleSettings{
+	RoyaleSettings: rules.RoyaleSettings{
 		ShrinkEveryNTurns: 40,
 	},
 
-	SquadSettings: SquadSettings{
+	SquadSettings: rules.SquadSettings{
 		AllowBodyCollisions: true,
 		SharedElimination:   true,
 		SharedHealth:        true,
