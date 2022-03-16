@@ -13,10 +13,14 @@ func TestStandardRulesetSettings(t *testing.T) {
 		MinimumFood:         5,
 		FoodSpawnChance:     10,
 		HazardDamagePerTurn: 10,
+		HazardMap:           "hz_spiral",
+		HazardMapAuthor:     "altersaddle",
 	}
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestWrappedRulesetSettings(t *testing.T) {
@@ -25,11 +29,15 @@ func TestWrappedRulesetSettings(t *testing.T) {
 			MinimumFood:         5,
 			FoodSpawnChance:     10,
 			HazardDamagePerTurn: 10,
+			HazardMap:           "hz_spiral",
+			HazardMapAuthor:     "altersaddle",
 		},
 	}
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestSoloRulesetSettings(t *testing.T) {
@@ -38,11 +46,15 @@ func TestSoloRulesetSettings(t *testing.T) {
 			MinimumFood:         5,
 			FoodSpawnChance:     10,
 			HazardDamagePerTurn: 10,
+			HazardMap:           "hz_spiral",
+			HazardMapAuthor:     "altersaddle",
 		},
 	}
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestRoyaleRulesetSettings(t *testing.T) {
@@ -53,12 +65,16 @@ func TestRoyaleRulesetSettings(t *testing.T) {
 			MinimumFood:         5,
 			FoodSpawnChance:     10,
 			HazardDamagePerTurn: 10,
+			HazardMap:           "hz_spiral",
+			HazardMapAuthor:     "altersaddle",
 		},
 	}
 	assert.Equal(t, ruleset.ShrinkEveryNTurns, ruleset.Settings().RoyaleSettings.ShrinkEveryNTurns)
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestConstrictorRulesetSettings(t *testing.T) {
@@ -67,11 +83,15 @@ func TestConstrictorRulesetSettings(t *testing.T) {
 			MinimumFood:         5,
 			FoodSpawnChance:     10,
 			HazardDamagePerTurn: 10,
+			HazardMap:           "hz_spiral",
+			HazardMapAuthor:     "altersaddle",
 		},
 	}
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestSquadRulesetSettings(t *testing.T) {
@@ -84,6 +104,8 @@ func TestSquadRulesetSettings(t *testing.T) {
 			MinimumFood:         5,
 			FoodSpawnChance:     10,
 			HazardDamagePerTurn: 10,
+			HazardMap:           "hz_spiral",
+			HazardMapAuthor:     "altersaddle",
 		},
 	}
 	assert.Equal(t, ruleset.AllowBodyCollisions, ruleset.Settings().SquadSettings.AllowBodyCollisions)
@@ -94,6 +116,8 @@ func TestSquadRulesetSettings(t *testing.T) {
 	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
 	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
 	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
+	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
+	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
 func TestRulesetBuilder(t *testing.T) {

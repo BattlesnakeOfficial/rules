@@ -83,15 +83,12 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 }
 
 func (r RoyaleRuleset) Settings() Settings {
-	return Settings{
-		FoodSpawnChance:     r.FoodSpawnChance,
-		MinimumFood:         r.MinimumFood,
-		HazardDamagePerTurn: r.HazardDamagePerTurn,
-		RoyaleSettings: RoyaleSettings{
-			seed:              r.Seed,
-			ShrinkEveryNTurns: r.ShrinkEveryNTurns,
-		},
+	s := r.StandardRuleset.Settings()
+	s.RoyaleSettings = RoyaleSettings{
+		seed:              r.Seed,
+		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
 	}
+	return s
 }
 
 // Adaptor for integrating stages into RoyaleRuleset

@@ -9,6 +9,8 @@ type StandardRuleset struct {
 	FoodSpawnChance     int32 // [0, 100]
 	MinimumFood         int32
 	HazardDamagePerTurn int32
+	HazardMap           string // optional
+	HazardMapAuthor     string // optional
 }
 
 func (r *StandardRuleset) Name() string { return GameTypeStandard }
@@ -454,6 +456,8 @@ func (r StandardRuleset) Settings() Settings {
 		FoodSpawnChance:     r.FoodSpawnChance,
 		MinimumFood:         r.MinimumFood,
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
+		HazardMap:           r.HazardMap,
+		HazardMapAuthor:     r.HazardMapAuthor,
 	}
 }
 

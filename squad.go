@@ -142,18 +142,15 @@ func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, e
 }
 
 func (r SquadRuleset) Settings() Settings {
-	return Settings{
-		FoodSpawnChance:     r.FoodSpawnChance,
-		MinimumFood:         r.MinimumFood,
-		HazardDamagePerTurn: r.HazardDamagePerTurn,
-		SquadSettings: SquadSettings{
-			squadMap:            r.SquadMap,
-			AllowBodyCollisions: r.AllowBodyCollisions,
-			SharedElimination:   r.SharedElimination,
-			SharedHealth:        r.SharedHealth,
-			SharedLength:        r.SharedLength,
-		},
+	s := r.StandardRuleset.Settings()
+	s.SquadSettings = SquadSettings{
+		squadMap:            r.SquadMap,
+		AllowBodyCollisions: r.AllowBodyCollisions,
+		SharedElimination:   r.SharedElimination,
+		SharedHealth:        r.SharedHealth,
+		SharedLength:        r.SharedLength,
 	}
+	return s
 }
 
 // Adaptor for integrating stages into SquadRuleset
