@@ -28,7 +28,7 @@ func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves [
 		return nil, err
 	}
 
-	r.removeFood(prevState)
+	r.removeFood(nextState)
 
 	err = r.applyConstrictorRules(nextState)
 	if err != nil {

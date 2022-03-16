@@ -43,133 +43,183 @@ func TestStandardName(t *testing.T) {
 	require.Equal(t, "standard", r.Name())
 }
 
-func TestCreateNextBoardState(t *testing.T) {
-	tests := []struct {
-		prevState     *BoardState
-		moves         []SnakeMove
-		expectedError error
-		expectedState *BoardState
-	}{
-		{
-			&BoardState{
-				Width:  10,
-				Height: 10,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{1, 1}, {1, 2}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{{3, 4}, {3, 3}},
-						Health: 100,
-					},
-				},
-				Food:    []Point{{0, 0}, {1, 0}},
-				Hazards: []Point{},
+// Checks that the error for a snake missing a move is returned
+var standardCaseErrNoMoveFound = gameTestCase{
+	"Standard Case Error No Move Found",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 100,
 			},
-			[]SnakeMove{
-				{ID: "one", Move: MoveUp},
-			},
-			ErrorNoMoveFound,
-			nil,
-		},
-		{
-			&BoardState{
-				Width:  10,
-				Height: 10,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{1, 1}, {1, 2}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{},
-						Health: 100,
-					},
-				},
-				Food:    []Point{{0, 0}, {1, 0}},
-				Hazards: []Point{},
-			},
-			[]SnakeMove{
-				{ID: "one", Move: MoveUp},
-				{ID: "two", Move: MoveDown},
-			},
-			ErrorZeroLengthSnake,
-			nil,
-		},
-		{
-			&BoardState{
-				Width:  10,
-				Height: 10,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{1, 1}, {1, 2}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{{3, 4}, {3, 3}},
-						Health: 100,
-					},
-					{
-						ID:              "three",
-						Body:            []Point{},
-						Health:          100,
-						EliminatedCause: EliminatedByOutOfBounds,
-					},
-				},
-				Food:    []Point{{0, 0}, {1, 0}},
-				Hazards: []Point{},
-			},
-			[]SnakeMove{
-				{ID: "one", Move: MoveDown},
-				{ID: "two", Move: MoveUp},
-				{ID: "three", Move: MoveLeft}, // Should be ignored
-			},
-			nil,
-			&BoardState{
-				Width:  10,
-				Height: 10,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{{3, 5}, {3, 4}},
-						Health: 99,
-					},
-					{
-						ID:              "three",
-						Body:            []Point{},
-						Health:          100,
-						EliminatedCause: EliminatedByOutOfBounds,
-					},
-				},
-				Food:    []Point{{0, 0}},
-				Hazards: []Point{},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 4}, {3, 3}},
+				Health: 100,
 			},
 		},
-	}
+		Food:    []Point{{0, 0}, {1, 0}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+	},
+	ErrorNoMoveFound,
+	nil,
+}
 
+// Checks that the error for a snake with no points is returned
+var standardCaseErrZeroLengthSnake = gameTestCase{
+	"Standard Case Error Zero Length Snake",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{},
+				Health: 100,
+			},
+		},
+		Food:    []Point{{0, 0}, {1, 0}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+		{ID: "two", Move: MoveDown},
+	},
+	ErrorZeroLengthSnake,
+	nil,
+}
+
+// Checks a basic state where a snake moves, eats and grows
+var standardCaseMoveEatAndGrow = gameTestCase{
+	"Standard Case Move Eat and Grow",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {1, 2}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 4}, {3, 3}},
+				Health: 100,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedByOutOfBounds,
+			},
+		},
+		Food:    []Point{{0, 0}, {1, 0}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveDown},
+		{ID: "two", Move: MoveUp},
+		{ID: "three", Move: MoveLeft}, // Should be ignored
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Health: 100,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{3, 5}, {3, 4}},
+				Health: 99,
+			},
+			{
+				ID:              "three",
+				Body:            []Point{},
+				Health:          100,
+				EliminatedCause: EliminatedByOutOfBounds,
+			},
+		},
+		Food:    []Point{{0, 0}},
+		Hazards: []Point{},
+	},
+}
+
+// Checks a basic state where two snakes of equal sizes collide, and both should
+// be eliminated as a result.
+var standardMoveAndCollideMAD = gameTestCase{
+	"Standard Case Move and Collide",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 99,
+			},
+			{
+				ID:     "two",
+				Body:   []Point{{1, 2}, {2, 2}},
+				Health: 99,
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+		{ID: "two", Move: MoveDown},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:              "one",
+				Body:            []Point{{1, 2}, {1, 1}},
+				Health:          98,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "two",
+			},
+			{
+				ID:              "two",
+				Body:            []Point{{1, 1}, {1, 2}},
+				Health:          98,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "one",
+			},
+		},
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+}
+
+func TestStandardCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		standardCaseMoveEatAndGrow,
+		standardMoveAndCollideMAD,
+	}
 	r := StandardRuleset{}
-	for _, test := range tests {
-		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
-		require.Equal(t, test.expectedError, err)
-		if test.expectedState != nil {
-			require.Equal(t, test.expectedState.Width, nextState.Width)
-			require.Equal(t, test.expectedState.Height, nextState.Height)
-			require.Equal(t, test.expectedState.Food, nextState.Food)
-			require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
-			require.Equal(t, test.expectedState.Hazards, nextState.Hazards)
-		}
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }
 

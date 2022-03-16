@@ -45,89 +45,67 @@ func TestConstrictorModifyInitialBoardState(t *testing.T) {
 	}
 }
 
-func TestConstrictorCreateNextBoardState(t *testing.T) {
-	tests := []struct {
-		prevState     *BoardState
-		moves         []SnakeMove
-		expectedState *BoardState
-	}{
-		{
-			&BoardState{
-				Width:  3,
-				Height: 3,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{0, 0}, {0, 0}, {0, 0}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{{2, 2}, {2, 2}, {2, 2}},
-						Health: 100,
-					},
-				},
-				Food: []Point{},
+// Test that two equal snakes collide and both get eliminated
+// also checks:
+//	- food removed
+//  - health back to max
+var constrictorMoveAndCollideMAD = gameTestCase{
+	"Constrictor Case Move and Collide",
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:     "one",
+				Body:   []Point{{1, 1}, {2, 1}},
+				Health: 99,
 			},
-			[]SnakeMove{
-				{ID: "one", Move: MoveUp},
-				{ID: "two", Move: MoveDown},
-			},
-			&BoardState{
-				Width:  3,
-				Height: 3,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{0, 1}, {0, 0}, {0, 0}},
-						Health: 100,
-					},
-					{
-						ID:     "two",
-						Body:   []Point{{2, 1}, {2, 2}, {2, 2}},
-						Health: 100,
-					},
-				},
-				Food: []Point{},
+			{
+				ID:     "two",
+				Body:   []Point{{1, 2}, {2, 2}},
+				Health: 99,
 			},
 		},
-		// Ensure snakes keep growing and are fed
-		{
-			&BoardState{
-				Width:  3,
-				Height: 3,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{2, 0}, {1, 0}, {0, 0}, {0, 0}},
-						Health: 75,
-					},
-				},
-				Food: []Point{},
+		Food:    []Point{{10, 10}, {9, 9}, {8, 8}},
+		Hazards: []Point{},
+	},
+	[]SnakeMove{
+		{ID: "one", Move: MoveUp},
+		{ID: "two", Move: MoveDown},
+	},
+	nil,
+	&BoardState{
+		Width:  10,
+		Height: 10,
+		Snakes: []Snake{
+			{
+				ID:              "one",
+				Body:            []Point{{1, 2}, {1, 1}, {1, 1}},
+				Health:          100,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "two",
 			},
-			[]SnakeMove{
-				{ID: "one", Move: MoveUp},
-			},
-			&BoardState{
-				Width:  3,
-				Height: 3,
-				Snakes: []Snake{
-					{
-						ID:     "one",
-						Body:   []Point{{2, 1}, {2, 0}, {1, 0}, {0, 0}, {0, 0}},
-						Health: 100,
-					},
-				},
-				Food: []Point{},
+			{
+				ID:              "two",
+				Body:            []Point{{1, 1}, {1, 2}, {1, 2}},
+				Health:          100,
+				EliminatedCause: EliminatedByCollision,
+				EliminatedBy:    "one",
 			},
 		},
-	}
+		Food:    []Point{},
+		Hazards: []Point{},
+	},
+}
 
+func TestConstrictorCreateNextBoardState(t *testing.T) {
+	cases := []gameTestCase{
+		standardCaseErrNoMoveFound,
+		standardCaseErrZeroLengthSnake,
+		constrictorMoveAndCollideMAD,
+	}
 	r := ConstrictorRuleset{}
-	for _, test := range tests {
-		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
-		require.NoError(t, err)
-		require.Equal(t, test.expectedState.Food, nextState.Food)
-		require.Equal(t, test.expectedState.Snakes, nextState.Snakes)
+	for _, gc := range cases {
+		gc.requireValidNextState(t, &r)
 	}
 }

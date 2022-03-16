@@ -55,6 +55,9 @@ func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (boo
 
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
+		if snake.EliminatedCause != NotEliminated {
+			continue
+		}
 		snake.Body[0].X = wrap(snake.Body[0].X, 0, b.Width-1)
 		snake.Body[0].Y = wrap(snake.Body[0].Y, 0, b.Height-1)
 	}
