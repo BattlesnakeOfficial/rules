@@ -145,10 +145,10 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		return &SquadRuleset{
 			StandardRuleset:     *standardRuleset,
 			SquadMap:            squadMap,
-			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, true),
-			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, true),
-			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, true),
-			SharedLength:        paramsBool(rb.params, ParamSharedLength, true),
+			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
+			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
+			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
+			SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
 		}
 	}
 	return standardRuleset
