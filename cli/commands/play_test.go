@@ -2,53 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
 	"github.com/BattlesnakeOfficial/rules/test"
-	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/require"
 )
-
-func TestPlayArgsConfigInitialised(t *testing.T) {
-	oldArgs := os.Args
-	oldRun := run
-	defer func() {
-		os.Args = oldArgs
-		run = oldRun
-	}()
-
-	os.Args = []string{
-		"",
-		"play",
-		"-g", "solo",
-		"--foodSpawnChance", "2",
-		"--minimumFood", "2",
-		"--hazardDamagePerTurn", "2",
-		"--shrinkEveryNTurns", "2",
-	}
-	run = func(cmd *cobra.Command, args []string) {
-		// no-op
-	}
-
-	// validate initial assumptions
-	require.NotEqual(t, "solo", defaultConfig[rules.ParamGameType])
-	require.NotEqual(t, "2", defaultConfig[rules.ParamFoodSpawnChance])
-	require.NotEqual(t, "2", defaultConfig[rules.ParamMinimumFood])
-	require.NotEqual(t, "2", defaultConfig[rules.ParamHazardDamagePerTurn])
-	require.NotEqual(t, "2", defaultConfig[rules.ParamShrinkEveryNTurns])
-
-	err := playCmd.Execute()
-	require.NoError(t, err)
-
-	// check that default config is updated to reflect game type
-	require.Equal(t, "solo", defaultConfig[rules.ParamGameType])
-	require.Equal(t, "2", defaultConfig[rules.ParamFoodSpawnChance])
-	require.Equal(t, "2", defaultConfig[rules.ParamMinimumFood])
-	require.Equal(t, "2", defaultConfig[rules.ParamHazardDamagePerTurn])
-	require.Equal(t, "2", defaultConfig[rules.ParamShrinkEveryNTurns])
-}
 
 func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
