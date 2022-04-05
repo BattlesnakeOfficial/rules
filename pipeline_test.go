@@ -58,21 +58,6 @@ func TestPipeline(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, next)
 	require.True(t, ended)
-
-	// test that Append works
-	p, err = rules.NewPipelineFromRegistry(r, "astage")
-	require.NoError(t, err)
-	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
-	require.NoError(t, err)
-	require.NotNil(t, next)
-	require.False(t, ended) // current pipeline shouldn't end
-	p2, err := rules.NewPipelineFromRegistry(r, "ends")
-	require.NoError(t, err)
-	p = p.Append(p2)
-	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
-	require.NoError(t, err)
-	require.NotNil(t, next)
-	require.True(t, ended) // now the pipeline should end since we appended a pipeline that does end
 }
 
 func TestStageRegistry(t *testing.T) {

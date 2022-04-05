@@ -109,14 +109,6 @@ func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string
 	return p, nil
 }
 
-// Append appends the stages from another pipeline to the end of this pipeline.
-// It is similar to the standard append in that the backing slice of stages will be re-used, when possible.
-func (p *Pipeline) Append(p2 *Pipeline) *Pipeline {
-	return &Pipeline{
-		stages: append(p.stages, p2.stages...),
-	}
-}
-
 // Execute runs all of the pipeline stages and produces a next game state
 // by cloning the original state and applying stages to modify the cloned, next state.
 //
