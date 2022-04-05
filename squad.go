@@ -52,11 +52,6 @@ func areSnakeIDsOnSameSquad(squadMap map[string]string, snakeID string, otherID 
 	return squadMap[snakeID] == squadMap[otherID]
 }
 
-func (r *SquadRuleset) resurrectSquadBodyCollisions(b *BoardState) error {
-	_, err := r.callStageFunc(ResurrectSnakesSquad, b, []SnakeMove{})
-	return err
-}
-
 func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	if !settings.SquadSettings.AllowBodyCollisions {
 		return false, nil
@@ -76,11 +71,6 @@ func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 	}
 
 	return false, nil
-}
-
-func (r *SquadRuleset) shareSquadAttributes(b *BoardState) error {
-	_, err := r.callStageFunc(ShareAttributesSquad, b, []SnakeMove{})
-	return err
 }
 
 func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
