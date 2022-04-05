@@ -29,11 +29,6 @@ func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []Sna
 	return nextState, err
 }
 
-func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
-	_, err := r.callStageFunc(MoveSnakesWrapped, b, moves)
-	return err
-}
-
 func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	_, err := MoveSnakesStandard(b, settings, moves)
 	if err != nil {
