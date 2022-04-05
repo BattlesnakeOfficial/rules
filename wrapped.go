@@ -6,40 +6,27 @@ type WrappedRuleset struct {
 
 func (r *WrappedRuleset) Name() string { return GameTypeWrapped }
 
+func (r WrappedRuleset) Pipeline() (*Pipeline, error) {
+	return NewPipeline(
+		"movement.wrapped",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
+	)
+}
+
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	nextState := prevState.Clone()
 
-	err := r.moveSnakes(nextState, moves)
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
+	_, err = p.Execute(nextState, r.Settings(), moves)
 
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeDamageHazards(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+	return nextState, err
 }
 
 func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {

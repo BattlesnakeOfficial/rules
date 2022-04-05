@@ -20,46 +20,28 @@ func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*Bo
 	return initialState, nil
 }
 
+func (r StandardRuleset) Pipeline() (*Pipeline, error) {
+	return NewPipeline(
+		"movement.standard",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
+	)
+}
+
 func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	// We specifically want to copy prevState, so as not to alter it directly.
 	nextState := prevState.Clone()
 
-	err := r.moveSnakes(nextState, moves)
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
+	_, err = p.Execute(nextState, r.Settings(), moves)
 
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeDamageHazards(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// bvanvugt: We specifically want this to happen before elimination for two reasons:
-	// 1) We want snakes to be able to eat on their very last turn and still survive.
-	// 2) So that head-to-head collisions on food still remove the food.
-	//    This does create an artifact though, where head-to-head collisions
-	//    of equal length actually show length + 1 and full health, as if both snakes ate.
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+	return nextState, err
 }
 
 func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {

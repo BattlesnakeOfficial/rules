@@ -6,6 +6,23 @@ type ConstrictorRuleset struct {
 
 func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
+func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
+	// The squad pipeline extends the standard pipeline
+	standard, err := r.StandardRuleset.Pipeline()
+	if err != nil {
+		return nil, err
+	}
+
+	constrictor, err := NewPipeline(
+		"removefood.constrictor",
+		"growsnake.constrictor",
+	)
+	if err != nil {
+		return nil, err
+	}
+	return standard.Append(constrictor), nil
+}
+
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
 	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)
 	if err != nil {
@@ -23,19 +40,15 @@ func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardSta
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
+	nextState := prevState.Clone()
+
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
+	_, err = p.Execute(nextState, r.Settings(), moves)
 
-	r.removeFood(nextState)
-
-	err = r.applyConstrictorRules(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+	return nextState, err
 }
 
 func (r *ConstrictorRuleset) removeFood(b *BoardState) {

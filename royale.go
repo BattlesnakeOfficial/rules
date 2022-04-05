@@ -15,23 +15,36 @@ type RoyaleRuleset struct {
 
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
+func (r RoyaleRuleset) Pipeline() (*Pipeline, error) {
+	// The squad pipeline extends the standard pipeline
+	standard, err := r.StandardRuleset.Pipeline()
+	if err != nil {
+		return nil, err
+	}
+
+	royale, err := NewPipeline(
+		"placehazard.royale",
+	)
+	if err != nil {
+		return nil, err
+	}
+	return standard.Append(royale), nil
+}
+
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.StandardRuleset.HazardDamagePerTurn < 1 {
 		return nil, errors.New("royale damage per turn must be greater than zero")
 	}
 
-	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
+	nextState := prevState.Clone()
+
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
+	_, err = p.Execute(nextState, r.Settings(), moves)
 
-	// Royale's only job is now to populate the hazards for next turn - StandardRuleset takes care of applying hazard damage.
-	err = r.populateHazards(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextBoardState, nil
+	return nextState, err
 }
 
 func (r *RoyaleRuleset) populateHazards(b *BoardState) error {

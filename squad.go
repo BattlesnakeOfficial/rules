@@ -18,23 +18,33 @@ type SquadRuleset struct {
 
 func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
+func (r SquadRuleset) Pipeline() (*Pipeline, error) {
+	// The squad pipeline extends the standard pipeline
+	standard, err := r.StandardRuleset.Pipeline()
+	if err != nil {
+		return nil, err
+	}
+
+	squad, err := NewPipeline(
+		"collision.squad",
+		"sharedattr.squad",
+	)
+	if err != nil {
+		return nil, err
+	}
+	return standard.Append(squad), nil
+}
+
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
+	nextState := prevState.Clone()
+
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
+	_, err = p.Execute(nextState, r.Settings(), moves)
 
-	err = r.resurrectSquadBodyCollisions(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.shareSquadAttributes(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextBoardState, nil
+	return nextState, err
 }
 
 func areSnakesOnSameSquad(squadMap map[string]string, snake *Snake, other *Snake) bool {

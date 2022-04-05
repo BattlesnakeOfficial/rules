@@ -8,7 +8,23 @@ import (
 type StageRegistry map[string]StageFunc
 
 // globalRegistry is a global mapping of stage names to stage functions
-var globalRegistry = StageRegistry{}
+var globalRegistry = StageRegistry{
+	"reducehealth.standard":   ReduceSnakeHealthStandard,
+	"hazarddamage.standard":   DamageHazardsStandard,
+	"eatfood.standard":        FeedSnakesStandard,
+	"placefood.standard":      SpawnFoodStandard,
+	"placehazard.royale":      PopulateHazardsRoyale,
+	"removefood.constrictor":  RemoveFoodConstrictor,
+	"growsnake.constrictor":   GrowSnakesConstrictor,
+	"eliminatesnake.standard": EliminateSnakesStandard,
+	"movement.standard":       MoveSnakesStandard,
+	"movement.wrapped":        MoveSnakesWrapped,
+	"gameover.standard":       GameOverStandard,
+	"gameover.solo":           GameOverSolo,
+	"gameover.squad":          GameOverSquad,
+	"collision.squad":         ResurrectSnakesSquad,
+	"sharedattr.squad":        ShareAttributesSquad,
+}
 
 // RegisterPipelineStage adds a stage to the registry.
 // If a stage has already been mapped it will be overwritten by the newly
@@ -50,26 +66,15 @@ type Pipeline struct {
 	stages []StageFunc
 }
 
-// NewPipeline constructs an instance of Pipeline, which is a series of stages of
-// game behavior that are ordered in a particular sequence.
-//
-//
-// The order of execution for the pipeline stages will correspond to the order that
-// the stage names are provided.
-//
-// Example:
-// 	NewPipeline(s, "stage1", "stage2")
-// ... will result in stage "stage1" running first, then stage "stage2" running after.
-//
-// The stage names come from a global registry that maps names to stage functions.
-//
-// An error will be returned if an unregistered stage name is used (a name that is not
-// mapped in the registry).
+// NewPipeline constructs an instance of Pipeline using the global registry.
+// It is a convenience wrapper for NewPipelineFromRegistry when you want
+// to use the default, global registry.
 func NewPipeline(stageNames ...string) (*Pipeline, error) {
 	return NewPipelineFromRegistry(globalRegistry, stageNames...)
 }
 
-// NewPipelineFromRegistry constructs an instance of Pipeline, using the specified registry.
+// NewPipelineFromRegistry constructs an instance of Pipeline, using the specified registry
+// of pipeline stage functions.
 //
 // The order of execution for the pipeline stages will correspond to the order that
 // the stage names are provided.
@@ -102,6 +107,14 @@ func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string
 	}
 
 	return p, nil
+}
+
+// Append appends the stages from another pipeline to the end of this pipeline.
+// It is similar to the standard append in that the backing slice of stages will be re-used, when possible.
+func (p *Pipeline) Append(p2 *Pipeline) *Pipeline {
+	return &Pipeline{
+		stages: append(p.stages, p2.stages...),
+	}
 }
 
 // Execute runs all of the pipeline stages and produces a next game state.
