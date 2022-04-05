@@ -8,12 +8,12 @@ func (r *WrappedRuleset) Name() string { return GameTypeWrapped }
 
 func (r WrappedRuleset) Pipeline() (*Pipeline, error) {
 	return NewPipeline(
-		"movement.wrapped",
-		"reducehealth.standard",
-		"hazarddamage.standard",
-		"eatfood.standard",
-		"placefood.standard",
-		"eliminatesnake.standard",
+		"snake.movement.wrapped",
+		"health.reduce.standard",
+		"hazard.damage.standard",
+		"snake.eatfood.standard",
+		"food.spawn.standard",
+		"snake.eliminate.standard",
 	)
 }
 

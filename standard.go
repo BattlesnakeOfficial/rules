@@ -22,12 +22,12 @@ func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*Bo
 
 func (r StandardRuleset) Pipeline() (*Pipeline, error) {
 	return NewPipeline(
-		"movement.standard",
-		"reducehealth.standard",
-		"hazarddamage.standard",
-		"eatfood.standard",
-		"placefood.standard",
-		"eliminatesnake.standard",
+		"snake.movement.standard",
+		"health.reduce.standard",
+		"hazard.damage.standard",
+		"snake.eatfood.standard",
+		"food.spawn.standard",
+		"snake.eliminate.standard",
 		"gameover.standard",
 	)
 }

@@ -7,23 +7,23 @@ import (
 // StageRegistry is a mapping of stage names to stage functions
 type StageRegistry map[string]StageFunc
 
-// globalRegistry is a global mapping of stage names to stage functions
+// globalRegistry is a global, default mapping of stage names to stage functions
 var globalRegistry = StageRegistry{
-	"reducehealth.standard":   ReduceSnakeHealthStandard,
-	"hazarddamage.standard":   DamageHazardsStandard,
-	"eatfood.standard":        FeedSnakesStandard,
-	"placefood.standard":      SpawnFoodStandard,
-	"placehazard.royale":      PopulateHazardsRoyale,
-	"removefood.constrictor":  RemoveFoodConstrictor,
-	"growsnake.constrictor":   GrowSnakesConstrictor,
-	"eliminatesnake.standard": EliminateSnakesStandard,
-	"movement.standard":       MoveSnakesStandard,
-	"movement.wrapped":        MoveSnakesWrapped,
-	"gameover.standard":       GameOverStandard,
-	"gameover.solo":           GameOverSolo,
-	"gameover.squad":          GameOverSquad,
-	"collision.squad":         ResurrectSnakesSquad,
-	"sharedattr.squad":        ShareAttributesSquad,
+	"food.remove.constrictor":  RemoveFoodConstrictor,
+	"food.spawn.standard":      SpawnFoodStandard,
+	"gameover.solo":            GameOverSolo,
+	"gameover.squad":           GameOverSquad,
+	"gameover.standard":        GameOverStandard,
+	"hazard.damage.standard":   DamageHazardsStandard,
+	"hazard.spawn.royale":      PopulateHazardsRoyale,
+	"health.reduce.standard":   ReduceSnakeHealthStandard,
+	"snake.collision.squad":    ResurrectSnakesSquad,
+	"snake.eatfood.standard":   FeedSnakesStandard,
+	"snake.eliminate.standard": EliminateSnakesStandard,
+	"snake.grow.constrictor":   GrowSnakesConstrictor,
+	"snake.movement.standard":  MoveSnakesStandard,
+	"snake.movement.wrapped":   MoveSnakesWrapped,
+	"snake.share.squad":        ShareAttributesSquad,
 }
 
 // RegisterPipelineStage adds a stage to the registry.

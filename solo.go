@@ -8,12 +8,12 @@ func (r *SoloRuleset) Name() string { return GameTypeSolo }
 
 func (r SoloRuleset) Pipeline() (*Pipeline, error) {
 	return NewPipeline(
-		"movement.standard",
-		"reducehealth.standard",
-		"hazarddamage.standard",
-		"eatfood.standard",
-		"placefood.standard",
-		"eliminatesnake.standard",
+		"snake.movement.standard",
+		"health.reduce.standard",
+		"hazard.damage.standard",
+		"snake.eatfood.standard",
+		"food.spawn.standard",
+		"snake.eliminate.standard",
 		"gameover.solo",
 	)
 }

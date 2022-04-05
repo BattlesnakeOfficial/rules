@@ -20,14 +20,14 @@ func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
 func (r SquadRuleset) Pipeline() (*Pipeline, error) {
 	return NewPipeline(
-		"movement.standard",
-		"reducehealth.standard",
-		"hazarddamage.standard",
-		"eatfood.standard",
-		"placefood.standard",
-		"eliminatesnake.standard",
-		"collision.squad",
-		"sharedattr.squad",
+		"snake.movement.standard",
+		"health.reduce.standard",
+		"hazard.damage.standard",
+		"snake.eatfood.standard",
+		"food.spawn.standard",
+		"snake.eliminate.standard",
+		"snake.collision.squad",
+		"snake.share.squad",
 		"gameover.squad",
 	)
 }

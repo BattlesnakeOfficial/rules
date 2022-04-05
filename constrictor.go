@@ -8,14 +8,14 @@ func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
 func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
 	return NewPipeline(
-		"movement.standard",
-		"reducehealth.standard",
-		"hazarddamage.standard",
-		"eatfood.standard",
-		"placefood.standard",
-		"eliminatesnake.standard",
-		"removefood.constrictor",
-		"growsnake.constrictor",
+		"snake.movement.standard",
+		"health.reduce.standard",
+		"hazard.damage.standard",
+		"snake.eatfood.standard",
+		"food.spawn.standard",
+		"snake.eliminate.standard",
+		"food.remove.constrictor",
+		"snake.grow.constrictor",
 		"gameover.standard",
 	)
 }
