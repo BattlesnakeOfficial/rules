@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/client"
 	"github.com/BattlesnakeOfficial/rules/test"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetIndividualBoardStateForSnake(t *testing.T) {
@@ -99,6 +101,105 @@ func TestSettingsRequestSerialization(t *testing.T) {
 			t.Log(string(requestBody))
 
 			test.RequireJSONMatchesFixture(t, fmt.Sprintf("testdata/snake_request_body_%s.json", gt), string(requestBody))
+		})
+	}
+}
+
+func TestConvertRulesSnakes(t *testing.T) {
+	tests := []struct {
+		name     string
+		snakes   []rules.Snake
+		state    map[string]SnakeState
+		expected []client.Snake
+	}{
+		{
+			name:     "empty",
+			snakes:   []rules.Snake{},
+			state:    map[string]SnakeState{},
+			expected: []client.Snake{},
+		},
+		{
+			name: "all properties",
+			snakes: []rules.Snake{
+				{ID: "one", Body: []rules.Point{{X: 3, Y: 3}, {X: 2, Y: 3}}, Health: 100},
+			},
+			state: map[string]SnakeState{
+				"one": {
+					ID:        "one",
+					Name:      "ONE",
+					URL:       "http://example1.com",
+					Squad:     "squadA",
+					Head:      "a",
+					Tail:      "b",
+					Color:     "#012345",
+					LastMove:  "up",
+					Character: '+',
+				},
+			},
+			expected: []client.Snake{
+				{
+					ID:      "one",
+					Name:    "ONE",
+					Latency: "0",
+					Health:  100,
+					Body:    []client.Coord{{X: 3, Y: 3}, {X: 2, Y: 3}},
+					Head:    client.Coord{X: 3, Y: 3},
+					Length:  2,
+					Shout:   "",
+					Squad:   "squadA",
+					Customizations: client.Customizations{
+						Color: "#012345",
+						Head:  "a",
+						Tail:  "b",
+					},
+				},
+			},
+		},
+		{
+			name: "some eliminated",
+			snakes: []rules.Snake{
+				{
+					ID:               "one",
+					EliminatedCause:  rules.EliminatedByCollision,
+					EliminatedOnTurn: 1,
+					Body:             []rules.Point{{X: 3, Y: 3}},
+				},
+				{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}},
+			},
+			state: map[string]SnakeState{
+				"one": {ID: "one"},
+				"two": {ID: "two"},
+			},
+			expected: []client.Snake{
+				{
+					ID:      "two",
+					Latency: "0",
+					Body:    []client.Coord{{X: 4, Y: 3}},
+					Head:    client.Coord{X: 4, Y: 3},
+					Length:  1,
+				},
+			},
+		},
+		{
+			name: "all eliminated",
+			snakes: []rules.Snake{
+				{
+					ID:               "one",
+					EliminatedCause:  rules.EliminatedByCollision,
+					EliminatedOnTurn: 1,
+					Body:             []rules.Point{{X: 3, Y: 3}},
+				},
+			},
+			state: map[string]SnakeState{
+				"one": {ID: "one"},
+			},
+			expected: []client.Snake{},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := convertRulesSnakes(test.snakes, test.state)
+			require.Equal(t, test.expected, actual)
 		})
 	}
 }

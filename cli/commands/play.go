@@ -43,6 +43,7 @@ var Names []string
 var URLs []string
 var Squads []string
 var Timeout int32
+var TurnDuration int32
 var Sequential bool
 var GameType string
 var ViewMap bool
@@ -90,6 +91,7 @@ func init() {
 	playCmd.Flags().BoolVarP(&UseColor, "color", "c", false, "Use color to draw the map")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
+	playCmd.Flags().Int32VarP(&TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
 	playCmd.Flags().StringVarP(&Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
 
@@ -111,6 +113,7 @@ var run = func(cmd *cobra.Command, args []string) {
 	GameId = uuid.New().String()
 	Turn = 0
 
+	var endTime time.Time
 	snakeStates := buildSnakesFromOptions()
 
 	ruleset := getRuleset(Seed, snakeStates)
@@ -125,6 +128,10 @@ var run = func(cmd *cobra.Command, args []string) {
 	}
 
 	for v := false; !v; v, _ = ruleset.IsGameOver(state) {
+		if TurnDuration > 0 {
+			endTime = time.Now().Add(time.Duration(TurnDuration) * time.Millisecond)
+		}
+
 		Turn++
 		state = createNextBoardState(ruleset, state, snakeStates, Turn)
 
@@ -136,6 +143,10 @@ var run = func(cmd *cobra.Command, args []string) {
 
 		if TurnDelay > 0 {
 			time.Sleep(time.Duration(TurnDelay) * time.Millisecond)
+		}
+
+		if TurnDuration > 0 {
+			time.Sleep(time.Until(endTime))
 		}
 
 		if exportGame {
@@ -392,7 +403,7 @@ func convertRulesSnake(snake rules.Snake, snakeState SnakeState) client.Snake {
 }
 
 func convertRulesSnakes(snakes []rules.Snake, snakeStates map[string]SnakeState) []client.Snake {
-	var a []client.Snake
+	a := make([]client.Snake, 0)
 	for _, snake := range snakes {
 		if snake.EliminatedCause == rules.NotEliminated {
 			a = append(a, convertRulesSnake(snake, snakeStates[snake.ID]))
