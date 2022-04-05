@@ -7,7 +7,7 @@ type ConstrictorRuleset struct {
 func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
 func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
-	// The squad pipeline extends the standard pipeline
+	// The constrictor pipeline extends the standard pipeline
 	standard, err := r.StandardRuleset.Pipeline()
 	if err != nil {
 		return nil, err

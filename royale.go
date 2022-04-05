@@ -16,7 +16,7 @@ type RoyaleRuleset struct {
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
 func (r RoyaleRuleset) Pipeline() (*Pipeline, error) {
-	// The squad pipeline extends the standard pipeline
+	// The royale pipeline extends the standard pipeline
 	standard, err := r.StandardRuleset.Pipeline()
 	if err != nil {
 		return nil, err
