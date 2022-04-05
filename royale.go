@@ -44,11 +44,6 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 	return nextState, err
 }
 
-func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
-	_, err := r.callStageFunc(PopulateHazardsRoyale, b, []SnakeMove{})
-	return err
-}
-
 func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	b.Hazards = []Point{}
 
@@ -99,9 +94,4 @@ func (r RoyaleRuleset) Settings() Settings {
 		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
 	}
 	return s
-}
-
-// Adaptor for integrating stages into RoyaleRuleset
-func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
 }

@@ -102,7 +102,7 @@ func TestRoyaleHazards(t *testing.T) {
 			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 		}
 
-		err := r.populateHazards(b)
+		_, err := PopulateHazardsRoyale(b, r.Settings(), nil)
 		require.Equal(t, test.Error, err)
 		if err == nil {
 			// Obstacles should match
@@ -131,7 +131,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	stateAfterTurn := func(prevState *BoardState, turn int32) *BoardState {
 		nextState := prevState.Clone()
 		nextState.Turn = turn - 1
-		err := r.populateHazards(nextState)
+		_, err := PopulateHazardsRoyale(nextState, r.Settings(), nil)
 		require.NoError(t, err)
 		nextState.Turn = turn
 		return nextState
