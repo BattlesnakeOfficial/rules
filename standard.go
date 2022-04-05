@@ -28,6 +28,7 @@ func (r StandardRuleset) Pipeline() (*Pipeline, error) {
 		"eatfood.standard",
 		"placefood.standard",
 		"eliminatesnake.standard",
+		"gameover.standard",
 	)
 }
 
@@ -42,11 +43,6 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 	_, err = p.Execute(nextState, r.Settings(), moves)
 
 	return nextState, err
-}
-
-func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
-	_, err := r.callStageFunc(MoveSnakesStandard, b, moves)
-	return err
 }
 
 func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -146,11 +142,6 @@ func getDefaultMove(snakeBody []Point) string {
 	return MoveUp
 }
 
-func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
-	_, err := r.callStageFunc(ReduceSnakeHealthStandard, b, []SnakeMove{})
-	return err
-}
-
 func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
@@ -158,11 +149,6 @@ func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMo
 		}
 	}
 	return false, nil
-}
-
-func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
-	_, err := r.callStageFunc(DamageHazardsStandard, b, []SnakeMove{})
-	return err
 }
 
 func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -198,11 +184,6 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 	}
 
 	return false, nil
-}
-
-func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
-	_, err := r.callStageFunc(EliminateSnakesStandard, b, []SnakeMove{})
-	return err
 }
 
 func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -360,11 +341,6 @@ func snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 	return false
 }
 
-func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
-	_, err := r.callStageFunc(FeedSnakesStandard, b, []SnakeMove{})
-	return err
-}
-
 func FeedSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	newFood := []Point{}
 	for _, food := range b.Food {
@@ -401,11 +377,6 @@ func growSnake(snake *Snake) {
 	if len(snake.Body) > 0 {
 		snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
 	}
-}
-
-func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
-	_, err := r.callStageFunc(SpawnFoodStandard, b, []SnakeMove{})
-	return err
 }
 
 func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
