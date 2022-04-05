@@ -33,13 +33,11 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 		return nil, errors.New("royale damage per turn must be greater than zero")
 	}
 
-	nextState := prevState.Clone()
-
 	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.Execute(nextState, r.Settings(), moves)
+	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
 
 	return nextState, err
 }

@@ -28,44 +28,50 @@ func TestPipeline(t *testing.T) {
 	p, err := rules.NewPipelineFromRegistry(r, "astage")
 	require.NoError(t, err)
 	require.NotNil(t, p)
-	ended, err := p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err := p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.False(t, ended)
 
 	// test that the pipeline short-circuits for a stage that errors
 	r.RegisterPipelineStage("errors", mockStageFn(false, errors.New("")))
 	p, err = rules.NewPipelineFromRegistry(r, "errors", "astage")
 	require.NoError(t, err)
-	ended, err = p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.Error(t, err)
+	require.NotNil(t, next)
 	require.False(t, ended)
 
 	// test that the pipeline short-circuits for a stage that ends
 	r.RegisterPipelineStage("ends", mockStageFn(true, nil))
 	p, err = rules.NewPipelineFromRegistry(r, "ends", "astage")
 	require.NoError(t, err)
-	ended, err = p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.True(t, ended)
 
 	// test that the pipeline runs normally for multiple stages
 	p, err = rules.NewPipelineFromRegistry(r, "astage", "ends")
 	require.NoError(t, err)
-	ended, err = p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.True(t, ended)
 
 	// test that Append works
 	p, err = rules.NewPipelineFromRegistry(r, "astage")
 	require.NoError(t, err)
-	ended, err = p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.False(t, ended) // current pipeline shouldn't end
 	p2, err := rules.NewPipelineFromRegistry(r, "ends")
 	require.NoError(t, err)
 	p = p.Append(p2)
-	ended, err = p.Execute(nil, rules.Settings{}, nil)
+	ended, next, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.True(t, ended) // now the pipeline should end since we appended a pipeline that does end
 }
 

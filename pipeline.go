@@ -117,23 +117,28 @@ func (p *Pipeline) Append(p2 *Pipeline) *Pipeline {
 	}
 }
 
-// Execute runs all of the pipeline stages and produces a next game state.
+// Execute runs all of the pipeline stages and produces a next game state
+// by cloning the original state and applying stages to modify the cloned, next state.
+//
 // If any stage produces an error or an ended game state, the pipeline
 // immediately stops at that stage.
+//
 // The result is always the result of the last stage that was executed.
-func (p *Pipeline) Execute(state *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+//
+func (p *Pipeline) Execute(state *BoardState, settings Settings, moves []SnakeMove) (bool, *BoardState, error) {
 	var ended bool
 	var err error
+	state = state.Clone()
 	for _, fn := range p.stages {
 		// execute current stage
 		ended, err = fn(state, settings, moves)
 
 		// stop if we hit any errors or if the game is ended
 		if err != nil || ended {
-			return ended, err
+			return ended, state, err
 		}
 	}
 
 	// return the result of the last stage as the final pipeline result
-	return ended, err
+	return ended, state, err
 }

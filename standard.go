@@ -33,14 +33,11 @@ func (r StandardRuleset) Pipeline() (*Pipeline, error) {
 }
 
 func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	// We specifically want to copy prevState, so as not to alter it directly.
-	nextState := prevState.Clone()
-
 	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.Execute(nextState, r.Settings(), moves)
+	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
 
 	return nextState, err
 }

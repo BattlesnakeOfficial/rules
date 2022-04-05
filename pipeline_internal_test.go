@@ -24,8 +24,9 @@ func TestPipelineGlboals(t *testing.T) {
 	require.NotNil(t, p)
 
 	// ensure that it runs okay too
-	ended, err := p.Execute(nil, Settings{}, nil)
+	ended, next, err := p.Execute(&BoardState{}, Settings{}, nil)
 	require.NoError(t, err)
+	require.NotNil(t, next)
 	require.True(t, ended)
 
 	globalRegistry = oldReg

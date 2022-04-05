@@ -37,13 +37,11 @@ func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardSta
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextState := prevState.Clone()
-
 	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.Execute(nextState, r.Settings(), moves)
+	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
 
 	return nextState, err
 }
