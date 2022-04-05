@@ -16,19 +16,16 @@ type RoyaleRuleset struct {
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
 func (r RoyaleRuleset) Pipeline() (*Pipeline, error) {
-	// The royale pipeline extends the standard pipeline
-	standard, err := r.StandardRuleset.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-
-	royale, err := NewPipeline(
+	return NewPipeline(
+		"movement.standard",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
 		"placehazard.royale",
+		"gameover.standard",
 	)
-	if err != nil {
-		return nil, err
-	}
-	return standard.Append(royale), nil
 }
 
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {

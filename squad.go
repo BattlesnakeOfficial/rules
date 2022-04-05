@@ -19,20 +19,17 @@ type SquadRuleset struct {
 func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
 func (r SquadRuleset) Pipeline() (*Pipeline, error) {
-	// The squad pipeline extends the standard pipeline
-	standard, err := r.StandardRuleset.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-
-	squad, err := NewPipeline(
+	return NewPipeline(
+		"movement.standard",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
 		"collision.squad",
 		"sharedattr.squad",
+		"gameover.squad",
 	)
-	if err != nil {
-		return nil, err
-	}
-	return standard.Append(squad), nil
 }
 
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {

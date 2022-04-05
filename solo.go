@@ -6,6 +6,18 @@ type SoloRuleset struct {
 
 func (r *SoloRuleset) Name() string { return GameTypeSolo }
 
+func (r SoloRuleset) Pipeline() (*Pipeline, error) {
+	return NewPipeline(
+		"movement.standard",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
+		"gameover.solo",
+	)
+}
+
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
 	return r.callStageFunc(GameOverSolo, b, []SnakeMove{})
 }

@@ -7,20 +7,17 @@ type ConstrictorRuleset struct {
 func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
 func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
-	// The constrictor pipeline extends the standard pipeline
-	standard, err := r.StandardRuleset.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-
-	constrictor, err := NewPipeline(
+	return NewPipeline(
+		"movement.standard",
+		"reducehealth.standard",
+		"hazarddamage.standard",
+		"eatfood.standard",
+		"placefood.standard",
+		"eliminatesnake.standard",
 		"removefood.constrictor",
 		"growsnake.constrictor",
+		"gameover.standard",
 	)
-	if err != nil {
-		return nil, err
-	}
-	return standard.Append(constrictor), nil
 }
 
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
