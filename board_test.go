@@ -461,8 +461,8 @@ func TestPlaceFoodFixedNoRoom_Corners(t *testing.T) {
 		Food: []Point{},
 	}
 
-	// There are only three possible spawn locations for each snake,
-	// so repeat calls to place food should fail after 3 successes
+	// There are only two possible food spawn locations for each snake,
+	// so repeat calls to place food should fail after 2 successes
 	err := PlaceFoodFixed(boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
@@ -473,20 +473,15 @@ func TestPlaceFoodFixedNoRoom_Corners(t *testing.T) {
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 8, len(boardState.Food))
 
-	err = PlaceFoodFixed(boardState)
-	require.NoError(t, err)
-	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
-	require.Equal(t, 12, len(boardState.Food))
-
 	// And now there should be no more room.
 	err = PlaceFoodFixed(boardState)
 	require.Error(t, err)
 
 	expectedFood := []Point{
-		{0, 0}, {0, 2}, {2, 0}, // Snake @ {1, 1}
-		{0, 4}, {0, 6}, {2, 6}, // Snake @ {1, 5}
-		{4, 0}, {6, 0}, {6, 2}, // Snake @ {5, 1}
-		{4, 6}, {6, 4}, {6, 6}, // Snake @ {5, 5}
+		{0, 2}, {2, 0}, // Snake @ {1, 1}
+		{0, 4}, {2, 6}, // Snake @ {1, 5}
+		{4, 0}, {6, 2}, // Snake @ {5, 1}
+		{4, 6}, {6, 4}, // Snake @ {5, 5}
 	}
 	sortPoints(expectedFood)
 	sortPoints(boardState.Food)

@@ -160,7 +160,7 @@ func PlaceFoodAutomatically(b *BoardState) error {
 func PlaceFoodFixed(b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 
-	// Place 1 food within exactly 2 moves of each snake, but never towards the center
+	// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
 	for i := 0; i < len(b.Snakes); i++ {
 		snakeHead := b.Snakes[i].Body[0]
 		possibleFoodLocations := []Point{
@@ -170,9 +170,11 @@ func PlaceFoodFixed(b *BoardState) error {
 			{snakeHead.X + 1, snakeHead.Y + 1},
 		}
 
-		// Remove any positions already occupied by food or closer to center
+		// Remove any invalid/unwanted positions
 		availableFoodLocations := []Point{}
 		for _, p := range possibleFoodLocations {
+
+			// Ignore points already occupied by food
 			isOccupiedAlready := false
 			for _, food := range b.Food {
 				if food.X == p.X && food.Y == p.Y {
@@ -184,20 +186,27 @@ func PlaceFoodFixed(b *BoardState) error {
 				continue
 			}
 
-			// Food must be away from center on at least one axis
-			isFarFromCenter := false
+			// Food must be further than snake from center on at least one axis
+			isAwayFromCenter := false
 			if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
-				isFarFromCenter = true
+				isAwayFromCenter = true
 			} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
-				isFarFromCenter = true
+				isAwayFromCenter = true
 			} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
-				isFarFromCenter = true
+				isAwayFromCenter = true
 			} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
-				isFarFromCenter = true
+				isAwayFromCenter = true
 			}
-			if isFarFromCenter {
-				availableFoodLocations = append(availableFoodLocations, p)
+			if !isAwayFromCenter {
+				continue
 			}
+
+			// Don't spawn food in corners
+			if (p.X == 0 || p.X == (b.Width-1)) && (p.Y == 0 || p.Y == (b.Height-1)) {
+				continue
+			}
+
+			availableFoodLocations = append(availableFoodLocations, p)
 		}
 
 		if len(availableFoodLocations) <= 0 {
