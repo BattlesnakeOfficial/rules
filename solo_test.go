@@ -44,6 +44,7 @@ func TestSoloIsGameOver(t *testing.T) {
 	r := SoloRuleset{}
 	for _, test := range tests {
 		b := &BoardState{
+			Turn:   99, // game can't end at 0, must be > 0 to end
 			Height: 11,
 			Width:  11,
 			Snakes: test.Snakes,

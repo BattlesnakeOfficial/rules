@@ -43,8 +43,7 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 }
 
 func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	// If no moves are passed, pass on modifying the initial board state
-	if len(moves) == 0 {
+	if IsInitialisation(b, settings, moves) {
 		return false, nil
 	}
 
@@ -140,6 +139,9 @@ func getDefaultMove(snakeBody []Point) string {
 }
 
 func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
 			b.Snakes[i].Health = b.Snakes[i].Health - 1
@@ -149,6 +151,9 @@ func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMo
 }
 
 func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
@@ -184,6 +189,9 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 }
 
 func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	// First order snake indices by length.
 	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
 	snakeIndicesByLength := make([]int, len(b.Snakes))
@@ -377,6 +385,9 @@ func growSnake(snake *Snake) {
 }
 
 func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	numCurrentFood := int32(len(b.Food))
 	if numCurrentFood < settings.MinimumFood {
 		return false, PlaceFoodRandomly(b, settings.MinimumFood-numCurrentFood)
@@ -392,6 +403,9 @@ func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
 }
 
 func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	numSnakesRemaining := 0
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
@@ -421,15 +435,4 @@ func IsInitialisation(b *BoardState, settings Settings, moves []SnakeMove) bool 
 	// We can safely assume that the game state is in the initialisation phase when
 	// the turn hasn't advanced and the moves are empty
 	return b.Turn <= 0 && len(moves) == 0
-}
-
-// WithNoOpOnInit wraps a stage with no-op behavior when a game is in the initialisation stage.
-func WithNoOpOnInit(fn StageFunc) StageFunc {
-	return func(b *BoardState, s Settings, m []SnakeMove) (bool, error) {
-		// If the game is initialising, the stage is a no-op
-		if IsInitialisation(b, s, m) {
-			return false, nil
-		}
-		return fn(b, s, m)
-	}
 }

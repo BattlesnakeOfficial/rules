@@ -102,7 +102,7 @@ func TestRoyaleHazards(t *testing.T) {
 			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 		}
 
-		_, err := PopulateHazardsRoyale(b, r.Settings(), nil)
+		_, err := PopulateHazardsRoyale(b, r.Settings(), mockSnakeMoves())
 		require.Equal(t, test.Error, err)
 		if err == nil {
 			// Obstacles should match

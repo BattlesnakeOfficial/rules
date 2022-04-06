@@ -43,6 +43,9 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 }
 
 func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	b.Hazards = []Point{}
 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state

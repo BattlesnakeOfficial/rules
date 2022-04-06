@@ -795,25 +795,25 @@ func TestReduceSnakeHealth(t *testing.T) {
 	}
 
 	r := StandardRuleset{}
-	_, err := ReduceSnakeHealthStandard(b, r.Settings(), nil)
+	_, err := ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(98))
 	require.Equal(t, b.Snakes[1].Health, int32(1))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	_, err = ReduceSnakeHealthStandard(b, r.Settings(), nil)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(97))
 	require.Equal(t, b.Snakes[1].Health, int32(0))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	_, err = ReduceSnakeHealthStandard(b, r.Settings(), nil)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(96))
 	require.Equal(t, b.Snakes[1].Health, int32(-1))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	_, err = ReduceSnakeHealthStandard(b, r.Settings(), nil)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(95))
 	require.Equal(t, b.Snakes[1].Health, int32(-2))
@@ -1214,7 +1214,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: test.Snakes,
 			}
-			_, err := EliminateSnakesStandard(b, r.Settings(), nil)
+			_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
 			require.Equal(t, test.Err, err)
 			for i, snake := range b.Snakes {
 				require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
@@ -1254,7 +1254,7 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		b := &BoardState{Width: 10, Height: 10, Snakes: test.Snakes}
-		_, err := EliminateSnakesStandard(b, r.Settings(), nil)
+		_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		for i, snake := range b.Snakes {
 			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause, snake.ID)
@@ -1320,7 +1320,7 @@ func TestMaybeDamageHazards(t *testing.T) {
 	for _, test := range tests {
 		b := &BoardState{Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
 		r := StandardRuleset{HazardDamagePerTurn: 100}
-		_, err := DamageHazardsStandard(b, r.Settings(), nil)
+		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 
 		for i, snake := range b.Snakes {
@@ -1361,7 +1361,7 @@ func TestHazardDamagePerTurn(t *testing.T) {
 		}
 		r := StandardRuleset{HazardDamagePerTurn: test.HazardDamagePerTurn}
 
-		_, err := DamageHazardsStandard(b, r.Settings(), nil)
+		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.Equal(t, test.Error, err)
 		require.Equal(t, test.ExpectedHealth, b.Snakes[0].Health)
 		require.Equal(t, test.ExpectedEliminationCause, b.Snakes[0].EliminatedCause)
@@ -1477,7 +1477,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 			Food: test.Food,
 		}
 
-		_, err := SpawnFoodStandard(b, r.Settings(), nil)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, len(b.Food))
 	}
@@ -1513,7 +1513,7 @@ func TestMaybeSpawnFoodHundredChance(t *testing.T) {
 		Food: []Point{},
 	}
 	for i := 1; i <= 22; i++ {
-		_, err := SpawnFoodStandard(b, r.Settings(), nil)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, i, len(b.Food))
 	}
@@ -1547,7 +1547,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		}
 
 		rand.Seed(test.Seed)
-		_, err := SpawnFoodStandard(b, r.Settings(), nil)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, int32(len(b.Food)), "Seed %d", test.Seed)
 	}
@@ -1610,6 +1610,7 @@ func TestIsGameOver(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		b := &BoardState{
+			Turn:   1, // game can't end at turn 0, must be > 0
 			Height: 11,
 			Width:  11,
 			Snakes: test.Snakes,

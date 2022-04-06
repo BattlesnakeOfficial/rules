@@ -13,20 +13,20 @@ type StageRegistry map[string]StageFunc
 // to add additional stages.
 var globalRegistry = StageRegistry{
 	"food.remove.constrictor":  RemoveFoodConstrictor,
-	"food.spawn.standard":      WithNoOpOnInit(SpawnFoodStandard),
-	"gameover.solo":            WithNoOpOnInit(GameOverSolo),
-	"gameover.squad":           WithNoOpOnInit(GameOverSquad),
-	"gameover.standard":        WithNoOpOnInit(GameOverStandard),
-	"hazard.damage.standard":   WithNoOpOnInit(DamageHazardsStandard),
-	"hazard.spawn.royale":      WithNoOpOnInit(PopulateHazardsRoyale),
-	"health.reduce.standard":   WithNoOpOnInit(ReduceSnakeHealthStandard),
-	"snake.collision.squad":    WithNoOpOnInit(ResurrectSnakesSquad),
-	"snake.eatfood.standard":   WithNoOpOnInit(FeedSnakesStandard),
-	"snake.eliminate.standard": WithNoOpOnInit(EliminateSnakesStandard),
+	"food.spawn.standard":      SpawnFoodStandard,
+	"gameover.solo":            GameOverSolo,
+	"gameover.squad":           GameOverSquad,
+	"gameover.standard":        GameOverStandard,
+	"hazard.damage.standard":   DamageHazardsStandard,
+	"hazard.spawn.royale":      PopulateHazardsRoyale,
+	"health.reduce.standard":   ReduceSnakeHealthStandard,
+	"snake.collision.squad":    ResurrectSnakesSquad,
+	"snake.eatfood.standard":   FeedSnakesStandard,
+	"snake.eliminate.standard": EliminateSnakesStandard,
 	"snake.grow.constrictor":   GrowSnakesConstrictor,
-	"snake.movement.standard":  WithNoOpOnInit(MoveSnakesStandard),
-	"snake.movement.wrapped":   WithNoOpOnInit(MoveSnakesWrapped),
-	"snake.share.squad":        WithNoOpOnInit(ShareAttributesSquad),
+	"snake.movement.standard":  MoveSnakesStandard,
+	"snake.movement.wrapped":   MoveSnakesWrapped,
+	"snake.share.squad":        ShareAttributesSquad,
 }
 
 // RegisterPipelineStage adds a stage to the registry.

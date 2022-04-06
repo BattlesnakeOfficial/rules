@@ -77,7 +77,7 @@ func TestSquadAllowBodyCollisions(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SquadMap: squadMap, AllowBodyCollisions: true}
-	_, err := ResurrectSnakesSquad(boardState, r.Settings(), nil)
+	_, err := ResurrectSnakesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -113,7 +113,7 @@ func TestSquadAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
 			"2": "red",
 		},
 	}
-	_, err := ResurrectSnakesSquad(boardState, r.Settings(), nil)
+	_, err := ResurrectSnakesSquad(boardState, r.Settings(), mockSnakeMoves())
 	require.Error(t, err)
 }
 
@@ -152,7 +152,7 @@ func TestSquadShareSquadHealth(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedHealth: true, SquadMap: squadMap}
-	_, err := ShareAttributesSquad(boardState, r.Settings(), nil)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -202,7 +202,7 @@ func TestSquadSharedLength(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedLength: true, SquadMap: squadMap}
-	_, err := ShareAttributesSquad(boardState, r.Settings(), nil)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -255,7 +255,7 @@ func TestSquadSharedElimination(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedElimination: true, SquadMap: squadMap}
-	_, err := ShareAttributesSquad(boardState, r.Settings(), nil)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -291,7 +291,7 @@ func TestSquadSharedAttributesErrorLengthZero(t *testing.T) {
 			"2": "red",
 		},
 	}
-	_, err := ShareAttributesSquad(boardState, r.Settings(), nil)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 	require.Error(t, err)
 }
 
@@ -332,6 +332,7 @@ func TestSquadIsGameOver(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{
+			Turn:   1, // game can't be over at turn 0, so turn must be at least 1
 			Height: 11,
 			Width:  11,
 			Snakes: test.Snakes,

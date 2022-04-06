@@ -39,3 +39,9 @@ func (gc *gameTestCase) requireValidNextState(t *testing.T, r Ruleset) {
 		}
 	})
 }
+
+func mockSnakeMoves() []SnakeMove {
+	return []SnakeMove{
+		{ID: "test-mock-move", Move: "mocked"},
+	}
+}

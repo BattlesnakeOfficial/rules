@@ -51,6 +51,9 @@ func areSnakeIDsOnSameSquad(squadMap map[string]string, snakeID string, otherID 
 }
 
 func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	if !settings.SquadSettings.AllowBodyCollisions {
 		return false, nil
 	}
@@ -72,6 +75,9 @@ func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 }
 
 func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialisation(b, settings, moves) {
+		return false, nil
+	}
 	squadSettings := settings.SquadSettings
 
 	if !(squadSettings.SharedElimination || squadSettings.SharedLength || squadSettings.SharedHealth) {
