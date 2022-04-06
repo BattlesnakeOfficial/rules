@@ -23,9 +23,6 @@ func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
 }
 
 func GameOverSolo(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
-		return false, nil
-	}
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
 			return false, nil

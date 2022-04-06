@@ -125,9 +125,6 @@ func (r *SquadRuleset) IsGameOver(b *BoardState) (bool, error) {
 }
 
 func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
-		return false, nil
-	}
 	snakesRemaining := []*Snake{}
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {

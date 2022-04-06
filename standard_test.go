@@ -1610,7 +1610,6 @@ func TestIsGameOver(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		b := &BoardState{
-			Turn:   1, // game can't end at turn 0, must be > 0
 			Height: 11,
 			Width:  11,
 			Snakes: test.Snakes,

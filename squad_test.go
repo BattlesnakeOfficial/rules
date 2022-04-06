@@ -332,7 +332,6 @@ func TestSquadIsGameOver(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{
-			Turn:   1, // game can't be over at turn 0, so turn must be at least 1
 			Height: 11,
 			Width:  11,
 			Snakes: test.Snakes,
