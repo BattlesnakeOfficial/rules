@@ -5,6 +5,9 @@ import (
 )
 
 type BoardState struct {
+	// Turn is the current turn.
+	// Turn 0 is a special case that is used for initialisation.
+	// Turn 1+ is a regular turn where snakes move etc...
 	Turn    int32
 	Height  int32
 	Width   int32

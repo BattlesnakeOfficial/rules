@@ -21,19 +21,13 @@ func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
 }
 
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
-	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)
+	p, err := r.Pipeline()
 	if err != nil {
 		return nil, err
 	}
 
-	r.removeFood(initialBoardState)
-
-	err = r.applyConstrictorRules(initialBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return initialBoardState, nil
+	_, nextState, err := p.Execute(initialBoardState, r.Settings(), nil)
+	return nextState, err
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
@@ -46,20 +40,11 @@ func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves [
 	return nextState, err
 }
 
-func (r *ConstrictorRuleset) removeFood(b *BoardState) {
-	_, _ = r.callStageFunc(RemoveFoodConstrictor, b, []SnakeMove{})
-}
-
 func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Remove all food from the board
 	b.Food = []Point{}
 
 	return false, nil
-}
-
-func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
-	_, err := r.callStageFunc(GrowSnakesConstrictor, b, []SnakeMove{})
-	return err
 }
 
 func GrowSnakesConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {

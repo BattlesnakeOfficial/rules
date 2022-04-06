@@ -7,23 +7,26 @@ import (
 // StageRegistry is a mapping of stage names to stage functions
 type StageRegistry map[string]StageFunc
 
-// globalRegistry is a global, default mapping of stage names to stage functions
+// globalRegistry is a global, default mapping of stage names to stage functions.
+// It can be extended by plugins through the use of registration functions.
+// Plugins that wish to extend the available game stages should call RegisterPipelineStageError
+// to add additional stages.
 var globalRegistry = StageRegistry{
 	"food.remove.constrictor":  RemoveFoodConstrictor,
-	"food.spawn.standard":      SpawnFoodStandard,
-	"gameover.solo":            GameOverSolo,
-	"gameover.squad":           GameOverSquad,
-	"gameover.standard":        GameOverStandard,
-	"hazard.damage.standard":   DamageHazardsStandard,
-	"hazard.spawn.royale":      PopulateHazardsRoyale,
-	"health.reduce.standard":   ReduceSnakeHealthStandard,
-	"snake.collision.squad":    ResurrectSnakesSquad,
-	"snake.eatfood.standard":   FeedSnakesStandard,
-	"snake.eliminate.standard": EliminateSnakesStandard,
+	"food.spawn.standard":      WithNoOpOnInit(SpawnFoodStandard),
+	"gameover.solo":            WithNoOpOnInit(GameOverSolo),
+	"gameover.squad":           WithNoOpOnInit(GameOverSquad),
+	"gameover.standard":        WithNoOpOnInit(GameOverStandard),
+	"hazard.damage.standard":   WithNoOpOnInit(DamageHazardsStandard),
+	"hazard.spawn.royale":      WithNoOpOnInit(PopulateHazardsRoyale),
+	"health.reduce.standard":   WithNoOpOnInit(ReduceSnakeHealthStandard),
+	"snake.collision.squad":    WithNoOpOnInit(ResurrectSnakesSquad),
+	"snake.eatfood.standard":   WithNoOpOnInit(FeedSnakesStandard),
+	"snake.eliminate.standard": WithNoOpOnInit(EliminateSnakesStandard),
 	"snake.grow.constrictor":   GrowSnakesConstrictor,
-	"snake.movement.standard":  MoveSnakesStandard,
-	"snake.movement.wrapped":   MoveSnakesWrapped,
-	"snake.share.squad":        ShareAttributesSquad,
+	"snake.movement.standard":  WithNoOpOnInit(MoveSnakesStandard),
+	"snake.movement.wrapped":   WithNoOpOnInit(MoveSnakesWrapped),
+	"snake.share.squad":        WithNoOpOnInit(ShareAttributesSquad),
 }
 
 // RegisterPipelineStage adds a stage to the registry.

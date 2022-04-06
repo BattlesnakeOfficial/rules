@@ -415,3 +415,21 @@ func (r StandardRuleset) Settings() Settings {
 func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
 	return stage(boardState, r.Settings(), moves)
 }
+
+// IsInitialisation checks whether the current state means the game is initialising.
+func IsInitialisation(b *BoardState, settings Settings, moves []SnakeMove) bool {
+	// We can safely assume that the game state is in the initialisation phase when
+	// the turn hasn't advanced and the moves are empty
+	return b.Turn <= 0 && len(moves) == 0
+}
+
+// WithNoOpOnInit wraps a stage with no-op behavior when a game is in the initialisation stage.
+func WithNoOpOnInit(fn StageFunc) StageFunc {
+	return func(b *BoardState, s Settings, m []SnakeMove) (bool, error) {
+		// If the game is initialising, the stage is a no-op
+		if IsInitialisation(b, s, m) {
+			return false, nil
+		}
+		return fn(b, s, m)
+	}
+}
