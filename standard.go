@@ -44,6 +44,11 @@ func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bo
 		return false, nil
 	}
 
+	// no-op when moves are empty
+	if len(moves) == 0 {
+		return false, nil
+	}
+
 	// Sanity check that all non-eliminated snakes have moves and bodies.
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
