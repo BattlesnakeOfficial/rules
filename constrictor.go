@@ -1,41 +1,34 @@
 package rules
 
+var constrictorRulesetStages = []string{
+	"snake.movement.standard",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+	"food.remove.constrictor",
+	"snake.grow.constrictor",
+	"gameover.standard",
+}
+
 type ConstrictorRuleset struct {
 	StandardRuleset
 }
 
 func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
-func (r ConstrictorRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.standard",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-		"food.remove.constrictor",
-		"snake.grow.constrictor",
-		"gameover.standard",
-	)
+func (r ConstrictorRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(constrictorRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-
-	_, nextState, err := p.Execute(initialBoardState, r.Settings(), nil)
+	_, nextState, err := r.Execute(initialBoardState, r.Settings(), nil)
 	return nextState, err
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 
 	return nextState, err
 }

@@ -4,6 +4,18 @@ import (
 	"errors"
 )
 
+var squadRulesetStages = []string{
+	"snake.movement.standard",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+	"snake.collision.squad",
+	"snake.share.squad",
+	"gameover.squad",
+}
+
 type SquadRuleset struct {
 	StandardRuleset
 
@@ -18,27 +30,12 @@ type SquadRuleset struct {
 
 func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
-func (r SquadRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.standard",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-		"snake.collision.squad",
-		"snake.share.squad",
-		"gameover.squad",
-	)
+func (r SquadRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(squadRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
-
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 	return nextState, err
 }
 
@@ -121,7 +118,8 @@ func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 }
 
 func (r *SquadRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return r.callStageFunc(GameOverSquad, b, []SnakeMove{})
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
 }
 
 func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -152,9 +150,4 @@ func (r SquadRuleset) Settings() Settings {
 		SharedLength:        r.SharedLength,
 	}
 	return s
-}
-
-// Adaptor for integrating stages into SquadRuleset
-func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
 }

@@ -1,25 +1,28 @@
 package rules
 
+var soloRulesetStages = []string{
+	"snake.movement.standard",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+	"gameover.solo",
+}
+
 type SoloRuleset struct {
 	StandardRuleset
 }
 
 func (r *SoloRuleset) Name() string { return GameTypeSolo }
 
-func (r SoloRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.standard",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-		"gameover.solo",
-	)
+func (r SoloRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(soloRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return r.callStageFunc(GameOverSolo, b, []SnakeMove{})
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
 }
 
 func GameOverSolo(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {

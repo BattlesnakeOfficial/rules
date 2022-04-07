@@ -218,8 +218,15 @@ func TestStandardCreateNextBoardState(t *testing.T) {
 		standardMoveAndCollideMAD,
 	}
 	r := StandardRuleset{}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeStandard,
+	})
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeStandard, NewPipeline(standardRulesetStages...)))
 	}
 }
 

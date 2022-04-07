@@ -331,7 +331,14 @@ func TestWrappedCreateNextBoardState(t *testing.T) {
 		wrappedCaseMoveAndWrap,
 	}
 	r := WrappedRuleset{}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeWrapped,
+	})
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeWrapped, NewPipeline(wrappedRulesetStages...)))
 	}
 }

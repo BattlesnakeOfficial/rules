@@ -103,8 +103,15 @@ func TestConstrictorCreateNextBoardState(t *testing.T) {
 		standardCaseErrZeroLengthSnake,
 		constrictorMoveAndCollideMAD,
 	}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeConstrictor,
+	})
 	r := ConstrictorRuleset{}
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeConstrictor, NewPipeline(constrictorRulesetStages...)))
 	}
 }

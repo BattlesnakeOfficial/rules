@@ -26,7 +26,9 @@ func (gc *gameTestCase) clone() *gameTestCase {
 
 // requireValidNextState requires that the ruleset produces a valid next state
 func (gc *gameTestCase) requireValidNextState(t *testing.T, r Ruleset) {
+	t.Helper()
 	t.Run(gc.name, func(t *testing.T) {
+		t.Helper()
 		prev := gc.prevState.Clone() // clone to protect against mutation (so we can ru-use test cases)
 		nextState, err := r.CreateNextBoardState(prev, gc.moves)
 		require.Equal(t, gc.expectedError, err)

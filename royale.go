@@ -5,6 +5,17 @@ import (
 	"math/rand"
 )
 
+var royaleRulesetStages = []string{
+	"snake.movement.standard",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+	"hazard.spawn.royale",
+	"gameover.standard",
+}
+
 type RoyaleRuleset struct {
 	StandardRuleset
 
@@ -15,30 +26,15 @@ type RoyaleRuleset struct {
 
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
-func (r RoyaleRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.standard",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-		"hazard.spawn.royale",
-		"gameover.standard",
-	)
+func (r RoyaleRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(royaleRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.StandardRuleset.HazardDamagePerTurn < 1 {
 		return nil, errors.New("royale damage per turn must be greater than zero")
 	}
-
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
-
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 	return nextState, err
 }
 

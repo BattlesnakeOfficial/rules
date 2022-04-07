@@ -104,7 +104,7 @@ func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBui
 }
 
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
-func (rb rulesetBuilder) Ruleset() Ruleset {
+func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	standardRuleset := &StandardRuleset{
 		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
 		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
@@ -138,13 +138,9 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 			StandardRuleset: *standardRuleset,
 		}
 	case GameTypeSquad:
-		squadMap := map[string]string{}
-		for id, squad := range rb.squads {
-			squadMap[id] = squad
-		}
 		return &SquadRuleset{
 			StandardRuleset:     *standardRuleset,
-			SquadMap:            squadMap,
+			SquadMap:            rb.squadMap(),
 			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
 			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
 			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
@@ -152,6 +148,42 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		}
 	}
 	return standardRuleset
+}
+
+func (rb rulesetBuilder) squadMap() map[string]string {
+	squadMap := map[string]string{}
+	for id, squad := range rb.squads {
+		squadMap[id] = squad
+	}
+	return squadMap
+}
+
+// PipelineRuleset provides an implementation of the Ruleset using a pipeline with a name.
+// It is intended to facilitate transitioning away from legacy Ruleset implementations to Pipeline
+// implementations.
+func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRuleset {
+	return &pipelineRuleset{
+		name:     name,
+		pipeline: p,
+		settings: Settings{
+			FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
+			MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
+			HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
+			HazardMap:           rb.params[ParamHazardMap],
+			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
+			RoyaleSettings: RoyaleSettings{
+				seed:              rb.seed,
+				ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
+			},
+			SquadSettings: SquadSettings{
+				squadMap:            rb.squadMap(),
+				AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
+				SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
+				SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
+				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
+			},
+		},
+	}
 }
 
 // paramsBool returns the boolean value for the specified parameter.
@@ -239,3 +271,41 @@ type SquadSettings struct {
 //
 // Errors should be treated as meaning the stage failed and the board state is now invalid.
 type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
+
+// PipelineRuleset groups the Pipeline and Ruleset methods.
+// It is intended to facilitate a transition from Ruleset legacy code to Pipeline code.
+type PipelineRuleset interface {
+	Ruleset
+	Pipeline
+}
+
+type pipelineRuleset struct {
+	pipeline Pipeline
+	name     string
+	settings Settings
+}
+
+func (r pipelineRuleset) Settings() Settings {
+	return r.settings
+}
+
+func (r pipelineRuleset) Name() string { return r.name }
+
+func (r *pipelineRuleset) IsGameOver(b *BoardState) (bool, error) {
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
+}
+
+func (r pipelineRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
+	_, nextState, err := r.Execute(initialState, r.Settings(), nil)
+	return nextState, err
+}
+
+func (r pipelineRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return r.pipeline.Execute(bs, s, sm)
+}
+
+func (r pipelineRuleset) CreateNextBoardState(bs *BoardState, sm []SnakeMove) (*BoardState, error) {
+	_, nextState, err := r.Execute(bs, r.Settings(), sm)
+	return nextState, err
+}

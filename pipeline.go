@@ -64,15 +64,29 @@ func RegisterPipelineStageError(s string, fn StageFunc) error {
 // next game state.
 //
 // If a stage produces an error or an ended game state, the pipeline is halted at that stage.
-type Pipeline struct {
+type Pipeline interface {
+	// Execute runs a sequence of stages and produces a next game state.
+	//
+	// If any stage produces an error or an ended game state, the pipeline
+	// immediately stops at that stage.
+	//
+	// The result is the result of the last stage that was executed.
+	//
+	Execute(*BoardState, Settings, []SnakeMove) (bool, *BoardState, error)
+}
+
+// pipeline is an implementation of Pipeline
+type pipeline struct {
 	// stages is a list of stages that should be executed from slice start to end
 	stages []StageFunc
+	// if the pipeline has an error
+	err error
 }
 
 // NewPipeline constructs an instance of Pipeline using the global registry.
 // It is a convenience wrapper for NewPipelineFromRegistry when you want
 // to use the default, global registry.
-func NewPipeline(stageNames ...string) (*Pipeline, error) {
+func NewPipeline(stageNames ...string) Pipeline {
 	return NewPipelineFromRegistry(globalRegistry, stageNames...)
 }
 
@@ -88,39 +102,47 @@ func NewPipeline(stageNames ...string) (*Pipeline, error) {
 //
 // An error will be returned if an unregistered stage name is used (a name that is not
 // mapped in the registry).
-func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string) (*Pipeline, error) {
+func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string) Pipeline {
 	// this can't be useful and probably indicates a problem
 	if len(registry) == 0 {
-		return nil, errors.New("empty registry")
+		return &pipeline{err: errors.New("empty registry")}
 	}
 
 	// this also can't be useful and probably indicates a problem
 	if len(stageNames) == 0 {
-		return nil, errors.New("no stages")
+		return &pipeline{err: errors.New("no stages")}
 	}
 
-	p := &Pipeline{}
+	p := pipeline{}
 	for _, s := range stageNames {
 		fn, ok := registry[s]
 		if !ok {
-			return nil, errors.New("stage not found")
+			return pipeline{err: errors.New("stage not found")}
 		}
 
 		p.stages = append(p.stages, fn)
 	}
 
-	return p, nil
+	return &p
 }
 
-// Execute runs all of the pipeline stages and produces a next game state
-// by cloning the original state and applying stages to modify the cloned, next state.
-//
-// If any stage produces an error or an ended game state, the pipeline
-// immediately stops at that stage.
-//
-// The result is always the result of the last stage that was executed.
-//
-func (p *Pipeline) Execute(state *BoardState, settings Settings, moves []SnakeMove) (bool, *BoardState, error) {
+// impl
+func (p pipeline) Execute(state *BoardState, settings Settings, moves []SnakeMove) (bool, *BoardState, error) {
+	// Design Detail
+	//
+	// If the pipeline is in an error state, Execute must return that error
+	// because the pipeline is invalid and cannot execute.
+	//
+	// This is done for API use convenience to satisfy the common pattern
+	// of wanting to write NewPipeline().Execute(...).
+	//
+	// This way you can do that without having to do 2 error checks.
+	// It defers errors from construction to being checked on execution.
+	if p.err != nil {
+		return false, nil, p.err
+	}
+
+	// Actually execute
 	var ended bool
 	var err error
 	state = state.Clone()

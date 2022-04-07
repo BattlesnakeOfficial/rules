@@ -1,28 +1,26 @@
 package rules
 
+var wrappedRulesetStages = []string{
+	"snake.movement.wrapped",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+}
+
 type WrappedRuleset struct {
 	StandardRuleset
 }
 
 func (r *WrappedRuleset) Name() string { return GameTypeWrapped }
 
-func (r WrappedRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.wrapped",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-	)
+func (r WrappedRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(wrappedRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 
 	return nextState, err
 }

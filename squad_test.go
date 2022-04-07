@@ -547,8 +547,19 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 		},
 	}
 	rand.Seed(0)
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeSquad,
+	})
+	rb.WithSeed(0)
+	for s, ss := range r.SquadMap {
+		rb = rb.AddSnakeToSquad(s, ss)
+	}
 	for _, gc := range standardCases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeSquad, NewPipeline(squadRulesetStages...)))
 	}
 
 	extendedCases := []gameTestCase{
@@ -557,7 +568,15 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 	}
 	r.SharedHealth = true
 	r.AllowBodyCollisions = true
+	rb = rb.WithParams(map[string]string{
+		ParamSharedHealth:        "true",
+		ParamAllowBodyCollisions: "true",
+	})
 	for _, gc := range extendedCases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeSquad, NewPipeline(squadRulesetStages...)))
 	}
 }

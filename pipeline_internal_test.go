@@ -19,8 +19,7 @@ func TestPipelineGlboals(t *testing.T) {
 	require.NoError(t, RegisterPipelineStageError("other", mockStageFn(true, nil)))
 
 	// ensure that we can build a pipeline using the global registry
-	p, err := NewPipeline("test", "other")
-	require.NoError(t, err)
+	p := NewPipeline("test", "other")
 	require.NotNil(t, p)
 
 	// ensure that it runs okay too

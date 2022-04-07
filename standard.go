@@ -13,6 +13,16 @@ type StandardRuleset struct {
 	HazardMapAuthor     string // optional
 }
 
+var standardRulesetStages = []string{
+	"snake.movement.standard",
+	"health.reduce.standard",
+	"hazard.damage.standard",
+	"snake.eatfood.standard",
+	"food.spawn.standard",
+	"snake.eliminate.standard",
+	"gameover.standard",
+}
+
 func (r *StandardRuleset) Name() string { return GameTypeStandard }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
@@ -20,25 +30,12 @@ func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*Bo
 	return initialState, nil
 }
 
-func (r StandardRuleset) Pipeline() (*Pipeline, error) {
-	return NewPipeline(
-		"snake.movement.standard",
-		"health.reduce.standard",
-		"hazard.damage.standard",
-		"snake.eatfood.standard",
-		"food.spawn.standard",
-		"snake.eliminate.standard",
-		"gameover.standard",
-	)
+func (r StandardRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(standardRulesetStages...).Execute(bs, s, sm)
 }
 
 func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	p, err := r.Pipeline()
-	if err != nil {
-		return nil, err
-	}
-	_, nextState, err := p.Execute(prevState, r.Settings(), moves)
-
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 	return nextState, err
 }
 
@@ -399,7 +396,8 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return r.callStageFunc(GameOverStandard, b, []SnakeMove{})
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
 }
 
 func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -420,11 +418,6 @@ func (r StandardRuleset) Settings() Settings {
 		HazardMap:           r.HazardMap,
 		HazardMapAuthor:     r.HazardMapAuthor,
 	}
-}
-
-// Adaptor for integrating stages into StandardRuleset
-func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
 }
 
 // IsInitialisation checks whether the current state means the game is initialising.

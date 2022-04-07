@@ -265,7 +265,16 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		ShrinkEveryNTurns: 1,
 	}
 	rand.Seed(0)
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType:            GameTypeRoyale,
+		ParamHazardDamagePerTurn: "1",
+		ParamShrinkEveryNTurns:   "1",
+	})
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeRoyale, NewPipeline(royaleRulesetStages...)))
 	}
 }
