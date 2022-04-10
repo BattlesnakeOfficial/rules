@@ -32,19 +32,26 @@ Usage:
   battlesnake play [flags]
 
 Flags:
-  -d, --delay int32         Turn Delay in Milliseconds (default 0)
-  -D, --duration int32      Minimum Turn Duration in Milliseconds (default 0)
-  -g, --gametype string     Type of Game Rules (default "standard")
-  -H, --height int32        Height of Board (default 11)
-  -h, --help                help for play
-  -n, --name stringArray    Name of Snake
-  -r, --seed int            Random Seed (default 1607708568137187300)
-  -s, --sequential          Use Sequential Processing
-  -S, --squad stringArray   Squad of Snake
-  -t, --timeout int32       Request Timeout (default 500)
-  -u, --url stringArray     URL of Snake
-  -v, --viewmap             View the Map Each Turn
-  -W, --width int32         Width of Board (default 11)
+  -W, --width int32                 Width of Board (default 11)
+  -H, --height int32                Height of Board (default 11)
+  -n, --name stringArray            Name of Snake
+  -u, --url stringArray             URL of Snake
+  -S, --squad stringArray           Squad of Snake
+  -t, --timeout int32               Request Timeout (default 500)
+  -s, --sequential                  Use Sequential Processing
+  -g, --gametype string             Type of Game Rules (default "standard")
+  -v, --viewmap                     View the Map Each Turn
+  -c, --color                       Use color to draw the map
+  -r, --seed int                    Random Seed (default 1649588785026867900)
+  -d, --delay int32                 Turn Delay in Milliseconds
+  -D, --duration int32              Minimum Turn Duration in Milliseconds
+      --debug-requests              Log body of all requests sent
+  -o, --output string               File path to output game state to. Existing files will be overwritten
+      --foodSpawnChance int32       Percentage chance of spawning a new food every round (default 15)
+      --minimumFood int32           Minimum food to keep on the board every turn (default 1)
+      --hazardDamagePerTurn int32   Health damage a snake will take when ending its turn in a hazard (default 14)
+      --shrinkEveryNTurns int32     In Royale mode, the number of turns between generating new hazards (default 25)
+  -h, --help                        help for play
 
 Global Flags:
       --config string   config file (default is $HOME/.battlesnake.yaml)
@@ -72,10 +79,29 @@ battlesnake play --width 7 --height 7 --name Snake1 --url http://snake1-url-what
 ### Sample Output
 ```
 $ battlesnake play --width 3 --height 3 --url http://redacted:4567/ --url http://redacted:4568/  --name Bob --name Sue
-2020/10/31 22:05:56 [1]: State: &{3 3 [{1 0}] [{e74892ba-9f0c-4e96-9bde-1a9efaff0ab4 [{0 1} {0 2} {0 2} {0 2}] 100  } {89e20d26-7da7-4964-b0ae-148c8f60f7ee [{2 1} {2 2} {2 2} {2 2}] 100  }]} OutOfBounds: []
-2020/10/31 22:05:56 [2]: State: &{3 3 [{1 0}] [{e74892ba-9f0c-4e96-9bde-1a9efaff0ab4 [{0 0} {0 1} {0 2} {0 2}] 99  } {89e20d26-7da7-4964-b0ae-148c8f60f7ee [{2 0} {2 1} {2 2} {2 2}] 99  }]} OutOfBounds: []
-2020/10/31 22:05:56 [3]: State: &{3 3 [{1 2}] [{e74892ba-9f0c-4e96-9bde-1a9efaff0ab4 [{1 0} {0 0} {0 1} {0 2} {0 2}] 100 head-collision 89e20d26-7da7-4964-b0ae-148c8f60f7ee} {89e20d26-7da7-4964-b0ae-148c8f60f7ee [{1 0} {2 0} {2 1} {2 2} {2 2}] 100 head-collision e74892ba-9f0c-4e96-9bde-1a9efaff0ab4}]} OutOfBounds: []
-2020/10/31 22:05:56 [DONE]: Game completed after 3 turns. It was a draw.
+2022/04/10 04:16:08 [1]: State: &{1 3 3 [{2 2} {2 0}] [{8d8e31df-a1c1-4cac-a981-2453febe76ae [{1 0} {0 0} {0 0}] 99  0 } {cb5f5f33-3b35-477d-9c32-3e3fecd0e3c2 [{1 2} {0 2} {0 2}] 99  0 }] []}
+2022/04/10 04:16:08 [2]: State: &{2 3 3 [{1 1}] [{8d8e31df-a1c1-4cac-a981-2453febe76ae [{2 0} {1 0} {0 0} {0 0}] 100  0 } {cb5f5f33-3b35-477d-9c32-3e3fecd0e3c2 [{2 2} {1 2} {0 2} {0 2}] 100  0 }] []}
+2022/04/10 04:16:08 [3]: State: &{3 3 3 [{1 1}] [{8d8e31df-a1c1-4cac-a981-2453febe76ae [{2 1} {2 0} {1 0} {0 0}] 99 head-collision 0 cb5f5f33-3b35-477d-9c32-3e3fecd0e3c2} {cb5f5f33-3b35-477d-9c32-3e3fecd0e3c2 [{2 1} {2 2} {1 2} {0 2}] 99 head-collision 0 8d8e31df-a1c1-4cac-a981-2453febe76ae}] []}
+2022/04/10 04:16:08 [DONE]: Game completed after 3 turns. It was a draw.
+```
+
+### Sample JSON Output
+
+The default output logs the BoardState struct each turn, but is not well suited for parsing with a script.
+
+Use the `--output` flag to write the game state in JSON format to a log file, for example:
+```
+battlesnake play --output out.log --name Snake1 --url http://snake1-url-whatever --name Snake2 --url http://snake2-url-whatever
+```
+
+The above command will write the game state each turn as a single line to `out.log` file. An example line:
+```
+{"game":{"id":"202b0f42-8d66-4adf-b29c-5ae1afd4c3cf","ruleset":{"name":"standard","version":"cli","settings":{"foodSpawnChance":15,"minimumFood":1,"hazardDamagePerTurn":14,"hazardMap":"","hazardMapAuthor":"","royale":{"shrinkEveryNTurns":0},"squad":{"allowBodyCollisions":false,"sharedElimination":false,"sharedHealth":false,"sharedLength":false}}},"timeout":500,"source":""},"turn":60,"board":{"height":11,"width":11,"snakes":[{"id":"55860e87-7c39-4911-8b67-aea861f27af6","name":"Snake1","latency":"0","health":98,"body":[{"x":10,"y":8},{"x":10,"y":9},{"x":10,"y":10},{"x":9,"y":10},{"x":9,"y":9},{"x":9,"y":8},{"x":8,"y":8},{"x":7,"y":8}],"head":{"x":10,"y":8},"length":8,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}},{"id":"fdb00735-1602-4a4c-bf23-2b704f80bbeb","name":"Snake2","latency":"0","health":92,"body":[{"x":9,"y":7},{"x":8,"y":7},{"x":7,"y":7},{"x":7,"y":6},{"x":7,"y":5},{"x":8,"y":5},{"x":9,"y":5},{"x":9,"y":4},{"x":8,"y":4}],"head":{"x":9,"y":7},"length":9,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}}],"food":[{"x":4,"y":6},{"x":0,"y":9},{"x":4,"y":5}],"hazards":[]},"you":{"id":"55860e87-7c39-4911-8b67-aea861f27af6","name":"Snake1","latency":"0","health":98,"body":[{"x":10,"y":8},{"x":10,"y":9},{"x":10,"y":10},{"x":9,"y":10},{"x":9,"y":9},{"x":9,"y":8},{"x":8,"y":8},{"x":7,"y":8}],"head":{"x":10,"y":8},"length":8,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}}}
+```
+
+To get the request data sent to each snake, use the `--debug-requests` flag (note this contains the `you` field which is missing in data generated using the `--output` flag):
+```
+2022/04/10 04:41:16 POST http://localhost:8080/move: {"game":{"id":"0baa4367-b1ee-40c7-96c8-34227b88af24","ruleset":{"name":"standard","version":"cli","settings":{"foodSpawnChance":15,"minimumFood":1,"hazardDamagePerTurn":14,"hazardMap":"","hazardMapAuthor":"","royale":{"shrinkEveryNTurns":0},"squad":{"allowBodyCollisions":false,"sharedElimination":false,"sharedHealth":false,"sharedLength":false}}},"timeout":500,"source":""},"turn":5,"board":{"height":11,"width":11,"snakes":[{"id":"5bddff9f-d3ff-458c-b0f5-df81a830b5d8","name":"Snake1","latency":"0","health":96,"body":[{"x":5,"y":7},{"x":4,"y":7},{"x":4,"y":8}],"head":{"x":5,"y":7},"length":3,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}},{"id":"f76e8994-6457-49f0-9102-6a1bcfee5695","name":"Snake2","latency":"0","health":96,"body":[{"x":6,"y":6},{"x":7,"y":6},{"x":7,"y":5}],"head":{"x":6,"y":6},"length":3,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}}],"food":[{"x":6,"y":10},{"x":10,"y":4},{"x":5,"y":5},{"x":9,"y":0}],"hazards":[]},"you":{"id":"f76e8994-6457-49f0-9102-6a1bcfee5695","name":"Snake2","latency":"0","health":96,"body":[{"x":6,"y":6},{"x":7,"y":6},{"x":7,"y":5}],"head":{"x":6,"y":6},"length":3,"shout":"","squad":"","customizations":{"color":"#03d3fc","head":"beluga","tail":"bolt"}}}
 ```
 
 ### Sample Output (With ASCII Board)
