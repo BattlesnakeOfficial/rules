@@ -1,12 +1,12 @@
 package rules
 
 var wrappedRulesetStages = []string{
-	"snake.movement.wrapped",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
+	StageMovementWrapBoundaries,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
 }
 
 type WrappedRuleset struct {

@@ -6,14 +6,14 @@ import (
 )
 
 var royaleRulesetStages = []string{
-	"snake.movement.standard",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
-	"hazard.spawn.royale",
-	"gameover.standard",
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageSpawnHazardsShrinkMap,
+	StageGameOverStandard,
 }
 
 type RoyaleRuleset struct {

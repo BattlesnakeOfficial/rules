@@ -14,13 +14,13 @@ type StandardRuleset struct {
 }
 
 var standardRulesetStages = []string{
-	"snake.movement.standard",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
-	"gameover.standard",
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageGameOverStandard,
 }
 
 func (r *StandardRuleset) Name() string { return GameTypeStandard }

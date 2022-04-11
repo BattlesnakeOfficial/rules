@@ -1,13 +1,13 @@
 package rules
 
 var soloRulesetStages = []string{
-	"snake.movement.standard",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
-	"gameover.solo",
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageGameOverSoloSnake,
 }
 
 type SoloRuleset struct {

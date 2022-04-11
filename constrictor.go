@@ -1,15 +1,15 @@
 package rules
 
 var constrictorRulesetStages = []string{
-	"snake.movement.standard",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
-	"food.remove.constrictor",
-	"snake.grow.constrictor",
-	"gameover.standard",
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageSpawnFoodNoFood,
+	StageModifySnakesAlwaysGrow,
+	StageGameOverStandard,
 }
 
 type ConstrictorRuleset struct {

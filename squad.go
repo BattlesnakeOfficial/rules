@@ -5,15 +5,15 @@ import (
 )
 
 var squadRulesetStages = []string{
-	"snake.movement.standard",
-	"health.reduce.standard",
-	"hazard.damage.standard",
-	"snake.eatfood.standard",
-	"food.spawn.standard",
-	"snake.eliminate.standard",
-	"snake.collision.squad",
-	"snake.share.squad",
-	"gameover.squad",
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageEliminationResurrectSquadCollisions,
+	StageModifySnakesShareAttributes,
+	StageGameOverBySquad,
 }
 
 type SquadRuleset struct {

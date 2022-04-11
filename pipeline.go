@@ -7,26 +7,45 @@ import (
 // StageRegistry is a mapping of stage names to stage functions
 type StageRegistry map[string]StageFunc
 
+const (
+	StageSpawnFoodStandard    = "spawn_food.standard"
+	StageGameOverStandard     = "game_over.standard"
+	StageStarvationStandard   = "starvation.standard"
+	StageFeedSnakesStandard   = "feed_snakes.standard"
+	StageMovementStandard     = "movement.standard"
+	StageHazardDamageStandard = "hazard_damage.standard"
+	StageEliminationStandard  = "elimination.standard"
+
+	StageGameOverSoloSnake                   = "game_over.solo_snake"
+	StageGameOverBySquad                     = "game_over.by_squad"
+	StageSpawnFoodNoFood                     = "spawn_food.no_food"
+	StageSpawnHazardsShrinkMap               = "spawn_hazards.shrink_map"
+	StageEliminationResurrectSquadCollisions = "elimination.resurrect_squad_collisions"
+	StageModifySnakesAlwaysGrow              = "modify_snakes.always_grow"
+	StageMovementWrapBoundaries              = "movement.wrap_boundaries"
+	StageModifySnakesShareAttributes         = "modify_snakes.share_attributes"
+)
+
 // globalRegistry is a global, default mapping of stage names to stage functions.
 // It can be extended by plugins through the use of registration functions.
 // Plugins that wish to extend the available game stages should call RegisterPipelineStageError
 // to add additional stages.
 var globalRegistry = StageRegistry{
-	"food.remove.constrictor":  RemoveFoodConstrictor,
-	"food.spawn.standard":      SpawnFoodStandard,
-	"gameover.solo":            GameOverSolo,
-	"gameover.squad":           GameOverSquad,
-	"gameover.standard":        GameOverStandard,
-	"hazard.damage.standard":   DamageHazardsStandard,
-	"hazard.spawn.royale":      PopulateHazardsRoyale,
-	"health.reduce.standard":   ReduceSnakeHealthStandard,
-	"snake.collision.squad":    ResurrectSnakesSquad,
-	"snake.eatfood.standard":   FeedSnakesStandard,
-	"snake.eliminate.standard": EliminateSnakesStandard,
-	"snake.grow.constrictor":   GrowSnakesConstrictor,
-	"snake.movement.standard":  MoveSnakesStandard,
-	"snake.movement.wrapped":   MoveSnakesWrapped,
-	"snake.share.squad":        ShareAttributesSquad,
+	StageSpawnFoodNoFood:                     RemoveFoodConstrictor,
+	StageSpawnFoodStandard:                   SpawnFoodStandard,
+	StageGameOverSoloSnake:                   GameOverSolo,
+	StageGameOverBySquad:                     GameOverSquad,
+	StageGameOverStandard:                    GameOverStandard,
+	StageHazardDamageStandard:                DamageHazardsStandard,
+	StageSpawnHazardsShrinkMap:               PopulateHazardsRoyale,
+	StageStarvationStandard:                  ReduceSnakeHealthStandard,
+	StageEliminationResurrectSquadCollisions: ResurrectSnakesSquad,
+	StageFeedSnakesStandard:                  FeedSnakesStandard,
+	StageEliminationStandard:                 EliminateSnakesStandard,
+	StageModifySnakesAlwaysGrow:              GrowSnakesConstrictor,
+	StageMovementStandard:                    MoveSnakesStandard,
+	StageMovementWrapBoundaries:              MoveSnakesWrapped,
+	StageModifySnakesShareAttributes:         ShareAttributesSquad,
 }
 
 // RegisterPipelineStage adds a stage to the registry.
