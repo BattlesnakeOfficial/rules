@@ -6,6 +6,56 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPipelineRuleset(t *testing.T) {
+	r := StageRegistry{
+		"doesnt_end": mockStageFn(false, nil),
+		"ends":       mockStageFn(true, nil),
+	}
+
+	// test game over when it does end
+	p := NewPipelineFromRegistry(r, "doesnt_end", "ends")
+	pr := pipelineRuleset{
+		name:     "test",
+		pipeline: p,
+	}
+	require.Equal(t, "test", pr.Name())
+	ended, err := pr.IsGameOver(&BoardState{})
+	require.NoError(t, err)
+	require.True(t, ended)
+
+	// Test game over when it doesn't end
+	p = NewPipelineFromRegistry(r, "doesnt_end")
+	pr = pipelineRuleset{
+		name:     "test",
+		pipeline: p,
+	}
+	ended, err = pr.IsGameOver(&BoardState{})
+	require.NoError(t, err)
+	require.False(t, ended)
+
+	// test a stage that adds food, except on initialization
+	r.RegisterPipelineStage("add_food", func(bs *BoardState, s Settings, sm []SnakeMove) (bool, error) {
+		if IsInitialisation(bs, s, sm) {
+			return false, nil
+		}
+		bs.Food = append(bs.Food, Point{X: 0, Y: 0})
+		return false, nil
+	})
+	b := &BoardState{}
+	p = NewPipelineFromRegistry(r, "add_food")
+	pr = pipelineRuleset{
+		name:     "test",
+		pipeline: p,
+	}
+	require.Empty(t, b.Food)
+	b, err = pr.ModifyInitialBoardState(b)
+	require.NoError(t, err)
+	require.Empty(t, b.Food, "food should not be added on initialisation phase")
+	b, err = pr.CreateNextBoardState(b, mockSnakeMoves())
+	require.NoError(t, err)
+	require.NotEmpty(t, b.Food, "fodo should be added now")
+}
+
 func TestPipelineGlboals(t *testing.T) {
 	oldReg := globalRegistry
 	globalRegistry = StageRegistry{}
