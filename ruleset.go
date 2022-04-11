@@ -285,27 +285,38 @@ type pipelineRuleset struct {
 	settings Settings
 }
 
+// impl Ruleset
 func (r pipelineRuleset) Settings() Settings {
 	return r.settings
 }
 
+// impl Ruleset
 func (r pipelineRuleset) Name() string { return r.name }
 
+// impl Ruleset
 func (r *pipelineRuleset) IsGameOver(b *BoardState) (bool, error) {
 	gameover, _, err := r.Execute(b, r.Settings(), nil)
 	return gameover, err
 }
 
+// impl Ruleset
 func (r pipelineRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
 	_, nextState, err := r.Execute(initialState, r.Settings(), nil)
 	return nextState, err
 }
 
+// impl Pipeline
 func (r pipelineRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
 	return r.pipeline.Execute(bs, s, sm)
 }
 
+// impl Ruleset
 func (r pipelineRuleset) CreateNextBoardState(bs *BoardState, sm []SnakeMove) (*BoardState, error) {
 	_, nextState, err := r.Execute(bs, r.Settings(), sm)
 	return nextState, err
+}
+
+// impl Pipeline
+func (r pipelineRuleset) Error() error {
+	return r.pipeline.Error()
 }

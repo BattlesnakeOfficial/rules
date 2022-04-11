@@ -92,6 +92,8 @@ type Pipeline interface {
 	// The result is the result of the last stage that was executed.
 	//
 	Execute(*BoardState, Settings, []SnakeMove) (bool, *BoardState, error)
+	// Error can be called to check if the pipeline is in an error state.
+	Error() error
 }
 
 // pipeline is an implementation of Pipeline
@@ -143,6 +145,11 @@ func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string
 	}
 
 	return &p
+}
+
+// impl
+func (p pipeline) Error() error {
+	return p.err
 }
 
 // impl

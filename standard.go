@@ -30,6 +30,7 @@ func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*Bo
 	return initialState, nil
 }
 
+// impl Pipeline
 func (r StandardRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
 	return NewPipeline(standardRulesetStages...).Execute(bs, s, sm)
 }
@@ -423,6 +424,11 @@ func (r StandardRuleset) Settings() Settings {
 		HazardMap:           r.HazardMap,
 		HazardMapAuthor:     r.HazardMapAuthor,
 	}
+}
+
+// impl Pipeline
+func (r StandardRuleset) Error() error {
+	return nil
 }
 
 // IsInitialisation checks whether the current state means the game is initialising.
