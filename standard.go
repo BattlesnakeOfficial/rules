@@ -427,7 +427,7 @@ func (r StandardRuleset) Settings() Settings {
 }
 
 // impl Pipeline
-func (r StandardRuleset) Error() error {
+func (r StandardRuleset) Err() error {
 	return nil
 }
 

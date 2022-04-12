@@ -20,7 +20,7 @@ func TestPipelineRuleset(t *testing.T) {
 		pipeline: p,
 	}
 	require.Equal(t, "test", pr.Name())
-	require.Equal(t, errors.New("stage not found"), pr.Error())
+	require.Equal(t, errors.New("stage not found"), pr.Err())
 
 	// test game over when it does end
 	p = NewPipelineFromRegistry(r, "doesnt_end", "ends")

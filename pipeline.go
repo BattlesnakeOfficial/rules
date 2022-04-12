@@ -80,16 +80,25 @@ func RegisterPipelineStage(s string, fn StageFunc) {
 //
 // If a stage produces an error or an ended game state, the pipeline is halted at that stage.
 type Pipeline interface {
-	// Execute runs a sequence of stages and produces a next game state.
+	// Execute runs the pipeline stages and produces a next game state.
 	//
 	// If any stage produces an error or an ended game state, the pipeline
 	// immediately stops at that stage.
 	//
-	// The result is the result of the last stage that was executed.
+	// Errors should be checked and the other results ignored if error is non-nil.
 	//
+	// If the pipeline is already in an error state (this can be checked by calling Err()),
+	// this error will be immediately returned and the pipeline will not run.
+	//
+	// After the pipeline runs, the results will be the result of the last stage that was executed.
 	Execute(*BoardState, Settings, []SnakeMove) (bool, *BoardState, error)
-	// Error can be called to check if the pipeline is in an error state.
-	Error() error
+	// Err provides a way to check for errors before/without calling Execute.
+	// Err returns an error if the Pipeline is in an error state.
+	// If this error is not nil, this error will also be returned from Execute, so it is
+	// optional to call Err.
+	// The idea is to reduce error-checking verbosity for the majority of cases where a
+	// Pipeline is immediately executed after construction (i.e. NewPipeline(...).Execute(...)).
+	Err() error
 }
 
 // pipeline is an implementation of Pipeline
@@ -144,7 +153,7 @@ func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string
 }
 
 // impl
-func (p pipeline) Error() error {
+func (p pipeline) Err() error {
 	return p.err
 }
 

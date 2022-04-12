@@ -317,6 +317,6 @@ func (r pipelineRuleset) CreateNextBoardState(bs *BoardState, sm []SnakeMove) (*
 }
 
 // impl Pipeline
-func (r pipelineRuleset) Error() error {
-	return r.pipeline.Error()
+func (r pipelineRuleset) Err() error {
+	return r.pipeline.Err()
 }

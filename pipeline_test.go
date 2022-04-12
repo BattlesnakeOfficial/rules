@@ -13,21 +13,21 @@ func TestPipeline(t *testing.T) {
 
 	// test empty registry error
 	p := rules.NewPipelineFromRegistry(r)
-	require.Equal(t, errors.New("empty registry"), p.Error())
+	require.Equal(t, errors.New("empty registry"), p.Err())
 	_, _, err := p.Execute(nil, rules.Settings{}, nil)
 	require.Equal(t, errors.New("empty registry"), err)
 
 	// test empty stages names error
 	r.RegisterPipelineStage("astage", mockStageFn(false, nil))
 	p = rules.NewPipelineFromRegistry(r)
-	require.Equal(t, errors.New("no stages"), p.Error())
+	require.Equal(t, errors.New("no stages"), p.Err())
 	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
 	require.Equal(t, errors.New("no stages"), err)
 
 	// test that an unregistered stage name errors
 	p = rules.NewPipelineFromRegistry(r, "doesntexist")
 	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
-	require.Equal(t, errors.New("stage not found"), p.Error())
+	require.Equal(t, errors.New("stage not found"), p.Err())
 	require.Equal(t, errors.New("stage not found"), err)
 
 	// simplest case - one stage
