@@ -67,16 +67,12 @@ func (sr StageRegistry) RegisterPipelineStageError(s string, fn StageFunc) error
 }
 
 // RegisterPipelineStage adds a stage to the global stage registry.
-// If a stage has already been mapped it will be overwritten by the newly
-// registered function.
+// It will panic if the a stage has already been registered with the same name.
 func RegisterPipelineStage(s string, fn StageFunc) {
-	globalRegistry.RegisterPipelineStage(s, fn)
-}
-
-// RegisterPipelineStageError adds a stage to the global stage registry.
-// If a stage has already been mapped an error will be returned.
-func RegisterPipelineStageError(s string, fn StageFunc) error {
-	return globalRegistry.RegisterPipelineStageError(s, fn)
+	err := globalRegistry.RegisterPipelineStageError(s, fn)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Pipeline is an ordered sequences of game stages which are executed to produce the
