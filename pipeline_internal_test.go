@@ -44,7 +44,7 @@ func TestPipelineRuleset(t *testing.T) {
 
 	// test a stage that adds food, except on initialization
 	r.RegisterPipelineStage("add_food", func(bs *BoardState, s Settings, sm []SnakeMove) (bool, error) {
-		if IsInitialisation(bs, s, sm) {
+		if IsInitialization(bs, s, sm) {
 			return false, nil
 		}
 		bs.Food = append(bs.Food, Point{X: 0, Y: 0})

@@ -39,7 +39,7 @@ func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []Snak
 }
 
 func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 	b.Hazards = []Point{}

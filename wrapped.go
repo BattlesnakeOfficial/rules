@@ -26,7 +26,7 @@ func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []Sna
 }
 
 func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 

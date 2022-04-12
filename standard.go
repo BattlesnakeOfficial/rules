@@ -41,7 +41,7 @@ func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []Sn
 }
 
 func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 
@@ -142,7 +142,7 @@ func getDefaultMove(snakeBody []Point) string {
 }
 
 func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 	for i := 0; i < len(b.Snakes); i++ {
@@ -154,7 +154,7 @@ func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMo
 }
 
 func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 	for i := 0; i < len(b.Snakes); i++ {
@@ -192,7 +192,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 }
 
 func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 	// First order snake indices by length.
@@ -388,7 +388,7 @@ func growSnake(snake *Snake) {
 }
 
 func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialisation(b, settings, moves) {
+	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 	numCurrentFood := int32(len(b.Food))
@@ -431,8 +431,8 @@ func (r StandardRuleset) Error() error {
 	return nil
 }
 
-// IsInitialisation checks whether the current state means the game is initialising.
-func IsInitialisation(b *BoardState, settings Settings, moves []SnakeMove) bool {
+// IsInitialization checks whether the current state means the game is initialising.
+func IsInitialization(b *BoardState, settings Settings, moves []SnakeMove) bool {
 	// We can safely assume that the game state is in the initialisation phase when
 	// the turn hasn't advanced and the moves are empty
 	return b.Turn <= 0 && len(moves) == 0
