@@ -84,6 +84,11 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	return false, nil
 }
 
+func (r *RoyaleRuleset) IsGameOver(b *BoardState) (bool, error) {
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
+}
+
 func (r RoyaleRuleset) Settings() Settings {
 	s := r.StandardRuleset.Settings()
 	s.RoyaleSettings = RoyaleSettings{

@@ -32,6 +32,11 @@ func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves [
 	return nextState, err
 }
 
+func (r *ConstrictorRuleset) IsGameOver(b *BoardState) (bool, error) {
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
+}
+
 func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Remove all food from the board
 	b.Food = []Point{}

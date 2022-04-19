@@ -7,6 +7,7 @@ var wrappedRulesetStages = []string{
 	StageFeedSnakesStandard,
 	StageSpawnFoodStandard,
 	StageEliminationStandard,
+	StageGameOverStandard,
 }
 
 type WrappedRuleset struct {
@@ -45,6 +46,11 @@ func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	}
 
 	return false, nil
+}
+
+func (r *WrappedRuleset) IsGameOver(b *BoardState) (bool, error) {
+	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	return gameover, err
 }
 
 func wrap(value, min, max int32) int32 {
