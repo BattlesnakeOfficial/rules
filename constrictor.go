@@ -47,6 +47,9 @@ func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) 
 func GrowSnakesConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Set all snakes to max health and ensure they grow next turn
 	for i := 0; i < len(b.Snakes); i++ {
+		if len(b.Snakes[i].Body) <= 0 {
+			return false, ErrorZeroLengthSnake
+		}
 		b.Snakes[i].Health = SnakeMaxHealth
 
 		tail := b.Snakes[i].Body[len(b.Snakes[i].Body)-1]
