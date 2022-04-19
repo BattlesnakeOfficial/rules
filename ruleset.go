@@ -36,6 +36,9 @@ const (
 	ErrorNoRoomForFood   = RulesetError("not enough space to place food")
 	ErrorNoMoveFound     = RulesetError("move not provided for snake")
 	ErrorZeroLengthSnake = RulesetError("snake is length zero")
+	ErrorEmptyRegistry   = RulesetError("empty registry")
+	ErrorNoStages        = RulesetError("no stages")
+	ErrorStageNotFound   = RulesetError("stage not found")
 
 	// Ruleset / game type names
 	GameTypeConstrictor = "constrictor"

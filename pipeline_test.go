@@ -66,9 +66,10 @@ func TestStageRegistry(t *testing.T) {
 	require.Contains(t, sr, "test")
 
 	// error on duplicate
+	var e rules.RulesetError
 	err := sr.RegisterPipelineStageError("test", mockStageFn(false, nil))
 	require.Error(t, err)
-	require.True(t, rules.IsDuplicateStage(err))
+	require.True(t, errors.As(err, &e), "error should be a RulesetError")
 	require.Equal(t, "stage 'test' has already been registered", err.Error())
 
 	// register another stage with no error
