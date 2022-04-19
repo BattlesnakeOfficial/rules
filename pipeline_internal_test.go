@@ -65,17 +65,6 @@ func TestPipelineRuleset(t *testing.T) {
 	require.NotEmpty(t, b.Food, "fodo should be added now")
 }
 
-func assertPanic(t *testing.T, f func()) {
-	t.Helper()
-	defer func() {
-		t.Helper()
-		if r := recover(); r == nil {
-			t.Errorf("panic expected")
-		}
-	}()
-	f()
-}
-
 func TestPipelineGlobals(t *testing.T) {
 	oldReg := globalRegistry
 	globalRegistry = StageRegistry{}
@@ -85,7 +74,7 @@ func TestPipelineGlobals(t *testing.T) {
 	require.Contains(t, globalRegistry, "test")
 
 	// ensure that the global registry panics if you register an existing stage name
-	assertPanic(t, func() {
+	require.Panics(t, func() {
 		RegisterPipelineStage("test", mockStageFn(false, nil))
 	})
 	RegisterPipelineStage("other", mockStageFn(true, nil)) // otherwise should not panic
