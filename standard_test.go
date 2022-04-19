@@ -218,8 +218,15 @@ func TestStandardCreateNextBoardState(t *testing.T) {
 		standardMoveAndCollideMAD,
 	}
 	r := StandardRuleset{}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeStandard,
+	})
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeStandard, NewPipeline(standardRulesetStages...)))
 	}
 }
 
@@ -552,7 +559,7 @@ func TestMoveSnakes(t *testing.T) {
 			{ID: "two", Move: test.MoveTwo},
 			{ID: "three", Move: test.MoveThree},
 		}
-		err := r.moveSnakes(b, moves)
+		_, err := MoveSnakesStandard(b, r.Settings(), moves)
 
 		require.NoError(t, err)
 		require.Len(t, b.Snakes, 3)
@@ -597,7 +604,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 	}
 
 	r := StandardRuleset{}
-	err := r.moveSnakes(b, moves)
+	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.Equal(t, ErrorNoMoveFound, err)
 }
 
@@ -622,7 +629,7 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 	}
 
 	r := StandardRuleset{}
-	err := r.moveSnakes(b, moves)
+	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.Equal(t, ErrorNoMoveFound, err)
 }
 
@@ -647,7 +654,7 @@ func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 	}
 
 	r := StandardRuleset{}
-	err := r.moveSnakes(b, moves)
+	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.NoError(t, err)
 	require.Equal(t, []Point{{1, 0}}, b.Snakes[0].Body)
 }
@@ -699,7 +706,7 @@ func TestMoveSnakesDefault(t *testing.T) {
 		}
 		moves := []SnakeMove{{ID: "one", Move: test.Move}}
 
-		err := r.moveSnakes(b, moves)
+		_, err := MoveSnakesStandard(b, r.Settings(), moves)
 		require.NoError(t, err)
 		require.Len(t, b.Snakes, 1)
 		require.Equal(t, len(test.Body), len(b.Snakes[0].Body))
@@ -795,25 +802,25 @@ func TestReduceSnakeHealth(t *testing.T) {
 	}
 
 	r := StandardRuleset{}
-	err := r.reduceSnakeHealth(b)
+	_, err := ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(98))
 	require.Equal(t, b.Snakes[1].Health, int32(1))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	err = r.reduceSnakeHealth(b)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(97))
 	require.Equal(t, b.Snakes[1].Health, int32(0))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	err = r.reduceSnakeHealth(b)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(96))
 	require.Equal(t, b.Snakes[1].Health, int32(-1))
 	require.Equal(t, b.Snakes[2].Health, int32(50))
 
-	err = r.reduceSnakeHealth(b)
+	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, int32(95))
 	require.Equal(t, b.Snakes[1].Health, int32(-2))
@@ -1214,7 +1221,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: test.Snakes,
 			}
-			err := r.maybeEliminateSnakes(b)
+			_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
 			require.Equal(t, test.Err, err)
 			for i, snake := range b.Snakes {
 				require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
@@ -1254,7 +1261,7 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 	r := StandardRuleset{}
 	for _, test := range tests {
 		b := &BoardState{Width: 10, Height: 10, Snakes: test.Snakes}
-		err := r.maybeEliminateSnakes(b)
+		_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		for i, snake := range b.Snakes {
 			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause, snake.ID)
@@ -1320,7 +1327,7 @@ func TestMaybeDamageHazards(t *testing.T) {
 	for _, test := range tests {
 		b := &BoardState{Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
 		r := StandardRuleset{HazardDamagePerTurn: 100}
-		err := r.maybeDamageHazards(b)
+		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 
 		for i, snake := range b.Snakes {
@@ -1361,7 +1368,7 @@ func TestHazardDamagePerTurn(t *testing.T) {
 		}
 		r := StandardRuleset{HazardDamagePerTurn: test.HazardDamagePerTurn}
 
-		err := r.maybeDamageHazards(b)
+		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.Equal(t, test.Error, err)
 		require.Equal(t, test.ExpectedHealth, b.Snakes[0].Health)
 		require.Equal(t, test.ExpectedEliminationCause, b.Snakes[0].EliminatedCause)
@@ -1441,7 +1448,7 @@ func TestMaybeFeedSnakes(t *testing.T) {
 			Snakes: test.Snakes,
 			Food:   test.Food,
 		}
-		err := r.maybeFeedSnakes(b)
+		_, err := FeedSnakesStandard(b, r.Settings(), nil)
 		require.NoError(t, err, test.Name)
 		require.Equal(t, len(test.ExpectedSnakes), len(b.Snakes), test.Name)
 		for i := 0; i < len(b.Snakes); i++ {
@@ -1477,7 +1484,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 			Food: test.Food,
 		}
 
-		err := r.maybeSpawnFood(b)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, len(b.Food))
 	}
@@ -1495,7 +1502,7 @@ func TestMaybeSpawnFoodZeroChance(t *testing.T) {
 		Food: []Point{},
 	}
 	for i := 0; i < 1000; i++ {
-		err := r.maybeSpawnFood(b)
+		_, err := SpawnFoodStandard(b, r.Settings(), nil)
 		require.NoError(t, err)
 		require.Equal(t, len(b.Food), 0)
 	}
@@ -1513,7 +1520,7 @@ func TestMaybeSpawnFoodHundredChance(t *testing.T) {
 		Food: []Point{},
 	}
 	for i := 1; i <= 22; i++ {
-		err := r.maybeSpawnFood(b)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, i, len(b.Food))
 	}
@@ -1547,7 +1554,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		}
 
 		rand.Seed(test.Seed)
-		err := r.maybeSpawnFood(b)
+		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, int32(len(b.Food)), "Seed %d", test.Seed)
 	}

@@ -4,6 +4,18 @@ import (
 	"errors"
 )
 
+var squadRulesetStages = []string{
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageEliminationResurrectSquadCollisions,
+	StageModifySnakesShareAttributes,
+	StageGameOverBySquad,
+}
+
 type SquadRuleset struct {
 	StandardRuleset
 
@@ -18,23 +30,13 @@ type SquadRuleset struct {
 
 func (r *SquadRuleset) Name() string { return GameTypeSquad }
 
+func (r SquadRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(squadRulesetStages...).Execute(bs, s, sm)
+}
+
 func (r *SquadRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.resurrectSquadBodyCollisions(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.shareSquadAttributes(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextBoardState, nil
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
+	return nextState, err
 }
 
 func areSnakesOnSameSquad(squadMap map[string]string, snake *Snake, other *Snake) bool {
@@ -45,12 +47,10 @@ func areSnakeIDsOnSameSquad(squadMap map[string]string, snakeID string, otherID 
 	return squadMap[snakeID] == squadMap[otherID]
 }
 
-func (r *SquadRuleset) resurrectSquadBodyCollisions(b *BoardState) error {
-	_, err := r.callStageFunc(ResurrectSnakesSquad, b, []SnakeMove{})
-	return err
-}
-
 func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	if !settings.SquadSettings.AllowBodyCollisions {
 		return false, nil
 	}
@@ -71,12 +71,10 @@ func ResurrectSnakesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 	return false, nil
 }
 
-func (r *SquadRuleset) shareSquadAttributes(b *BoardState) error {
-	_, err := r.callStageFunc(ShareAttributesSquad, b, []SnakeMove{})
-	return err
-}
-
 func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	squadSettings := settings.SquadSettings
 
 	if !(squadSettings.SharedElimination || squadSettings.SharedLength || squadSettings.SharedHealth) {
@@ -120,7 +118,7 @@ func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 }
 
 func (r *SquadRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return r.callStageFunc(GameOverSquad, b, []SnakeMove{})
+	return GameOverSquad(b, r.Settings(), nil)
 }
 
 func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -151,9 +149,4 @@ func (r SquadRuleset) Settings() Settings {
 		SharedLength:        r.SharedLength,
 	}
 	return s
-}
-
-// Adaptor for integrating stages into SquadRuleset
-func (r *SquadRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
 }

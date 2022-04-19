@@ -105,7 +105,14 @@ func TestSoloCreateNextBoardState(t *testing.T) {
 		soloCaseNotOver,
 	}
 	r := SoloRuleset{}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeSolo,
+	})
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeSolo, NewPipeline(soloRulesetStages...)))
 	}
 }

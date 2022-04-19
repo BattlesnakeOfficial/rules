@@ -1,53 +1,36 @@
 package rules
 
+var wrappedRulesetStages = []string{
+	StageMovementWrapBoundaries,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageGameOverStandard,
+}
+
 type WrappedRuleset struct {
 	StandardRuleset
 }
 
 func (r *WrappedRuleset) Name() string { return GameTypeWrapped }
 
-func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextState := prevState.Clone()
-
-	err := r.moveSnakes(nextState, moves)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeDamageHazards(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+func (r WrappedRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(wrappedRulesetStages...).Execute(bs, s, sm)
 }
 
-func (r *WrappedRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
-	_, err := r.callStageFunc(MoveSnakesWrapped, b, moves)
-	return err
+func (r *WrappedRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
+
+	return nextState, err
 }
 
 func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
+
 	_, err := MoveSnakesStandard(b, settings, moves)
 	if err != nil {
 		return false, err
@@ -63,6 +46,10 @@ func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	}
 
 	return false, nil
+}
+
+func (r *WrappedRuleset) IsGameOver(b *BoardState) (bool, error) {
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func wrap(value, min, max int32) int32 {

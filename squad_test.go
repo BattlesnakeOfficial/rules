@@ -26,14 +26,14 @@ func TestSquadCreateNextBoardStateSanity(t *testing.T) {
 func TestSquadResurrectSquadBodyCollisionsSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}
-	err := r.resurrectSquadBodyCollisions(boardState)
+	_, err := ResurrectSnakesSquad(boardState, r.Settings(), nil)
 	require.NoError(t, err)
 }
 
 func TestSquadSharedAttributesSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := SquadRuleset{}
-	err := r.shareSquadAttributes(boardState)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), nil)
 	require.NoError(t, err)
 }
 
@@ -77,7 +77,7 @@ func TestSquadAllowBodyCollisions(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SquadMap: squadMap, AllowBodyCollisions: true}
-	err := r.resurrectSquadBodyCollisions(boardState)
+	_, err := ResurrectSnakesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -113,7 +113,7 @@ func TestSquadAllowBodyCollisionsEliminatedByNotSet(t *testing.T) {
 			"2": "red",
 		},
 	}
-	err := r.resurrectSquadBodyCollisions(boardState)
+	_, err := ResurrectSnakesSquad(boardState, r.Settings(), mockSnakeMoves())
 	require.Error(t, err)
 }
 
@@ -152,7 +152,7 @@ func TestSquadShareSquadHealth(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedHealth: true, SquadMap: squadMap}
-	err := r.shareSquadAttributes(boardState)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -202,7 +202,7 @@ func TestSquadSharedLength(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedLength: true, SquadMap: squadMap}
-	err := r.shareSquadAttributes(boardState)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -255,7 +255,7 @@ func TestSquadSharedElimination(t *testing.T) {
 	require.Equal(t, len(squadMap), len(boardState.Snakes), "squad map is wrong size, error in test setup")
 
 	r := SquadRuleset{SharedElimination: true, SquadMap: squadMap}
-	err := r.shareSquadAttributes(boardState)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 
 	require.NoError(t, err)
 	require.Equal(t, len(boardState.Snakes), len(testSnakes))
@@ -291,7 +291,7 @@ func TestSquadSharedAttributesErrorLengthZero(t *testing.T) {
 			"2": "red",
 		},
 	}
-	err := r.shareSquadAttributes(boardState)
+	_, err := ShareAttributesSquad(boardState, r.Settings(), mockSnakeMoves())
 	require.Error(t, err)
 }
 
@@ -547,8 +547,19 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 		},
 	}
 	rand.Seed(0)
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeSquad,
+	})
+	rb.WithSeed(0)
+	for s, ss := range r.SquadMap {
+		rb = rb.AddSnakeToSquad(s, ss)
+	}
 	for _, gc := range standardCases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeSquad, NewPipeline(squadRulesetStages...)))
 	}
 
 	extendedCases := []gameTestCase{
@@ -557,7 +568,15 @@ func TestSquadCreateNextBoardState(t *testing.T) {
 	}
 	r.SharedHealth = true
 	r.AllowBodyCollisions = true
+	rb = rb.WithParams(map[string]string{
+		ParamSharedHealth:        "true",
+		ParamAllowBodyCollisions: "true",
+	})
 	for _, gc := range extendedCases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeSquad, NewPipeline(squadRulesetStages...)))
 	}
 }

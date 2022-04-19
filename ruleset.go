@@ -36,6 +36,9 @@ const (
 	ErrorNoRoomForFood   = RulesetError("not enough space to place food")
 	ErrorNoMoveFound     = RulesetError("move not provided for snake")
 	ErrorZeroLengthSnake = RulesetError("snake is length zero")
+	ErrorEmptyRegistry   = RulesetError("empty registry")
+	ErrorNoStages        = RulesetError("no stages")
+	ErrorStageNotFound   = RulesetError("stage not found")
 
 	// Ruleset / game type names
 	GameTypeConstrictor = "constrictor"
@@ -104,7 +107,7 @@ func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBui
 }
 
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
-func (rb rulesetBuilder) Ruleset() Ruleset {
+func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	standardRuleset := &StandardRuleset{
 		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
 		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
@@ -138,13 +141,9 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 			StandardRuleset: *standardRuleset,
 		}
 	case GameTypeSquad:
-		squadMap := map[string]string{}
-		for id, squad := range rb.squads {
-			squadMap[id] = squad
-		}
 		return &SquadRuleset{
 			StandardRuleset:     *standardRuleset,
-			SquadMap:            squadMap,
+			SquadMap:            rb.squadMap(),
 			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
 			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
 			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
@@ -152,6 +151,42 @@ func (rb rulesetBuilder) Ruleset() Ruleset {
 		}
 	}
 	return standardRuleset
+}
+
+func (rb rulesetBuilder) squadMap() map[string]string {
+	squadMap := map[string]string{}
+	for id, squad := range rb.squads {
+		squadMap[id] = squad
+	}
+	return squadMap
+}
+
+// PipelineRuleset provides an implementation of the Ruleset using a pipeline with a name.
+// It is intended to facilitate transitioning away from legacy Ruleset implementations to Pipeline
+// implementations.
+func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRuleset {
+	return &pipelineRuleset{
+		name:     name,
+		pipeline: p,
+		settings: Settings{
+			FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
+			MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
+			HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
+			HazardMap:           rb.params[ParamHazardMap],
+			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
+			RoyaleSettings: RoyaleSettings{
+				seed:              rb.seed,
+				ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
+			},
+			SquadSettings: SquadSettings{
+				squadMap:            rb.squadMap(),
+				AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
+				SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
+				SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
+				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
+			},
+		},
+	}
 }
 
 // paramsBool returns the boolean value for the specified parameter.
@@ -239,3 +274,56 @@ type SquadSettings struct {
 //
 // Errors should be treated as meaning the stage failed and the board state is now invalid.
 type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
+
+// PipelineRuleset groups the Pipeline and Ruleset methods.
+// It is intended to facilitate a transition from Ruleset legacy code to Pipeline code.
+type PipelineRuleset interface {
+	Ruleset
+	Pipeline
+}
+
+type pipelineRuleset struct {
+	pipeline Pipeline
+	name     string
+	settings Settings
+}
+
+// impl Ruleset
+func (r pipelineRuleset) Settings() Settings {
+	return r.settings
+}
+
+// impl Ruleset
+func (r pipelineRuleset) Name() string { return r.name }
+
+// impl Ruleset
+// IMPORTANT: this implementation of IsGameOver deviates from the previous Ruleset implementations
+// in that it checks if the *NEXT* state results in game over, not the previous state.
+// This is due to the design of pipelines / stage functions not having a distinction between
+// checking for game over and producing a next state.
+func (r *pipelineRuleset) IsGameOver(b *BoardState) (bool, error) {
+	gameover, _, err := r.Execute(b, r.Settings(), nil) // checks if next state is game over
+	return gameover, err
+}
+
+// impl Ruleset
+func (r pipelineRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
+	_, nextState, err := r.Execute(initialState, r.Settings(), nil)
+	return nextState, err
+}
+
+// impl Pipeline
+func (r pipelineRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return r.pipeline.Execute(bs, s, sm)
+}
+
+// impl Ruleset
+func (r pipelineRuleset) CreateNextBoardState(bs *BoardState, sm []SnakeMove) (*BoardState, error) {
+	_, nextState, err := r.Execute(bs, r.Settings(), sm)
+	return nextState, err
+}
+
+// impl Pipeline
+func (r pipelineRuleset) Err() error {
+	return r.pipeline.Err()
+}

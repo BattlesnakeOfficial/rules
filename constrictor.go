@@ -1,45 +1,39 @@
 package rules
 
+var constrictorRulesetStages = []string{
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageEliminationStandard,
+	StageSpawnFoodNoFood,
+	StageModifySnakesAlwaysGrow,
+	StageGameOverStandard,
+}
+
 type ConstrictorRuleset struct {
 	StandardRuleset
 }
 
 func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
 
+func (r ConstrictorRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(constrictorRulesetStages...).Execute(bs, s, sm)
+}
+
 func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
-	initialBoardState, err := r.StandardRuleset.ModifyInitialBoardState(initialBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	r.removeFood(initialBoardState)
-
-	err = r.applyConstrictorRules(initialBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return initialBoardState, nil
+	_, nextState, err := r.Execute(initialBoardState, r.Settings(), nil)
+	return nextState, err
 }
 
 func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	nextState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
-	if err != nil {
-		return nil, err
-	}
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
 
-	r.removeFood(nextState)
-
-	err = r.applyConstrictorRules(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+	return nextState, err
 }
 
-func (r *ConstrictorRuleset) removeFood(b *BoardState) {
-	_, _ = r.callStageFunc(RemoveFoodConstrictor, b, []SnakeMove{})
+func (r *ConstrictorRuleset) IsGameOver(b *BoardState) (bool, error) {
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -49,14 +43,12 @@ func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) 
 	return false, nil
 }
 
-func (r *ConstrictorRuleset) applyConstrictorRules(b *BoardState) error {
-	_, err := r.callStageFunc(GrowSnakesConstrictor, b, []SnakeMove{})
-	return err
-}
-
 func GrowSnakesConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Set all snakes to max health and ensure they grow next turn
 	for i := 0; i < len(b.Snakes); i++ {
+		if len(b.Snakes[i].Body) <= 0 {
+			return false, ErrorZeroLengthSnake
+		}
 		b.Snakes[i].Health = SnakeMaxHealth
 
 		tail := b.Snakes[i].Body[len(b.Snakes[i].Body)-1]

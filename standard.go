@@ -13,6 +13,16 @@ type StandardRuleset struct {
 	HazardMapAuthor     string // optional
 }
 
+var standardRulesetStages = []string{
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageGameOverStandard,
+}
+
 func (r *StandardRuleset) Name() string { return GameTypeStandard }
 
 func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
@@ -20,55 +30,22 @@ func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*Bo
 	return initialState, nil
 }
 
-func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	// We specifically want to copy prevState, so as not to alter it directly.
-	nextState := prevState.Clone()
-
-	err := r.moveSnakes(nextState, moves)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.reduceSnakeHealth(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeDamageHazards(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	// bvanvugt: We specifically want this to happen before elimination for two reasons:
-	// 1) We want snakes to be able to eat on their very last turn and still survive.
-	// 2) So that head-to-head collisions on food still remove the food.
-	//    This does create an artifact though, where head-to-head collisions
-	//    of equal length actually show length + 1 and full health, as if both snakes ate.
-	err = r.maybeFeedSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeSpawnFood(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.maybeEliminateSnakes(nextState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextState, nil
+// impl Pipeline
+func (r StandardRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(standardRulesetStages...).Execute(bs, s, sm)
 }
 
-func (r *StandardRuleset) moveSnakes(b *BoardState, moves []SnakeMove) error {
-	_, err := r.callStageFunc(MoveSnakesStandard, b, moves)
-	return err
+func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
+	return nextState, err
 }
 
 func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
-	// If no moves are passed, pass on modifying the initial board state
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
+
+	// no-op when moves are empty
 	if len(moves) == 0 {
 		return false, nil
 	}
@@ -164,12 +141,10 @@ func getDefaultMove(snakeBody []Point) string {
 	return MoveUp
 }
 
-func (r *StandardRuleset) reduceSnakeHealth(b *BoardState) error {
-	_, err := r.callStageFunc(ReduceSnakeHealthStandard, b, []SnakeMove{})
-	return err
-}
-
 func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	for i := 0; i < len(b.Snakes); i++ {
 		if b.Snakes[i].EliminatedCause == NotEliminated {
 			b.Snakes[i].Health = b.Snakes[i].Health - 1
@@ -178,12 +153,10 @@ func ReduceSnakeHealthStandard(b *BoardState, settings Settings, moves []SnakeMo
 	return false, nil
 }
 
-func (r *StandardRuleset) maybeDamageHazards(b *BoardState) error {
-	_, err := r.callStageFunc(DamageHazardsStandard, b, []SnakeMove{})
-	return err
-}
-
 func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
@@ -218,12 +191,10 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 	return false, nil
 }
 
-func (r *StandardRuleset) maybeEliminateSnakes(b *BoardState) error {
-	_, err := r.callStageFunc(EliminateSnakesStandard, b, []SnakeMove{})
-	return err
-}
-
 func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	// First order snake indices by length.
 	// In multi-collision scenarios we want to always attribute elimination to the longest snake.
 	snakeIndicesByLength := make([]int, len(b.Snakes))
@@ -378,11 +349,6 @@ func snakeHasLostHeadToHead(s *Snake, other *Snake) bool {
 	return false
 }
 
-func (r *StandardRuleset) maybeFeedSnakes(b *BoardState) error {
-	_, err := r.callStageFunc(FeedSnakesStandard, b, []SnakeMove{})
-	return err
-}
-
 func FeedSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	newFood := []Point{}
 	for _, food := range b.Food {
@@ -421,12 +387,10 @@ func growSnake(snake *Snake) {
 	}
 }
 
-func (r *StandardRuleset) maybeSpawnFood(b *BoardState) error {
-	_, err := r.callStageFunc(SpawnFoodStandard, b, []SnakeMove{})
-	return err
-}
-
 func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	numCurrentFood := int32(len(b.Food))
 	if numCurrentFood < settings.MinimumFood {
 		return false, PlaceFoodRandomly(b, settings.MinimumFood-numCurrentFood)
@@ -438,7 +402,7 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return r.callStageFunc(GameOverStandard, b, []SnakeMove{})
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -461,7 +425,14 @@ func (r StandardRuleset) Settings() Settings {
 	}
 }
 
-// Adaptor for integrating stages into StandardRuleset
-func (r *StandardRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
+// impl Pipeline
+func (r StandardRuleset) Err() error {
+	return nil
+}
+
+// IsInitialization checks whether the current state means the game is initialising.
+func IsInitialization(b *BoardState, settings Settings, moves []SnakeMove) bool {
+	// We can safely assume that the game state is in the initialisation phase when
+	// the turn hasn't advanced and the moves are empty
+	return b.Turn <= 0 && len(moves) == 0
 }

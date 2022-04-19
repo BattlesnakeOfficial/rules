@@ -25,7 +25,7 @@ func NewBoardState(width, height int32) *BoardState {
 	}
 }
 
-// Clone returns a deep copy of prevState that can be safely modified inside Ruleset.CreateNextBoardState
+// Clone returns a deep copy of prevState that can be safely modified without affecting the original
 func (prevState *BoardState) Clone() *BoardState {
 	nextState := &BoardState{
 		Turn:    prevState.Turn,

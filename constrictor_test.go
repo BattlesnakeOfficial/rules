@@ -24,7 +24,6 @@ func TestConstrictorModifyInitialBoardState(t *testing.T) {
 		{11, 11, []string{}},
 		{11, 11, []string{"one", "two", "three", "four", "five"}},
 	}
-
 	r := ConstrictorRuleset{}
 	for testNum, test := range tests {
 		state, err := CreateDefaultBoardState(test.Width, test.Height, test.IDs)
@@ -104,8 +103,15 @@ func TestConstrictorCreateNextBoardState(t *testing.T) {
 		standardCaseErrZeroLengthSnake,
 		constrictorMoveAndCollideMAD,
 	}
+	rb := NewRulesetBuilder().WithParams(map[string]string{
+		ParamGameType: GameTypeConstrictor,
+	})
 	r := ConstrictorRuleset{}
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
+		// also test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.Ruleset())
+		// also test a pipeline with the same settings
+		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeConstrictor, NewPipeline(constrictorRulesetStages...)))
 	}
 }

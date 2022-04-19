@@ -5,6 +5,17 @@ import (
 	"math/rand"
 )
 
+var royaleRulesetStages = []string{
+	StageMovementStandard,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageSpawnFoodStandard,
+	StageEliminationStandard,
+	StageSpawnHazardsShrinkMap,
+	StageGameOverStandard,
+}
+
 type RoyaleRuleset struct {
 	StandardRuleset
 
@@ -15,31 +26,22 @@ type RoyaleRuleset struct {
 
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
 
+func (r RoyaleRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
+	return NewPipeline(royaleRulesetStages...).Execute(bs, s, sm)
+}
+
 func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
 	if r.StandardRuleset.HazardDamagePerTurn < 1 {
 		return nil, errors.New("royale damage per turn must be greater than zero")
 	}
-
-	nextBoardState, err := r.StandardRuleset.CreateNextBoardState(prevState, moves)
-	if err != nil {
-		return nil, err
-	}
-
-	// Royale's only job is now to populate the hazards for next turn - StandardRuleset takes care of applying hazard damage.
-	err = r.populateHazards(nextBoardState)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextBoardState, nil
-}
-
-func (r *RoyaleRuleset) populateHazards(b *BoardState) error {
-	_, err := r.callStageFunc(PopulateHazardsRoyale, b, []SnakeMove{})
-	return err
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
+	return nextState, err
 }
 
 func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	if IsInitialization(b, settings, moves) {
+		return false, nil
+	}
 	b.Hazards = []Point{}
 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
@@ -82,6 +84,10 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	return false, nil
 }
 
+func (r *RoyaleRuleset) IsGameOver(b *BoardState) (bool, error) {
+	return GameOverStandard(b, r.Settings(), nil)
+}
+
 func (r RoyaleRuleset) Settings() Settings {
 	s := r.StandardRuleset.Settings()
 	s.RoyaleSettings = RoyaleSettings{
@@ -89,9 +95,4 @@ func (r RoyaleRuleset) Settings() Settings {
 		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
 	}
 	return s
-}
-
-// Adaptor for integrating stages into RoyaleRuleset
-func (r *RoyaleRuleset) callStageFunc(stage StageFunc, boardState *BoardState, moves []SnakeMove) (bool, error) {
-	return stage(boardState, r.Settings(), moves)
 }
