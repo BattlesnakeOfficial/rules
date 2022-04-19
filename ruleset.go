@@ -297,8 +297,12 @@ func (r pipelineRuleset) Settings() Settings {
 func (r pipelineRuleset) Name() string { return r.name }
 
 // impl Ruleset
+// IMPORTANT: this implementation of IsGameOver deviates from the previous Ruleset implementations
+// in that it checks if the *NEXT* state results in game over, not the previous state.
+// This is due to the design of pipelines / stage functions not having a distinction between
+// checking for game over and producing a next state.
 func (r *pipelineRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
+	gameover, _, err := r.Execute(b, r.Settings(), nil) // checks if next state is game over
 	return gameover, err
 }
 
