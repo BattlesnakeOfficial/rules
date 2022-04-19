@@ -33,8 +33,7 @@ func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves [
 }
 
 func (r *ConstrictorRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
-	return gameover, err
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {

@@ -118,8 +118,7 @@ func ShareAttributesSquad(b *BoardState, settings Settings, moves []SnakeMove) (
 }
 
 func (r *SquadRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
-	return gameover, err
+	return GameOverSquad(b, r.Settings(), nil)
 }
 
 func GameOverSquad(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {

@@ -21,8 +21,7 @@ func (r SoloRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, 
 }
 
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
-	return gameover, err
+	return GameOverSolo(b, r.Settings(), nil)
 }
 
 func GameOverSolo(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {

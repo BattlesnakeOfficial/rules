@@ -49,8 +49,7 @@ func MoveSnakesWrapped(b *BoardState, settings Settings, moves []SnakeMove) (boo
 }
 
 func (r *WrappedRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
-	return gameover, err
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func wrap(value, min, max int32) int32 {

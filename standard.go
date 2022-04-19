@@ -402,8 +402,7 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 }
 
 func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil)
-	return gameover, err
+	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
