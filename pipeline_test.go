@@ -13,22 +13,22 @@ func TestPipeline(t *testing.T) {
 
 	// test empty registry error
 	p := rules.NewPipelineFromRegistry(r)
-	require.Equal(t, errors.New("empty registry"), p.Err())
+	require.Equal(t, rules.ErrorEmptyRegistry, p.Err())
 	_, _, err := p.Execute(nil, rules.Settings{}, nil)
-	require.Equal(t, errors.New("empty registry"), err)
+	require.Equal(t, rules.ErrorEmptyRegistry, err)
 
 	// test empty stages names error
 	r.RegisterPipelineStage("astage", mockStageFn(false, nil))
 	p = rules.NewPipelineFromRegistry(r)
-	require.Equal(t, errors.New("no stages"), p.Err())
+	require.Equal(t, rules.ErrorNoStages, p.Err())
 	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
-	require.Equal(t, errors.New("no stages"), err)
+	require.Equal(t, rules.ErrorNoStages, err)
 
 	// test that an unregistered stage name errors
 	p = rules.NewPipelineFromRegistry(r, "doesntexist")
 	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
-	require.Equal(t, errors.New("stage not found"), p.Err())
-	require.Equal(t, errors.New("stage not found"), err)
+	require.Equal(t, rules.ErrorStageNotFound, p.Err())
+	require.Equal(t, rules.ErrorStageNotFound, err)
 
 	// simplest case - one stage
 	ended, next, err := rules.NewPipelineFromRegistry(r, "astage").Execute(&rules.BoardState{}, rules.Settings{}, nil)
@@ -66,7 +66,10 @@ func TestStageRegistry(t *testing.T) {
 	require.Contains(t, sr, "test")
 
 	// error on duplicate
-	require.Error(t, sr.RegisterPipelineStageError("test", mockStageFn(false, nil)))
+	err := sr.RegisterPipelineStageError("test", mockStageFn(false, nil))
+	require.Error(t, err)
+	require.True(t, rules.IsDuplicateStage(err))
+	require.Equal(t, "stage 'test' has already been registered", err.Error())
 
 	// register another stage with no error
 	require.NoError(t, sr.RegisterPipelineStageError("other", mockStageFn(false, nil)))

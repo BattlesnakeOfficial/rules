@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"fmt"
 )
 
 // StageRegistry is a mapping of stage names to stage functions
@@ -25,6 +26,36 @@ const (
 	StageMovementWrapBoundaries              = "movement.wrap_boundaries"
 	StageModifySnakesShareAttributes         = "modify_snakes.share_attributes"
 )
+
+var (
+	ErrorEmptyRegistry = errors.New("empty registry")
+	ErrorNoStages      = errors.New("no stages")
+	ErrorStageNotFound = errors.New("stage not found")
+)
+
+type duplicateStageError struct {
+	stage string
+}
+
+func (dse duplicateStageError) Error() string {
+	return fmt.Sprintf("stage '%s' has already been registered", dse.stage)
+}
+
+// IsDuplicate implements an interface that allows a check of whether the error is from
+// registering a duplicate pipeline stage.
+func (dse duplicateStageError) IsDuplicate() bool {
+	return true
+}
+
+// IsDuplicateStage provides a convenient way to check if an error was
+// because of a duplicate pipeline stage
+func IsDuplicateStage(err error) bool {
+	type isDuplicate interface {
+		IsDuplicate() bool
+	}
+	te, ok := err.(isDuplicate)
+	return ok && te.IsDuplicate()
+}
 
 // globalRegistry is a global, default mapping of stage names to stage functions.
 // It can be extended by plugins through the use of registration functions.
@@ -59,7 +90,7 @@ func (sr StageRegistry) RegisterPipelineStage(s string, fn StageFunc) {
 // If a stage has already been mapped an error will be returned.
 func (sr StageRegistry) RegisterPipelineStageError(s string, fn StageFunc) error {
 	if _, ok := sr[s]; ok {
-		return errors.New("stage has already been registered")
+		return duplicateStageError{stage: s}
 	}
 
 	sr.RegisterPipelineStage(s, fn)
@@ -131,19 +162,19 @@ func NewPipeline(stageNames ...string) Pipeline {
 func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string) Pipeline {
 	// this can't be useful and probably indicates a problem
 	if len(registry) == 0 {
-		return &pipeline{err: errors.New("empty registry")}
+		return &pipeline{err: ErrorEmptyRegistry}
 	}
 
 	// this also can't be useful and probably indicates a problem
 	if len(stageNames) == 0 {
-		return &pipeline{err: errors.New("no stages")}
+		return &pipeline{err: ErrorNoStages}
 	}
 
 	p := pipeline{}
 	for _, s := range stageNames {
 		fn, ok := registry[s]
 		if !ok {
-			return pipeline{err: errors.New("stage not found")}
+			return pipeline{err: ErrorStageNotFound}
 		}
 
 		p.stages = append(p.stages, fn)

@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,7 +19,7 @@ func TestPipelineRuleset(t *testing.T) {
 		pipeline: p,
 	}
 	require.Equal(t, "test", pr.Name())
-	require.Equal(t, errors.New("stage not found"), pr.Err())
+	require.Equal(t, ErrorStageNotFound, pr.Err())
 
 	// test game over when it does end
 	p = NewPipelineFromRegistry(r, "doesnt_end", "ends")
