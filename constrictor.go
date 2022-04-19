@@ -5,7 +5,6 @@ var constrictorRulesetStages = []string{
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
-	StageSpawnFoodStandard,
 	StageEliminationStandard,
 	StageSpawnFoodNoFood,
 	StageModifySnakesAlwaysGrow,
