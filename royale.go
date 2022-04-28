@@ -2,7 +2,6 @@ package rules
 
 import (
 	"errors"
-	"math/rand"
 )
 
 var royaleRulesetStages = []string{
@@ -19,7 +18,7 @@ var royaleRulesetStages = []string{
 type RoyaleRuleset struct {
 	StandardRuleset
 
-	Seed int64
+	Seed int64 // Deprecated, StandardRuleset.Seed is used instead
 
 	ShrinkEveryNTurns int32
 }
@@ -55,7 +54,7 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 		return false, nil
 	}
 
-	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
+	randGenerator := settings.Rand()
 
 	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
 	minX, maxX := int32(0), b.Width-1

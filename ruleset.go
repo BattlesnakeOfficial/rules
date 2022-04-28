@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"math/rand"
 	"strconv"
 )
 
@@ -109,6 +110,7 @@ func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBui
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
 func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	standardRuleset := &StandardRuleset{
+		seed:                rb.seed,
 		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
 		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
 		HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
@@ -169,6 +171,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 		name:     name,
 		pipeline: p,
 		settings: Settings{
+			seed:                rb.seed,
 			FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
 			MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
 			HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
@@ -250,6 +253,9 @@ type Settings struct {
 	HazardMapAuthor     string         `json:"hazardMapAuthor"`
 	RoyaleSettings      RoyaleSettings `json:"royale"`
 	SquadSettings       SquadSettings  `json:"squad"`
+
+	seed int64
+	rand Rand
 }
 
 // RoyaleSettings contains settings that are specific to the "royale" game mode
@@ -265,6 +271,28 @@ type SquadSettings struct {
 	SharedElimination   bool `json:"sharedElimination"`
 	SharedHealth        bool `json:"sharedHealth"`
 	SharedLength        bool `json:"sharedLength"`
+}
+
+// Retrieve a random number generator based on a fixed seed.
+// The random number generator is cached in the BoardState, allowing it to be overridden for tests.
+func (s Settings) Rand() Rand {
+	if s.rand != nil {
+		return s.rand
+	}
+	s.rand = rand.New(rand.NewSource(s.seed))
+	return s.rand
+}
+
+// Override the built in random number generator for this BoardState.
+// For use in testing to make the game deterministic.
+func (s Settings) SetRand(rand Rand) {
+	s.rand = rand
+}
+
+// Set the BoardState's seed, which is used to generate random numbers.
+func (s Settings) SetSeed(seed int64) {
+	s.seed = seed
+	s.rand = nil
 }
 
 // StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
