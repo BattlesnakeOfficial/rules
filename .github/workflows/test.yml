@@ -2,6 +2,9 @@ name: Test
 
 on: [push, pull_request]
 
+env:
+  GO_VERSION: 1.18.1
+
 jobs:
 
   format:
@@ -11,7 +14,7 @@ jobs:
     - uses: actions/checkout@main
     - uses: actions/setup-go@main
       with:
-        go-version: '1.17'
+        go-version: '${{ env.GO_VERSION }}'
     - name: Run gofmt
       run: test -z $(gofmt -l .) || (gofmt -d . && exit 1)
 
@@ -23,7 +26,7 @@ jobs:
       - uses: actions/checkout@main
       - uses: actions/setup-go@main
         with:
-          go-version: '1.17'
+          go-version: '${{ env.GO_VERSION }}'
       - name: Run golangci-lint
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.43.0
@@ -37,7 +40,7 @@ jobs:
     - uses: actions/checkout@main
     - uses: actions/setup-go@main
       with:
-        go-version: '1.17'
+        go-version: '${{ env.GO_VERSION }}'
     - name: Run go test
       run: go test -race -coverprofile=coverage.txt ./...
     - name: Upload coverage to codecov.io
@@ -56,7 +59,7 @@ jobs:
     - uses: actions/checkout@main
     - uses: actions/setup-go@main
       with:
-        go-version: '1.17'
+        go-version: '${{ env.GO_VERSION }}'
     - name: Run go build
       run: |
         go build ./cli/battlesnake
