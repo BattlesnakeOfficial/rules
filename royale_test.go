@@ -2,7 +2,6 @@ package rules
 
 import (
 	"errors"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -96,6 +95,7 @@ func TestRoyaleHazards(t *testing.T) {
 		}
 		r := RoyaleRuleset{
 			StandardRuleset: StandardRuleset{
+				seed:                seed,
 				HazardDamagePerTurn: 1,
 			},
 			Seed:              seed,
@@ -125,7 +125,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	seed := int64(45897034512311)
 
 	base := &BoardState{Width: 10, Height: 10, Snakes: []Snake{{ID: "one", Health: 100, Body: []Point{{9, 1}, {9, 1}, {9, 1}}}}}
-	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 30}, Seed: seed, ShrinkEveryNTurns: 10}
+	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 30, seed: seed}, Seed: seed, ShrinkEveryNTurns: 10}
 	m := []SnakeMove{{ID: "one", Move: "down"}}
 
 	stateAfterTurn := func(prevState *BoardState, turn int32) *BoardState {
@@ -261,15 +261,16 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 	r := RoyaleRuleset{
 		StandardRuleset: StandardRuleset{
 			HazardDamagePerTurn: 1,
+			seed:                0,
 		},
 		ShrinkEveryNTurns: 1,
+		Seed:              0,
 	}
-	rand.Seed(0)
 	rb := NewRulesetBuilder().WithParams(map[string]string{
 		ParamGameType:            GameTypeRoyale,
 		ParamHazardDamagePerTurn: "1",
 		ParamShrinkEveryNTurns:   "1",
-	})
+	}).WithSeed(0)
 	for _, gc := range cases {
 		gc.requireValidNextState(t, &r)
 		// also test a RulesBuilder constructed instance

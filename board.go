@@ -1,8 +1,6 @@
 package rules
 
-import (
-	"math/rand"
-)
+import "math/rand"
 
 type BoardState struct {
 	Turn    int32
@@ -37,9 +35,10 @@ func (prevState *BoardState) Clone() *BoardState {
 	}
 	for i := 0; i < len(prevState.Snakes); i++ {
 		nextState.Snakes[i].ID = prevState.Snakes[i].ID
-		nextState.Snakes[i].Health = prevState.Snakes[i].Health
 		nextState.Snakes[i].Body = append([]Point{}, prevState.Snakes[i].Body...)
+		nextState.Snakes[i].Health = prevState.Snakes[i].Health
 		nextState.Snakes[i].EliminatedCause = prevState.Snakes[i].EliminatedCause
+		nextState.Snakes[i].EliminatedOnTurn = prevState.Snakes[i].EliminatedOnTurn
 		nextState.Snakes[i].EliminatedBy = prevState.Snakes[i].EliminatedBy
 	}
 	return nextState
@@ -335,4 +334,175 @@ func isKnownBoardSize(b *BoardState) bool {
 		return true
 	}
 	return false
+}
+
+func placeSnakesAutomaticallyWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
+	if isKnownBoardSize(b) {
+		return placeSnakesFixedWithRand(rand, b, snakeIDs)
+	}
+	return placeSnakesRandomlyWithRand(rand, b, snakeIDs)
+}
+
+func placeSnakesFixedWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
+	b.Snakes = make([]Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		b.Snakes[i] = Snake{
+			ID:     snakeIDs[i],
+			Health: SnakeMaxHealth,
+		}
+	}
+
+	// Create start 8 points
+	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
+	startPoints := []Point{
+		{mn, mn},
+		{mn, md},
+		{mn, mx},
+		{md, mn},
+		{md, mx},
+		{mx, mn},
+		{mx, md},
+		{mx, mx},
+	}
+
+	// Sanity check
+	if len(b.Snakes) > len(startPoints) {
+		return ErrorTooManySnakes
+	}
+
+	// Randomly order them
+	rand.Shuffle(len(startPoints), func(i int, j int) {
+		startPoints[i], startPoints[j] = startPoints[j], startPoints[i]
+	})
+
+	// Assign to snakes in order given
+	for i := 0; i < len(b.Snakes); i++ {
+		for j := 0; j < SnakeStartSize; j++ {
+			b.Snakes[i].Body = append(b.Snakes[i].Body, startPoints[i])
+		}
+
+	}
+	return nil
+}
+
+func placeSnakesRandomlyWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
+	b.Snakes = make([]Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		b.Snakes[i] = Snake{
+			ID:     snakeIDs[i],
+			Health: SnakeMaxHealth,
+		}
+	}
+
+	for i := 0; i < len(b.Snakes); i++ {
+		unoccupiedPoints := getEvenUnoccupiedPoints(b)
+		if len(unoccupiedPoints) <= 0 {
+			return ErrorNoRoomForSnake
+		}
+		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
+		for j := 0; j < SnakeStartSize; j++ {
+			b.Snakes[i].Body = append(b.Snakes[i].Body, p)
+		}
+	}
+	return nil
+}
+
+// PlaceFoodAutomatically initializes the array of food based on the size of the board and the number of snakes.
+func placeFoodAutomaticallyWithRand(rand Rand, b *BoardState) error {
+	if isKnownBoardSize(b) {
+		return placeFoodFixedWithRand(rand, b)
+	}
+	return placeFoodRandomlyWithRand(rand, b, int32(len(b.Snakes)))
+}
+
+func placeFoodFixedWithRand(rand Rand, b *BoardState) error {
+	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
+
+	// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeHead := b.Snakes[i].Body[0]
+		possibleFoodLocations := []Point{
+			{snakeHead.X - 1, snakeHead.Y - 1},
+			{snakeHead.X - 1, snakeHead.Y + 1},
+			{snakeHead.X + 1, snakeHead.Y - 1},
+			{snakeHead.X + 1, snakeHead.Y + 1},
+		}
+
+		// Remove any invalid/unwanted positions
+		availableFoodLocations := []Point{}
+		for _, p := range possibleFoodLocations {
+
+			// Ignore points already occupied by food
+			isOccupiedAlready := false
+			for _, food := range b.Food {
+				if food.X == p.X && food.Y == p.Y {
+					isOccupiedAlready = true
+					break
+				}
+			}
+			if isOccupiedAlready {
+				continue
+			}
+
+			// Food must be further than snake from center on at least one axis
+			isAwayFromCenter := false
+			if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
+				isAwayFromCenter = true
+			} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
+				isAwayFromCenter = true
+			} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
+				isAwayFromCenter = true
+			} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
+				isAwayFromCenter = true
+			}
+			if !isAwayFromCenter {
+				continue
+			}
+
+			// Don't spawn food in corners
+			if (p.X == 0 || p.X == (b.Width-1)) && (p.Y == 0 || p.Y == (b.Height-1)) {
+				continue
+			}
+
+			availableFoodLocations = append(availableFoodLocations, p)
+		}
+
+		if len(availableFoodLocations) <= 0 {
+			return ErrorNoRoomForFood
+		}
+
+		// Select randomly from available locations
+		placedFood := availableFoodLocations[rand.Intn(len(availableFoodLocations))]
+		b.Food = append(b.Food, placedFood)
+	}
+
+	// Finally, always place 1 food in center of board for dramatic purposes
+	isCenterOccupied := true
+	unoccupiedPoints := getUnoccupiedPoints(b, true)
+	for _, point := range unoccupiedPoints {
+		if point == centerCoord {
+			isCenterOccupied = false
+			break
+		}
+	}
+	if isCenterOccupied {
+		return ErrorNoRoomForFood
+	}
+	b.Food = append(b.Food, centerCoord)
+
+	return nil
+}
+
+// PlaceFoodRandomly adds up to n new food to the board in random unoccupied squares
+func placeFoodRandomlyWithRand(rand Rand, b *BoardState, n int32) error {
+	for i := int32(0); i < n; i++ {
+		unoccupiedPoints := getUnoccupiedPoints(b, false)
+		if len(unoccupiedPoints) > 0 {
+			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
+			b.Food = append(b.Food, newFood)
+		}
+	}
+	return nil
 }

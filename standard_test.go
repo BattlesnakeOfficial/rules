@@ -2,7 +2,6 @@ package rules
 
 import (
 	"math"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -286,8 +285,7 @@ func TestEatingOnLastMove(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := StandardRuleset{seed: 0} // Seed with a value that will reliably not spawn food
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
@@ -403,8 +401,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := StandardRuleset{seed: 0} // Seed with a value that will reliably not spawn food
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, test.expectedError, err)
@@ -480,8 +477,7 @@ func TestRegressionIssue19(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := StandardRuleset{seed: 0} // Seed with a value that will reliably not spawn food
 	for _, test := range tests {
 		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
@@ -1473,7 +1469,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r := StandardRuleset{MinimumFood: test.MinimumFood}
+		r := StandardRuleset{MinimumFood: test.MinimumFood, seed: 0}
 		b := &BoardState{
 			Height: 11,
 			Width:  11,
@@ -1541,8 +1537,8 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		{165, []Point{{4, 4}}, 2},
 	}
 
-	r := StandardRuleset{FoodSpawnChance: 50}
 	for _, test := range tests {
+		r := StandardRuleset{FoodSpawnChance: 50, seed: test.Seed}
 		b := &BoardState{
 			Height: 4,
 			Width:  5,
@@ -1553,7 +1549,6 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 			Food: test.Food,
 		}
 
-		rand.Seed(test.Seed)
 		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, int32(len(b.Food)), "Seed %d", test.Seed)

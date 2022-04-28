@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"math/rand"
 	"sort"
 )
 
@@ -11,6 +10,8 @@ type StandardRuleset struct {
 	HazardDamagePerTurn int32
 	HazardMap           string // optional
 	HazardMapAuthor     string // optional
+
+	seed int64
 }
 
 var standardRulesetStages = []string{
@@ -395,7 +396,7 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	if numCurrentFood < settings.MinimumFood {
 		return false, PlaceFoodRandomly(b, settings.MinimumFood-numCurrentFood)
 	}
-	if settings.FoodSpawnChance > 0 && int32(rand.Intn(100)) < settings.FoodSpawnChance {
+	if settings.FoodSpawnChance > 0 && int32(settings.Rand().Intn(100)) < settings.FoodSpawnChance {
 		return false, PlaceFoodRandomly(b, 1)
 	}
 	return false, nil
@@ -422,6 +423,7 @@ func (r StandardRuleset) Settings() Settings {
 		HazardDamagePerTurn: r.HazardDamagePerTurn,
 		HazardMap:           r.HazardMap,
 		HazardMapAuthor:     r.HazardMapAuthor,
+		seed:                r.seed,
 	}
 }
 
@@ -435,4 +437,29 @@ func IsInitialization(b *BoardState, settings Settings, moves []SnakeMove) bool 
 	// We can safely assume that the game state is in the initialisation phase when
 	// the turn hasn't advanced and the moves are empty
 	return b.Turn <= 0 && len(moves) == 0
+}
+
+func InitializeBoardStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	// Only activate in initialization
+	if !IsInitialization(b, settings, moves) {
+		return false, nil
+	}
+
+	if err := placeFoodAutomaticallyWithRand(settings.Rand(), b); err != nil {
+		return false, err
+	}
+	snakeIDs := make([]string, 0, len(b.Snakes))
+	for _, snake := range b.Snakes {
+		// skip placing all snakes automatically if any have a body
+		if len(snake.Body) > 0 {
+			return false, nil
+		}
+		snakeIDs = append(snakeIDs, snake.ID)
+	}
+
+	if err := placeSnakesAutomaticallyWithRand(settings.Rand(), b, snakeIDs); err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
