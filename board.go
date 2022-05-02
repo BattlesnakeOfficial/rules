@@ -64,6 +64,18 @@ func CreateDefaultBoardState(width int32, height int32, snakeIDs []string) (*Boa
 	return initialBoardState, nil
 }
 
+func InitializeSnakes(b *BoardState, snakeIDs []string) {
+	b.Snakes = make([]Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		b.Snakes[i] = Snake{
+			ID:     snakeIDs[i],
+			Health: SnakeMaxHealth,
+			Body:   []Point{},
+		}
+	}
+}
+
 // PlaceSnakesAutomatically initializes the array of snakes based on the provided snake IDs and the size of the board.
 func PlaceSnakesAutomatically(b *BoardState, snakeIDs []string) error {
 	if isKnownBoardSize(b) {
@@ -73,14 +85,7 @@ func PlaceSnakesAutomatically(b *BoardState, snakeIDs []string) error {
 }
 
 func PlaceSnakesFixed(b *BoardState, snakeIDs []string) error {
-	b.Snakes = make([]Snake, len(snakeIDs))
-
-	for i := 0; i < len(snakeIDs); i++ {
-		b.Snakes[i] = Snake{
-			ID:     snakeIDs[i],
-			Health: SnakeMaxHealth,
-		}
-	}
+	InitializeSnakes(b, snakeIDs)
 
 	// Create start 8 points
 	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
@@ -116,14 +121,7 @@ func PlaceSnakesFixed(b *BoardState, snakeIDs []string) error {
 }
 
 func PlaceSnakesRandomly(b *BoardState, snakeIDs []string) error {
-	b.Snakes = make([]Snake, len(snakeIDs))
-
-	for i := 0; i < len(snakeIDs); i++ {
-		b.Snakes[i] = Snake{
-			ID:     snakeIDs[i],
-			Health: SnakeMaxHealth,
-		}
-	}
+	InitializeSnakes(b, snakeIDs)
 
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := getEvenUnoccupiedPoints(b)
@@ -140,6 +138,13 @@ func PlaceSnakesRandomly(b *BoardState, snakeIDs []string) error {
 
 // PlaceSnake adds a snake to the board with the given ID and body coordinates.
 func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
+	for index, snake := range b.Snakes {
+		if snake.ID == snakeID {
+			b.Snakes[index].Body = body
+			return nil
+		}
+	}
+
 	b.Snakes = append(b.Snakes, Snake{
 		ID:     snakeID,
 		Health: SnakeMaxHealth,
