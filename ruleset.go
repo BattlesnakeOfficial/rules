@@ -131,7 +131,7 @@ func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	case GameTypeRoyale:
 		return &RoyaleRuleset{
 			StandardRuleset:   *standardRuleset,
-			Seed:              rb.seed,
+			Seed:              0,
 			ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
 		}
 	case GameTypeSolo:
@@ -178,7 +178,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 			HazardMap:           rb.params[ParamHazardMap],
 			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
 			RoyaleSettings: RoyaleSettings{
-				seed:              rb.seed,
+				seed:              0,
 				ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
 			},
 			SquadSettings: SquadSettings{
@@ -285,14 +285,19 @@ func (s Settings) Rand() Rand {
 
 // Override the built in random number generator for this BoardState.
 // For use in testing to make the game deterministic.
-func (s Settings) SetRand(rand Rand) {
+func (s *Settings) SetRand(rand Rand) {
 	s.rand = rand
 }
 
-// Set the BoardState's seed, which is used to generate random numbers.
-func (s Settings) SetSeed(seed int64) {
+// Set the seed, which is used to generate random numbers.
+func (s *Settings) SetSeed(seed int64) {
 	s.seed = seed
 	s.rand = nil
+}
+
+// Get the seed.
+func (s Settings) Seed() int64 {
+	return s.seed
 }
 
 // StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.

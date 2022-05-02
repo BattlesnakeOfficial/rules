@@ -42,11 +42,12 @@ func TestRulesetError(t *testing.T) {
 
 func TestRulesetBuilderInternals(t *testing.T) {
 
-	// test Royale with seed
+	// test Standard and Royale with seed
 	rsb := NewRulesetBuilder().WithSeed(3).WithParams(map[string]string{ParamGameType: GameTypeRoyale})
 	require.Equal(t, int64(3), rsb.seed)
 	require.Equal(t, GameTypeRoyale, rsb.Ruleset().Name())
-	require.Equal(t, int64(3), rsb.Ruleset().(*RoyaleRuleset).Seed)
+	require.Equal(t, int64(0), rsb.Ruleset().(*RoyaleRuleset).Seed)
+	require.Equal(t, int64(3), rsb.Ruleset().(*RoyaleRuleset).StandardRuleset.seed)
 
 	// test squad configuration
 	rsb = NewRulesetBuilder().
