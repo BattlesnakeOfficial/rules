@@ -439,25 +439,33 @@ func IsInitialization(b *BoardState, settings Settings, moves []SnakeMove) bool 
 	return b.Turn <= 0 && len(moves) == 0
 }
 
-func InitializeBoardStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+func InitializeSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Only activate in initialization
 	if !IsInitialization(b, settings, moves) {
 		return false, nil
 	}
 
-	if err := placeFoodAutomaticallyWithRand(settings.Rand(), b); err != nil {
+	if err := placeSnakesAutomaticallyWithRand(settings.Rand(), b); err != nil {
 		return false, err
 	}
-	snakeIDs := make([]string, 0, len(b.Snakes))
-	for _, snake := range b.Snakes {
-		// skip placing all snakes automatically if any have a body
-		if len(snake.Body) > 0 {
-			return false, nil
-		}
-		snakeIDs = append(snakeIDs, snake.ID)
+
+	return false, nil
+}
+
+func InitializeFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
+	// Only activate in initialization
+	if !IsInitialization(b, settings, moves) {
+		return false, nil
 	}
 
-	if err := placeSnakesAutomaticallyWithRand(settings.Rand(), b, snakeIDs); err != nil {
+	// Check that all snakes have bodies
+	for i := 0; i < len(b.Snakes); i++ {
+		if len(b.Snakes[i].Body) == 0 {
+			return false, ErrorZeroLengthSnake
+		}
+	}
+
+	if err := placeFoodAutomaticallyWithRand(settings.Rand(), b); err != nil {
 		return false, err
 	}
 

@@ -6,13 +6,15 @@ import "fmt"
 type StageRegistry map[string]StageFunc
 
 const (
-	StageSpawnFoodStandard    = "spawn_food.standard"
-	StageGameOverStandard     = "game_over.standard"
-	StageStarvationStandard   = "starvation.standard"
-	StageFeedSnakesStandard   = "feed_snakes.standard"
-	StageMovementStandard     = "movement.standard"
-	StageHazardDamageStandard = "hazard_damage.standard"
-	StageEliminationStandard  = "elimination.standard"
+	StageInitializeFoodStandard   = "initialize_food.standard"
+	StageInitializeSnakesStandard = "initialize_snakes.standard"
+	StageSpawnFoodStandard        = "spawn_food.standard"
+	StageGameOverStandard         = "game_over.standard"
+	StageStarvationStandard       = "starvation.standard"
+	StageFeedSnakesStandard       = "feed_snakes.standard"
+	StageMovementStandard         = "movement.standard"
+	StageHazardDamageStandard     = "hazard_damage.standard"
+	StageEliminationStandard      = "elimination.standard"
 
 	StageGameOverSoloSnake                   = "game_over.solo_snake"
 	StageGameOverBySquad                     = "game_over.by_squad"
@@ -29,6 +31,8 @@ const (
 // Plugins that wish to extend the available game stages should call RegisterPipelineStageError
 // to add additional stages.
 var globalRegistry = StageRegistry{
+	StageInitializeFoodStandard:              InitializeFoodStandard,
+	StageInitializeSnakesStandard:            InitializeSnakesStandard,
 	StageSpawnFoodNoFood:                     RemoveFoodConstrictor,
 	StageSpawnFoodStandard:                   SpawnFoodStandard,
 	StageGameOverSoloSnake:                   GameOverSolo,

@@ -341,23 +341,16 @@ func isKnownBoardSize(b *BoardState) bool {
 	return false
 }
 
-func placeSnakesAutomaticallyWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
+// Automatically place the snakes already present in the BoardState
+func placeSnakesAutomaticallyWithRand(rand Rand, b *BoardState) error {
 	if isKnownBoardSize(b) {
-		return placeSnakesFixedWithRand(rand, b, snakeIDs)
+		return placeSnakesFixedWithRand(rand, b)
 	}
-	return placeSnakesRandomlyWithRand(rand, b, snakeIDs)
+	return placeSnakesRandomlyWithRand(rand, b)
 }
 
-func placeSnakesFixedWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
-	b.Snakes = make([]Snake, len(snakeIDs))
-
-	for i := 0; i < len(snakeIDs); i++ {
-		b.Snakes[i] = Snake{
-			ID:     snakeIDs[i],
-			Health: SnakeMaxHealth,
-		}
-	}
-
+// Place the snakes already present in the BoardState based on fixed locations on known board sizes.
+func placeSnakesFixedWithRand(rand Rand, b *BoardState) error {
 	// Create start 8 points
 	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
 	startPoints := []Point{
@@ -383,6 +376,8 @@ func placeSnakesFixedWithRand(rand Rand, b *BoardState, snakeIDs []string) error
 
 	// Assign to snakes in order given
 	for i := 0; i < len(b.Snakes); i++ {
+		b.Snakes[i].Body = []Point{}
+
 		for j := 0; j < SnakeStartSize; j++ {
 			b.Snakes[i].Body = append(b.Snakes[i].Body, startPoints[i])
 		}
@@ -391,21 +386,14 @@ func placeSnakesFixedWithRand(rand Rand, b *BoardState, snakeIDs []string) error
 	return nil
 }
 
-func placeSnakesRandomlyWithRand(rand Rand, b *BoardState, snakeIDs []string) error {
-	b.Snakes = make([]Snake, len(snakeIDs))
-
-	for i := 0; i < len(snakeIDs); i++ {
-		b.Snakes[i] = Snake{
-			ID:     snakeIDs[i],
-			Health: SnakeMaxHealth,
-		}
-	}
-
+// Place the snakes already present in the BoardState randomly.
+func placeSnakesRandomlyWithRand(rand Rand, b *BoardState) error {
 	for i := 0; i < len(b.Snakes); i++ {
 		unoccupiedPoints := getEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
 			return ErrorNoRoomForSnake
 		}
+		b.Snakes[i].Body = []Point{}
 		p := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 		for j := 0; j < SnakeStartSize; j++ {
 			b.Snakes[i].Body = append(b.Snakes[i].Body, p)
