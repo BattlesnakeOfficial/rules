@@ -35,6 +35,7 @@ const (
 	ErrorEmptyRegistry   = RulesetError("empty registry")
 	ErrorNoStages        = RulesetError("no stages")
 	ErrorStageNotFound   = RulesetError("stage not found")
+	ErrorMapNotFound     = RulesetError("map not found")
 
 	// Ruleset / game type names
 	GameTypeConstrictor = "constrictor"
