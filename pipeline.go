@@ -2,9 +2,6 @@ package rules
 
 import "fmt"
 
-// StageRegistry is a mapping of stage names to stage functions
-type StageRegistry map[string]StageFunc
-
 const (
 	StageSpawnFoodStandard    = "spawn_food.standard"
 	StageGameOverStandard     = "game_over.standard"
@@ -45,6 +42,17 @@ var globalRegistry = StageRegistry{
 	StageMovementWrapBoundaries:              MoveSnakesWrapped,
 	StageModifySnakesShareAttributes:         ShareAttributesSquad,
 }
+
+// StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
+// It is expected to modify the boardState directly.
+// The return values are a boolean (to indicate whether the game has ended as a result of the stage)
+// and an error if any errors occurred during the stage.
+//
+// Errors should be treated as meaning the stage failed and the board state is now invalid.
+type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
+
+// StageRegistry is a mapping of stage names to stage functions
+type StageRegistry map[string]StageFunc
 
 // RegisterPipelineStage adds a stage to the registry.
 // If a stage has already been mapped it will be overwritten by the newly

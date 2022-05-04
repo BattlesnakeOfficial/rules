@@ -13,6 +13,20 @@ type BoardState struct {
 	Hazards []Point
 }
 
+type Point struct {
+	X int32
+	Y int32
+}
+
+type Snake struct {
+	ID               string
+	Body             []Point
+	Health           int32
+	EliminatedCause  string
+	EliminatedOnTurn int32
+	EliminatedBy     string
+}
+
 // NewBoardState returns an empty but fully initialized BoardState
 func NewBoardState(width, height int32) *BoardState {
 	return &BoardState{
