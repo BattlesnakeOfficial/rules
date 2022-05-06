@@ -37,7 +37,7 @@ func TestCreateDefaultBoardState(t *testing.T) {
 	}
 
 	for testNum, test := range tests {
-		state, err := CreateDefaultBoardState(test.Width, test.Height, test.IDs)
+		state, err := CreateDefaultBoardState(MaxRand, test.Width, test.Height, test.IDs)
 		require.Equal(t, test.Err, err)
 		if err != nil {
 			require.Nil(t, state)
@@ -196,8 +196,8 @@ func TestPlaceSnakesDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.BoardState.Width, test.BoardState.Height, len(test.SnakeIDs)), func(t *testing.T) {
-			require.Equal(t, test.BoardState.Width*test.BoardState.Height, int32(len(getUnoccupiedPoints(test.BoardState, true))))
-			err := PlaceSnakesAutomatically(test.BoardState, test.SnakeIDs)
+			require.Equal(t, test.BoardState.Width*test.BoardState.Height, int32(len(GetUnoccupiedPoints(test.BoardState, true))))
+			err := PlaceSnakesAutomatically(MaxRand, test.BoardState, test.SnakeIDs)
 			require.Equal(t, test.Err, err, "Snakes: %d", len(test.BoardState.Snakes))
 			if err == nil {
 				for i := 0; i < len(test.BoardState.Snakes); i++ {
@@ -338,7 +338,7 @@ func TestPlaceFood(t *testing.T) {
 
 	for _, test := range tests {
 		require.Len(t, test.BoardState.Food, 0)
-		err := PlaceFoodAutomatically(test.BoardState)
+		err := PlaceFoodAutomatically(MaxRand, test.BoardState)
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, len(test.BoardState.Food))
 		for _, point := range test.BoardState.Food {
@@ -396,7 +396,7 @@ func TestPlaceFoodFixed(t *testing.T) {
 	for _, test := range tests {
 		require.Len(t, test.BoardState.Food, 0)
 
-		err := PlaceFoodFixed(test.BoardState)
+		err := PlaceFoodFixed(MaxRand, test.BoardState)
 		require.NoError(t, err)
 		require.Equal(t, len(test.BoardState.Snakes)+1, len(test.BoardState.Food))
 
@@ -444,7 +444,7 @@ func TestPlaceFoodFixedNoRoom(t *testing.T) {
 		},
 		Food: []Point{},
 	}
-	err := PlaceFoodFixed(boardState)
+	err := PlaceFoodFixed(MaxRand, boardState)
 	require.Error(t, err)
 }
 
@@ -463,18 +463,18 @@ func TestPlaceFoodFixedNoRoom_Corners(t *testing.T) {
 
 	// There are only two possible food spawn locations for each snake,
 	// so repeat calls to place food should fail after 2 successes
-	err := PlaceFoodFixed(boardState)
+	err := PlaceFoodFixed(MaxRand, boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 4, len(boardState.Food))
 
-	err = PlaceFoodFixed(boardState)
+	err = PlaceFoodFixed(MaxRand, boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 8, len(boardState.Food))
 
 	// And now there should be no more room.
-	err = PlaceFoodFixed(boardState)
+	err = PlaceFoodFixed(MaxRand, boardState)
 	require.Error(t, err)
 
 	expectedFood := []Point{
@@ -503,18 +503,18 @@ func TestPlaceFoodFixedNoRoom_Cardinal(t *testing.T) {
 
 	// There are only two possible spawn locations for each snake,
 	// so repeat calls to place food should fail after 2 successes
-	err := PlaceFoodFixed(boardState)
+	err := PlaceFoodFixed(MaxRand, boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 4, len(boardState.Food))
 
-	err = PlaceFoodFixed(boardState)
+	err = PlaceFoodFixed(MaxRand, boardState)
 	require.NoError(t, err)
 	boardState.Food = boardState.Food[:len(boardState.Food)-1] // Center food
 	require.Equal(t, 8, len(boardState.Food))
 
 	// And now there should be no more room.
-	err = PlaceFoodFixed(boardState)
+	err = PlaceFoodFixed(MaxRand, boardState)
 	require.Error(t, err)
 
 	expectedFood := []Point{
@@ -653,7 +653,7 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		unoccupiedPoints := getUnoccupiedPoints(test.Board, true)
+		unoccupiedPoints := GetUnoccupiedPoints(test.Board, true)
 		require.Equal(t, len(test.Expected), len(unoccupiedPoints))
 		for i, e := range test.Expected {
 			require.Equal(t, e, unoccupiedPoints[i])
@@ -739,7 +739,7 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		evenUnoccupiedPoints := getEvenUnoccupiedPoints(test.Board)
+		evenUnoccupiedPoints := GetEvenUnoccupiedPoints(test.Board)
 		require.Equal(t, len(test.Expected), len(evenUnoccupiedPoints))
 		for i, e := range test.Expected {
 			require.Equal(t, e, evenUnoccupiedPoints[i])
@@ -756,7 +756,7 @@ func TestPlaceFoodRandomly(t *testing.T) {
 		},
 	}
 	// Food should never spawn, no room
-	err := PlaceFoodRandomly(b, 99)
+	err := PlaceFoodRandomly(MaxRand, b, 99)
 	require.NoError(t, err)
 	require.Equal(t, len(b.Food), 0)
 }

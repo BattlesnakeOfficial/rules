@@ -1,9 +1,5 @@
 package rules
 
-import (
-	"math/rand"
-)
-
 type BoardState struct {
 	Turn    int32
 	Height  int32
@@ -63,15 +59,15 @@ func (prevState *BoardState) Clone() *BoardState {
 // "default" board state with snakes and food.
 // In a real game, the engine may generate the board without calling this
 // function, or customize the results based on game-specific settings.
-func CreateDefaultBoardState(width int32, height int32, snakeIDs []string) (*BoardState, error) {
+func CreateDefaultBoardState(rand Rand, width int32, height int32, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := NewBoardState(width, height)
 
-	err := PlaceSnakesAutomatically(initialBoardState, snakeIDs)
+	err := PlaceSnakesAutomatically(rand, initialBoardState, snakeIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = PlaceFoodAutomatically(initialBoardState)
+	err = PlaceFoodAutomatically(rand, initialBoardState)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +76,14 @@ func CreateDefaultBoardState(width int32, height int32, snakeIDs []string) (*Boa
 }
 
 // PlaceSnakesAutomatically initializes the array of snakes based on the provided snake IDs and the size of the board.
-func PlaceSnakesAutomatically(b *BoardState, snakeIDs []string) error {
+func PlaceSnakesAutomatically(rand Rand, b *BoardState, snakeIDs []string) error {
 	if isKnownBoardSize(b) {
-		return PlaceSnakesFixed(b, snakeIDs)
+		return PlaceSnakesFixed(rand, b, snakeIDs)
 	}
-	return PlaceSnakesRandomly(b, snakeIDs)
+	return PlaceSnakesRandomly(rand, b, snakeIDs)
 }
 
-func PlaceSnakesFixed(b *BoardState, snakeIDs []string) error {
+func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 	b.Snakes = make([]Snake, len(snakeIDs))
 
 	for i := 0; i < len(snakeIDs); i++ {
@@ -130,7 +126,7 @@ func PlaceSnakesFixed(b *BoardState, snakeIDs []string) error {
 	return nil
 }
 
-func PlaceSnakesRandomly(b *BoardState, snakeIDs []string) error {
+func PlaceSnakesRandomly(rand Rand, b *BoardState, snakeIDs []string) error {
 	b.Snakes = make([]Snake, len(snakeIDs))
 
 	for i := 0; i < len(snakeIDs); i++ {
@@ -141,7 +137,7 @@ func PlaceSnakesRandomly(b *BoardState, snakeIDs []string) error {
 	}
 
 	for i := 0; i < len(b.Snakes); i++ {
-		unoccupiedPoints := getEvenUnoccupiedPoints(b)
+		unoccupiedPoints := GetEvenUnoccupiedPoints(b)
 		if len(unoccupiedPoints) <= 0 {
 			return ErrorNoRoomForSnake
 		}
@@ -164,14 +160,14 @@ func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
 }
 
 // PlaceFoodAutomatically initializes the array of food based on the size of the board and the number of snakes.
-func PlaceFoodAutomatically(b *BoardState) error {
+func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 	if isKnownBoardSize(b) {
-		return PlaceFoodFixed(b)
+		return PlaceFoodFixed(rand, b)
 	}
-	return PlaceFoodRandomly(b, int32(len(b.Snakes)))
+	return PlaceFoodRandomly(rand, b, int32(len(b.Snakes)))
 }
 
-func PlaceFoodFixed(b *BoardState) error {
+func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 
 	// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
@@ -234,7 +230,7 @@ func PlaceFoodFixed(b *BoardState) error {
 
 	// Finally, always place 1 food in center of board for dramatic purposes
 	isCenterOccupied := true
-	unoccupiedPoints := getUnoccupiedPoints(b, true)
+	unoccupiedPoints := GetUnoccupiedPoints(b, true)
 	for _, point := range unoccupiedPoints {
 		if point == centerCoord {
 			isCenterOccupied = false
@@ -250,9 +246,9 @@ func PlaceFoodFixed(b *BoardState) error {
 }
 
 // PlaceFoodRandomly adds up to n new food to the board in random unoccupied squares
-func PlaceFoodRandomly(b *BoardState, n int32) error {
+func PlaceFoodRandomly(rand Rand, b *BoardState, n int32) error {
 	for i := int32(0); i < n; i++ {
-		unoccupiedPoints := getUnoccupiedPoints(b, false)
+		unoccupiedPoints := GetUnoccupiedPoints(b, false)
 		if len(unoccupiedPoints) > 0 {
 			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 			b.Food = append(b.Food, newFood)
@@ -268,9 +264,9 @@ func absInt32(n int32) int32 {
 	return n
 }
 
-func getEvenUnoccupiedPoints(b *BoardState) []Point {
+func GetEvenUnoccupiedPoints(b *BoardState) []Point {
 	// Start by getting unoccupied points
-	unoccupiedPoints := getUnoccupiedPoints(b, true)
+	unoccupiedPoints := GetUnoccupiedPoints(b, true)
 
 	// Create a new array to hold points that are  even
 	evenUnoccupiedPoints := []Point{}
@@ -283,7 +279,7 @@ func getEvenUnoccupiedPoints(b *BoardState) []Point {
 	return evenUnoccupiedPoints
 }
 
-func getUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
+func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	pointIsOccupied := map[int32]map[int32]bool{}
 	for _, p := range b.Food {
 		if _, xExists := pointIsOccupied[p.X]; !xExists {

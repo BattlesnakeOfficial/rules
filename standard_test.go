@@ -15,7 +15,7 @@ func TestStandardRulesetInterface(t *testing.T) {
 func TestSanity(t *testing.T) {
 	r := StandardRuleset{}
 
-	state, err := CreateDefaultBoardState(0, 0, []string{})
+	state, err := CreateDefaultBoardState(MaxRand, 0, 0, []string{})
 	require.NoError(t, err)
 	require.NotNil(t, state)
 
