@@ -9,7 +9,7 @@ import (
 )
 
 func TestStandardMapInterface(t *testing.T) {
-	var _ Generator = StandardMap{}
+	var _ GameMap = StandardMap{}
 }
 
 func TestStandardMapSetupBoard(t *testing.T) {

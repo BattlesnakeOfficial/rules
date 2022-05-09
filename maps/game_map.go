@@ -2,14 +2,14 @@ package maps
 
 import "github.com/BattlesnakeOfficial/rules"
 
-type Generator interface {
-	// Return a unique identifier for this map generator.
+type GameMap interface {
+	// Return a unique identifier for this map.
 	ID() string
 
-	// Return non-functional metadata about this map generator.
+	// Return non-functional metadata about this map.
 	Meta() Metadata
 
-	// Called to generate a new board. The map generator is responsible for placing all snakes, food, and hazards.
+	// Called to generate a new board. The map is responsible for placing all snakes, food, and hazards.
 	SetupBoard(initialBoardState rules.BoardState, settings rules.Settings, editor Editor) error
 
 	// Called every turn to optionally update the board.
@@ -22,9 +22,9 @@ type Metadata struct {
 	Description string
 }
 
-// Editor is used by Generator implementations to modify the board state.
+// Editor is used by GameMap implementations to modify the board state.
 type Editor interface {
-	// Returns a random number generator. This MUST be used for any non-deterministic behavior in the map generator.
+	// Returns a random number generator. This MUST be used for any non-deterministic behavior in a GameMap.
 	GetRandom() rules.Rand
 
 	// Clears all food from the board.
