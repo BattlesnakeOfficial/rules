@@ -28,6 +28,21 @@ type Settings struct {
 	HazardMapAuthor     string         `json:"hazardMapAuthor"`
 	RoyaleSettings      RoyaleSettings `json:"royale"`
 	SquadSettings       SquadSettings  `json:"squad"`
+
+	rand Rand
+}
+
+func (settings Settings) Rand() Rand {
+	// Default to global random number generator if none is set.
+	if settings.rand == nil {
+		return GlobalRand
+	}
+	return settings.rand
+}
+
+func (settings Settings) WithRand(rand Rand) Settings {
+	settings.rand = rand
+	return settings
 }
 
 // RoyaleSettings contains settings that are specific to the "royale" game mode
@@ -48,6 +63,7 @@ type SquadSettings struct {
 type rulesetBuilder struct {
 	params map[string]string // game customisation parameters
 	seed   int64             // used for random events in games
+	rand   Rand              // used for random number generation
 	squads map[string]string // Snake ID -> Squad Name
 }
 
@@ -76,9 +92,14 @@ func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	return rb
 }
 
-// WithSeed sets the seed used for randomisation by certain game modes.
+// Deprecated: WithSeed sets the seed used for randomisation by certain game modes.
 func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
+	return rb
+}
+
+func (rb *rulesetBuilder) WithRand(rand Rand) *rulesetBuilder {
+	rb.rand = rand
 	return rb
 }
 
@@ -168,6 +189,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 				SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
 				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
 			},
+			rand: rb.rand,
 		},
 	}
 }
