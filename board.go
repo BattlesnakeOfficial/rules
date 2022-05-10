@@ -149,8 +149,30 @@ func PlaceSnakesRandomly(rand Rand, b *BoardState, snakeIDs []string) error {
 	return nil
 }
 
+// Adds all snakes without body coordinates to the board.
+// This allows GameMaps to access the list of snakes and perform initial placement.
+func InitializeSnakes(b *BoardState, snakeIDs []string) {
+	b.Snakes = make([]Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		b.Snakes[i] = Snake{
+			ID:     snakeIDs[i],
+			Health: SnakeMaxHealth,
+			Body:   []Point{},
+		}
+	}
+}
+
 // PlaceSnake adds a snake to the board with the given ID and body coordinates.
 func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
+	// Update an existing snake that already has a body
+	for index, snake := range b.Snakes {
+		if snake.ID == snakeID {
+			b.Snakes[index].Body = body
+			return nil
+		}
+	}
+	// Add a new snake
 	b.Snakes = append(b.Snakes, Snake{
 		ID:     snakeID,
 		Health: SnakeMaxHealth,
