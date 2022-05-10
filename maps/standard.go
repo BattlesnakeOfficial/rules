@@ -22,13 +22,13 @@ func (m StandardMap) Meta() Metadata {
 	}
 }
 
-func (m StandardMap) SetupBoard(initialBoardState rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	snakeIDs := make([]string, 0, len(initialBoardState.Snakes))
 	for _, snake := range initialBoardState.Snakes {
 		snakeIDs = append(snakeIDs, snake.ID)
 	}
 
-	tempBoardState, err := rules.CreateDefaultBoardState(editor.GetRandom(), initialBoardState.Width, initialBoardState.Height, snakeIDs)
+	tempBoardState, err := rules.CreateDefaultBoardState(editor.Random(), initialBoardState.Width, initialBoardState.Height, snakeIDs)
 	if err != nil {
 		return err
 	}
@@ -46,17 +46,17 @@ func (m StandardMap) SetupBoard(initialBoardState rules.BoardState, settings rul
 	return nil
 }
 
-func (m StandardMap) UpdateBoard(lastBoardState rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	minFood := int(settings.MinimumFood)
 	foodSpawnChance := int(settings.FoodSpawnChance)
 	numCurrentFood := len(lastBoardState.Food)
 
 	if numCurrentFood < minFood {
-		placeFoodRandomly(&lastBoardState, editor, minFood-numCurrentFood)
+		placeFoodRandomly(lastBoardState, editor, minFood-numCurrentFood)
 		return nil
 	}
-	if foodSpawnChance > 0 && (100-editor.GetRandom().Intn(100)) < foodSpawnChance {
-		placeFoodRandomly(&lastBoardState, editor, 1)
+	if foodSpawnChance > 0 && (100-editor.Random().Intn(100)) < foodSpawnChance {
+		placeFoodRandomly(lastBoardState, editor, 1)
 		return nil
 	}
 
@@ -70,7 +70,7 @@ func placeFoodRandomly(b *rules.BoardState, editor Editor, n int) {
 		n = len(unoccupiedPoints)
 	}
 
-	editor.GetRandom().Shuffle(len(unoccupiedPoints), func(i int, j int) {
+	editor.Random().Shuffle(len(unoccupiedPoints), func(i int, j int) {
 		unoccupiedPoints[i], unoccupiedPoints[j] = unoccupiedPoints[j], unoccupiedPoints[i]
 	})
 

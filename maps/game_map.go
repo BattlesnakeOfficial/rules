@@ -10,10 +10,10 @@ type GameMap interface {
 	Meta() Metadata
 
 	// Called to generate a new board. The map is responsible for placing all snakes, food, and hazards.
-	SetupBoard(initialBoardState rules.BoardState, settings rules.Settings, editor Editor) error
+	SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 
 	// Called every turn to optionally update the board.
-	UpdateBoard(previousBoardState rules.BoardState, settings rules.Settings, editor Editor) error
+	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
 type Metadata struct {
@@ -25,7 +25,7 @@ type Metadata struct {
 // Editor is used by GameMap implementations to modify the board state.
 type Editor interface {
 	// Returns a random number generator. This MUST be used for any non-deterministic behavior in a GameMap.
-	GetRandom() rules.Rand
+	Random() rules.Rand
 
 	// Clears all food from the board.
 	ClearFood()
@@ -62,7 +62,7 @@ func NewBoardStateEditor(boardState *rules.BoardState, rand rules.Rand) *BoardSt
 	}
 }
 
-func (editor *BoardStateEditor) GetRandom() rules.Rand { return editor.rand }
+func (editor *BoardStateEditor) Random() rules.Rand { return editor.rand }
 
 func (editor *BoardStateEditor) ClearFood() {
 	editor.Food = []rules.Point{}
