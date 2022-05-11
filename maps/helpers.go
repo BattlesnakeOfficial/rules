@@ -33,10 +33,57 @@ func UpdateBoard(mapID string, previousBoardState *rules.BoardState, settings ru
 	nextBoardState := previousBoardState.Clone()
 	editor := NewBoardStateEditor(nextBoardState, settings.Rand())
 
-	err = gameMap.SetupBoard(previousBoardState, settings, editor)
+	err = gameMap.UpdateBoard(previousBoardState, settings, editor)
 	if err != nil {
 		return nil, err
 	}
 
 	return nextBoardState, nil
+}
+
+// An implementation of GameMap that just does predetermined placements, for testing.
+type StubMap struct {
+	Id             string
+	SnakePositions map[string]rules.Point
+	Food           []rules.Point
+	Hazards        []rules.Point
+	Error          error
+}
+
+func (m StubMap) ID() string {
+	return m.Id
+}
+
+func (StubMap) Meta() Metadata {
+	return Metadata{}
+}
+
+func (m StubMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if m.Error != nil {
+		return m.Error
+	}
+	for _, snake := range initialBoardState.Snakes {
+		head := m.SnakePositions[snake.ID]
+		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, 100)
+	}
+	for _, food := range m.Food {
+		editor.AddFood(food)
+	}
+	for _, hazard := range m.Hazards {
+		editor.AddHazard(hazard)
+	}
+	return nil
+}
+
+func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if m.Error != nil {
+		return m.Error
+	}
+	for _, food := range m.Food {
+		editor.AddFood(food)
+	}
+	for _, hazard := range m.Hazards {
+		editor.AddHazard(hazard)
+	}
+	return nil
 }
