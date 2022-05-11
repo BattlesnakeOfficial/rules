@@ -231,7 +231,7 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakeStates map[string]Snake
 	for _, snakeState := range snakeStates {
 		snakeIds = append(snakeIds, snakeState.ID)
 	}
-	state, err := rules.CreateDefaultBoardState(Width, Height, snakeIds)
+	state, err := rules.CreateDefaultBoardState(rules.GlobalRand, Width, Height, snakeIds)
 	if err != nil {
 		log.Panic("[PANIC]: Error Initializing Board State")
 	}

@@ -4,67 +4,66 @@ import (
 	"strconv"
 )
 
-type RulesetError string
+type Ruleset interface {
+	Name() string
+	ModifyInitialBoardState(initialState *BoardState) (*BoardState, error)
+	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
+	IsGameOver(state *BoardState) (bool, error)
+	// Settings provides the game settings that are relevant to the ruleset.
+	Settings() Settings
+}
 
-func (err RulesetError) Error() string { return string(err) }
+type SnakeMove struct {
+	ID   string
+	Move string
+}
 
-const (
-	MoveUp    = "up"
-	MoveDown  = "down"
-	MoveRight = "right"
-	MoveLeft  = "left"
+// Settings contains all settings relevant to a game.
+// It is used by game logic to take a previous game state and produce a next game state.
+type Settings struct {
+	FoodSpawnChance     int32          `json:"foodSpawnChance"`
+	MinimumFood         int32          `json:"minimumFood"`
+	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
+	HazardMap           string         `json:"hazardMap"`
+	HazardMapAuthor     string         `json:"hazardMapAuthor"`
+	RoyaleSettings      RoyaleSettings `json:"royale"`
+	SquadSettings       SquadSettings  `json:"squad"`
 
-	BoardSizeSmall  = 7
-	BoardSizeMedium = 11
-	BoardSizeLarge  = 19
+	rand Rand
+}
 
-	SnakeMaxHealth = 100
-	SnakeStartSize = 3
+func (settings Settings) Rand() Rand {
+	// Default to global random number generator if none is set.
+	if settings.rand == nil {
+		return GlobalRand
+	}
+	return settings.rand
+}
 
-	// bvanvugt - TODO: Just return formatted strings instead of codes?
-	NotEliminated                   = ""
-	EliminatedByCollision           = "snake-collision"
-	EliminatedBySelfCollision       = "snake-self-collision"
-	EliminatedByOutOfHealth         = "out-of-health"
-	EliminatedByHeadToHeadCollision = "head-collision"
-	EliminatedByOutOfBounds         = "wall-collision"
-	EliminatedBySquad               = "squad-eliminated"
+func (settings Settings) WithRand(rand Rand) Settings {
+	settings.rand = rand
+	return settings
+}
 
-	// TODO - Error consts
-	ErrorTooManySnakes   = RulesetError("too many snakes for fixed start positions")
-	ErrorNoRoomForSnake  = RulesetError("not enough space to place snake")
-	ErrorNoRoomForFood   = RulesetError("not enough space to place food")
-	ErrorNoMoveFound     = RulesetError("move not provided for snake")
-	ErrorZeroLengthSnake = RulesetError("snake is length zero")
-	ErrorEmptyRegistry   = RulesetError("empty registry")
-	ErrorNoStages        = RulesetError("no stages")
-	ErrorStageNotFound   = RulesetError("stage not found")
+// RoyaleSettings contains settings that are specific to the "royale" game mode
+type RoyaleSettings struct {
+	seed              int64
+	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
+}
 
-	// Ruleset / game type names
-	GameTypeConstrictor = "constrictor"
-	GameTypeRoyale      = "royale"
-	GameTypeSolo        = "solo"
-	GameTypeSquad       = "squad"
-	GameTypeStandard    = "standard"
-	GameTypeWrapped     = "wrapped"
-
-	// Game creation parameter names
-	ParamGameType            = "name"
-	ParamFoodSpawnChance     = "foodSpawnChance"
-	ParamMinimumFood         = "minimumFood"
-	ParamHazardDamagePerTurn = "damagePerTurn"
-	ParamHazardMap           = "hazardMap"
-	ParamHazardMapAuthor     = "hazardMapAuthor"
-	ParamShrinkEveryNTurns   = "shrinkEveryNTurns"
-	ParamAllowBodyCollisions = "allowBodyCollisions"
-	ParamSharedElimination   = "sharedElimination"
-	ParamSharedHealth        = "sharedHealth"
-	ParamSharedLength        = "sharedLength"
-)
+// SquadSettings contains settings that are specific to the "squad" game mode
+type SquadSettings struct {
+	squadMap            map[string]string
+	AllowBodyCollisions bool `json:"allowBodyCollisions"`
+	SharedElimination   bool `json:"sharedElimination"`
+	SharedHealth        bool `json:"sharedHealth"`
+	SharedLength        bool `json:"sharedLength"`
+}
 
 type rulesetBuilder struct {
 	params map[string]string // game customisation parameters
 	seed   int64             // used for random events in games
+	rand   Rand              // used for random number generation
 	squads map[string]string // Snake ID -> Squad Name
 }
 
@@ -93,9 +92,14 @@ func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	return rb
 }
 
-// WithSeed sets the seed used for randomisation by certain game modes.
+// Deprecated: WithSeed sets the seed used for randomisation by certain game modes.
 func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
+	return rb
+}
+
+func (rb *rulesetBuilder) WithRand(rand Rand) *rulesetBuilder {
+	rb.rand = rand
 	return rb
 }
 
@@ -185,6 +189,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 				SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
 				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
 			},
+			rand: rb.rand,
 		},
 	}
 }
@@ -211,69 +216,6 @@ func paramsInt32(params map[string]string, paramName string, defaultValue int32)
 	}
 	return defaultValue
 }
-
-type Point struct {
-	X int32
-	Y int32
-}
-
-type Snake struct {
-	ID               string
-	Body             []Point
-	Health           int32
-	EliminatedCause  string
-	EliminatedOnTurn int32
-	EliminatedBy     string
-}
-
-type SnakeMove struct {
-	ID   string
-	Move string
-}
-
-type Ruleset interface {
-	Name() string
-	ModifyInitialBoardState(initialState *BoardState) (*BoardState, error)
-	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
-	IsGameOver(state *BoardState) (bool, error)
-	// Settings provides the game settings that are relevant to the ruleset.
-	Settings() Settings
-}
-
-// Settings contains all settings relevant to a game.
-// It is used by game logic to take a previous game state and produce a next game state.
-type Settings struct {
-	FoodSpawnChance     int32          `json:"foodSpawnChance"`
-	MinimumFood         int32          `json:"minimumFood"`
-	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
-	HazardMap           string         `json:"hazardMap"`
-	HazardMapAuthor     string         `json:"hazardMapAuthor"`
-	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"`
-}
-
-// RoyaleSettings contains settings that are specific to the "royale" game mode
-type RoyaleSettings struct {
-	seed              int64
-	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
-}
-
-// SquadSettings contains settings that are specific to the "squad" game mode
-type SquadSettings struct {
-	squadMap            map[string]string
-	AllowBodyCollisions bool `json:"allowBodyCollisions"`
-	SharedElimination   bool `json:"sharedElimination"`
-	SharedHealth        bool `json:"sharedHealth"`
-	SharedLength        bool `json:"sharedLength"`
-}
-
-// StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.
-// It is expected to modify the boardState directly.
-// The return values are a boolean (to indicate whether the game has ended as a result of the stage)
-// and an error if any errors occurred during the stage.
-//
-// Errors should be treated as meaning the stage failed and the board state is now invalid.
-type StageFunc func(*BoardState, Settings, []SnakeMove) (bool, error)
 
 // PipelineRuleset groups the Pipeline and Ruleset methods.
 // It is intended to facilitate a transition from Ruleset legacy code to Pipeline code.

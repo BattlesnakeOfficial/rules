@@ -393,10 +393,10 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	}
 	numCurrentFood := int32(len(b.Food))
 	if numCurrentFood < settings.MinimumFood {
-		return false, PlaceFoodRandomly(b, settings.MinimumFood-numCurrentFood)
+		return false, PlaceFoodRandomly(GlobalRand, b, settings.MinimumFood-numCurrentFood)
 	}
 	if settings.FoodSpawnChance > 0 && int32(rand.Intn(100)) < settings.FoodSpawnChance {
-		return false, PlaceFoodRandomly(b, 1)
+		return false, PlaceFoodRandomly(GlobalRand, b, 1)
 	}
 	return false, nil
 }

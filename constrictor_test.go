@@ -26,7 +26,7 @@ func TestConstrictorModifyInitialBoardState(t *testing.T) {
 	}
 	r := ConstrictorRuleset{}
 	for testNum, test := range tests {
-		state, err := CreateDefaultBoardState(test.Width, test.Height, test.IDs)
+		state, err := CreateDefaultBoardState(MaxRand, test.Width, test.Height, test.IDs)
 		require.NoError(t, err)
 		require.NotNil(t, state)
 		state, err = r.ModifyInitialBoardState(state)
