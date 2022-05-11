@@ -33,3 +33,8 @@ func (registry MapRegistry) GetMap(id string) (GameMap, error) {
 func GetMap(id string) (GameMap, error) {
 	return globalRegistry.GetMap(id)
 }
+
+// RegisterMap adds a map to the global registry.
+func RegisterMap(id string, m GameMap) {
+	globalRegistry.RegisterMap(id, m)
+}
