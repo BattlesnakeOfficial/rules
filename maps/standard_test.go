@@ -143,7 +143,8 @@ func TestStandardMapSetupBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := rules.NewBoardState(test.initialBoardState.Width, test.initialBoardState.Height)
-			editor := NewBoardStateEditor(nextBoardState, test.rand)
+			editor := NewBoardStateEditor(nextBoardState)
+			settings := settings.WithRand(test.rand)
 
 			err := m.SetupBoard(test.initialBoardState, settings, editor)
 
@@ -301,9 +302,10 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := test.initialBoardState.Clone()
-			editor := NewBoardStateEditor(nextBoardState, test.rand)
+			settings := test.settings.WithRand(test.rand)
+			editor := NewBoardStateEditor(nextBoardState)
 
-			err := m.UpdateBoard(test.initialBoardState.Clone(), test.settings, editor)
+			err := m.UpdateBoard(test.initialBoardState.Clone(), settings, editor)
 
 			require.NoError(t, err)
 			require.Equal(t, test.expected, nextBoardState)

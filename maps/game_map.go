@@ -24,9 +24,6 @@ type Metadata struct {
 
 // Editor is used by GameMap implementations to modify the board state.
 type Editor interface {
-	// Returns a random number generator. This MUST be used for any non-deterministic behavior in a GameMap.
-	Random() rules.Rand
-
 	// Clears all food from the board.
 	ClearFood()
 
@@ -52,17 +49,13 @@ type Editor interface {
 // An Editor backed by a BoardState.
 type BoardStateEditor struct {
 	*rules.BoardState
-	rand rules.Rand
 }
 
-func NewBoardStateEditor(boardState *rules.BoardState, rand rules.Rand) *BoardStateEditor {
+func NewBoardStateEditor(boardState *rules.BoardState) *BoardStateEditor {
 	return &BoardStateEditor{
 		BoardState: boardState,
-		rand:       rand,
 	}
 }
-
-func (editor *BoardStateEditor) Random() rules.Rand { return editor.rand }
 
 func (editor *BoardStateEditor) ClearFood() {
 	editor.Food = []rules.Point{}

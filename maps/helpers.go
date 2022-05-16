@@ -13,7 +13,7 @@ func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeI
 		return nil, err
 	}
 
-	editor := NewBoardStateEditor(boardState, settings.Rand())
+	editor := NewBoardStateEditor(boardState)
 
 	err = gameMap.SetupBoard(boardState, settings, editor)
 	if err != nil {
@@ -31,7 +31,7 @@ func UpdateBoard(mapID string, previousBoardState *rules.BoardState, settings ru
 	}
 
 	nextBoardState := previousBoardState.Clone()
-	editor := NewBoardStateEditor(nextBoardState, settings.Rand())
+	editor := NewBoardStateEditor(nextBoardState)
 
 	err = gameMap.UpdateBoard(previousBoardState, settings, editor)
 	if err != nil {
