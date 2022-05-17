@@ -20,6 +20,26 @@ func (globalRand) Shuffle(n int, swap func(i, j int)) {
 	rand.Shuffle(n, swap)
 }
 
+type seedRand struct {
+	seed int64
+	rand *rand.Rand
+}
+
+func NewSeedRand(seed int64) *seedRand {
+	return &seedRand{
+		seed: seed,
+		rand: rand.New(rand.NewSource(seed)),
+	}
+}
+
+func (s seedRand) Intn(n int) int {
+	return s.rand.Intn(n)
+}
+
+func (s seedRand) Shuffle(n int, swap func(i, j int)) {
+	s.rand.Shuffle(n, swap)
+}
+
 // For testing purposes
 
 // A Rand implementation that always returns the minimum value for any method.

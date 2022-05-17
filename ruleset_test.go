@@ -191,3 +191,26 @@ func TestStageFuncContract(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ended)
 }
+
+func TestRulesetBuilderGetRand(t *testing.T) {
+	var seed int64 = 12345
+	var turn int32 = 5
+	ruleset := rules.NewRulesetBuilder().WithSeed(seed).PipelineRuleset("example", rules.NewPipeline(rules.StageGameOverStandard))
+
+	rand1 := ruleset.Settings().GetRand(turn)
+
+	// Should produce a predictable series of numbers based on a seed
+	require.Equal(t, 80, rand1.Intn(100))
+	require.Equal(t, 94, rand1.Intn(100))
+
+	// Should produce the same number if re-initialized
+	require.Equal(
+		t,
+		ruleset.Settings().GetRand(turn).Intn(100),
+		ruleset.Settings().GetRand(turn).Intn(100),
+	)
+
+	// Should produce a different series of numbers for another turn
+	require.Equal(t, 22, rand1.Intn(100))
+	require.Equal(t, 16, rand1.Intn(100))
+}

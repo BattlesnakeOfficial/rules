@@ -30,18 +30,35 @@ type Settings struct {
 	SquadSettings       SquadSettings  `json:"squad"`
 
 	rand Rand
+	seed int64
 }
 
-func (settings Settings) Rand() Rand {
-	// Default to global random number generator if none is set.
-	if settings.rand == nil {
-		return GlobalRand
+// Get a random number generator initialized based on the seed and current turn.
+func (settings Settings) GetRand(turn int32) Rand {
+	// Allow overriding the random generator for testing
+	if settings.rand != nil {
+		return settings.rand
 	}
-	return settings.rand
+
+	if settings.seed != 0 {
+		return NewSeedRand(settings.seed + int64(turn+1))
+	}
+
+	// Default to global random number generator if neither seed or rand are set.
+	return GlobalRand
 }
 
 func (settings Settings) WithRand(rand Rand) Settings {
 	settings.rand = rand
+	return settings
+}
+
+func (settings Settings) Seed() int64 {
+	return settings.seed
+}
+
+func (settings Settings) WithSeed(seed int64) Settings {
+	settings.seed = seed
 	return settings
 }
 
@@ -92,12 +109,14 @@ func (rb *rulesetBuilder) WithParams(params map[string]string) *rulesetBuilder {
 	return rb
 }
 
-// Deprecated: WithSeed sets the seed used for randomisation by certain game modes.
+// WithSeed sets the seed used for randomisation by certain game modes.
 func (rb *rulesetBuilder) WithSeed(seed int64) *rulesetBuilder {
 	rb.seed = seed
 	return rb
 }
 
+// WithRandom overrides the random number generator with a specific instance
+// instead of a Rand initialized from the seed.
 func (rb *rulesetBuilder) WithRand(rand Rand) *rulesetBuilder {
 	rb.rand = rand
 	return rb
@@ -190,6 +209,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
 			},
 			rand: rb.rand,
+			seed: rb.seed,
 		},
 	}
 }

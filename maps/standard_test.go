@@ -78,23 +78,23 @@ func TestStandardMapSetupBoard(t *testing.T) {
 				Height: 11,
 				Snakes: []rules.Snake{
 					{ID: "1", Body: []rules.Point{{X: 1, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 1}}, Health: 100},
-					{ID: "2", Body: []rules.Point{{X: 1, Y: 5}, {X: 1, Y: 5}, {X: 1, Y: 5}}, Health: 100},
-					{ID: "3", Body: []rules.Point{{X: 1, Y: 9}, {X: 1, Y: 9}, {X: 1, Y: 9}}, Health: 100},
-					{ID: "4", Body: []rules.Point{{X: 5, Y: 1}, {X: 5, Y: 1}, {X: 5, Y: 1}}, Health: 100},
-					{ID: "5", Body: []rules.Point{{X: 5, Y: 9}, {X: 5, Y: 9}, {X: 5, Y: 9}}, Health: 100},
-					{ID: "6", Body: []rules.Point{{X: 9, Y: 1}, {X: 9, Y: 1}, {X: 9, Y: 1}}, Health: 100},
-					{ID: "7", Body: []rules.Point{{X: 9, Y: 5}, {X: 9, Y: 5}, {X: 9, Y: 5}}, Health: 100},
-					{ID: "8", Body: []rules.Point{{X: 9, Y: 9}, {X: 9, Y: 9}, {X: 9, Y: 9}}, Health: 100},
+					{ID: "2", Body: []rules.Point{{X: 1, Y: 9}, {X: 1, Y: 9}, {X: 1, Y: 9}}, Health: 100},
+					{ID: "3", Body: []rules.Point{{X: 9, Y: 1}, {X: 9, Y: 1}, {X: 9, Y: 1}}, Health: 100},
+					{ID: "4", Body: []rules.Point{{X: 9, Y: 9}, {X: 9, Y: 9}, {X: 9, Y: 9}}, Health: 100},
+					{ID: "5", Body: []rules.Point{{X: 1, Y: 5}, {X: 1, Y: 5}, {X: 1, Y: 5}}, Health: 100},
+					{ID: "6", Body: []rules.Point{{X: 5, Y: 1}, {X: 5, Y: 1}, {X: 5, Y: 1}}, Health: 100},
+					{ID: "7", Body: []rules.Point{{X: 5, Y: 9}, {X: 5, Y: 9}, {X: 5, Y: 9}}, Health: 100},
+					{ID: "8", Body: []rules.Point{{X: 9, Y: 5}, {X: 9, Y: 5}, {X: 9, Y: 5}}, Health: 100},
 				},
 				Food: []rules.Point{
 					{X: 0, Y: 2},
-					{X: 0, Y: 4},
 					{X: 0, Y: 8},
+					{X: 8, Y: 0},
+					{X: 8, Y: 10},
+					{X: 0, Y: 4},
 					{X: 4, Y: 0},
 					{X: 4, Y: 10},
-					{X: 8, Y: 0},
 					{X: 10, Y: 4},
-					{X: 8, Y: 10},
 					{X: 5, Y: 5},
 				},
 				Hazards: []rules.Point{},
@@ -115,22 +115,22 @@ func TestStandardMapSetupBoard(t *testing.T) {
 				Width:  11,
 				Height: 11,
 				Snakes: []rules.Snake{
-					{ID: "1", Body: []rules.Point{{X: 1, Y: 5}, {X: 1, Y: 5}, {X: 1, Y: 5}}, Health: 100},
-					{ID: "2", Body: []rules.Point{{X: 1, Y: 9}, {X: 1, Y: 9}, {X: 1, Y: 9}}, Health: 100},
-					{ID: "3", Body: []rules.Point{{X: 5, Y: 1}, {X: 5, Y: 1}, {X: 5, Y: 1}}, Health: 100},
-					{ID: "4", Body: []rules.Point{{X: 5, Y: 9}, {X: 5, Y: 9}, {X: 5, Y: 9}}, Health: 100},
-					{ID: "5", Body: []rules.Point{{X: 9, Y: 1}, {X: 9, Y: 1}, {X: 9, Y: 1}}, Health: 100},
-					{ID: "6", Body: []rules.Point{{X: 9, Y: 5}, {X: 9, Y: 5}, {X: 9, Y: 5}}, Health: 100},
+					{ID: "1", Body: []rules.Point{{X: 5, Y: 1}, {X: 5, Y: 1}, {X: 5, Y: 1}}, Health: 100},
+					{ID: "2", Body: []rules.Point{{X: 5, Y: 9}, {X: 5, Y: 9}, {X: 5, Y: 9}}, Health: 100},
+					{ID: "3", Body: []rules.Point{{X: 9, Y: 5}, {X: 9, Y: 5}, {X: 9, Y: 5}}, Health: 100},
+					{ID: "4", Body: []rules.Point{{X: 1, Y: 5}, {X: 1, Y: 5}, {X: 1, Y: 5}}, Health: 100},
+					{ID: "5", Body: []rules.Point{{X: 1, Y: 9}, {X: 1, Y: 9}, {X: 1, Y: 9}}, Health: 100},
+					{ID: "6", Body: []rules.Point{{X: 9, Y: 1}, {X: 9, Y: 1}, {X: 9, Y: 1}}, Health: 100},
 					{ID: "7", Body: []rules.Point{{X: 9, Y: 9}, {X: 9, Y: 9}, {X: 9, Y: 9}}, Health: 100},
 					{ID: "8", Body: []rules.Point{{X: 1, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 1}}, Health: 100},
 				},
 				Food: []rules.Point{
-					{X: 0, Y: 6},
-					{X: 2, Y: 10},
 					{X: 6, Y: 0},
 					{X: 6, Y: 10},
-					{X: 10, Y: 2},
 					{X: 10, Y: 6},
+					{X: 0, Y: 6},
+					{X: 2, Y: 10},
+					{X: 10, Y: 2},
 					{X: 10, Y: 8},
 					{X: 2, Y: 0},
 					{X: 5, Y: 5},
@@ -143,14 +143,15 @@ func TestStandardMapSetupBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := rules.NewBoardState(test.initialBoardState.Width, test.initialBoardState.Height)
-			editor := NewBoardStateEditor(nextBoardState, test.rand)
+			editor := NewBoardStateEditor(nextBoardState)
+			settings := settings.WithRand(test.rand)
 
 			err := m.SetupBoard(test.initialBoardState, settings, editor)
 
 			if test.err != nil {
 				require.Equal(t, test.err, err)
 			} else {
-				require.Equal(t, test.expected, nextBoardState)
+				require.Equalf(t, test.expected, nextBoardState, "%#v", nextBoardState.Food)
 			}
 		})
 	}
@@ -301,9 +302,10 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := test.initialBoardState.Clone()
-			editor := NewBoardStateEditor(nextBoardState, test.rand)
+			settings := test.settings.WithRand(test.rand)
+			editor := NewBoardStateEditor(nextBoardState)
 
-			err := m.UpdateBoard(test.initialBoardState.Clone(), test.settings, editor)
+			err := m.UpdateBoard(test.initialBoardState.Clone(), settings, editor)
 
 			require.NoError(t, err)
 			require.Equal(t, test.expected, nextBoardState)
