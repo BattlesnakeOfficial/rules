@@ -1,5 +1,7 @@
 package rules
 
+import "fmt"
+
 type BoardState struct {
 	Turn    int32
 	Height  int32
@@ -12,6 +14,11 @@ type BoardState struct {
 type Point struct {
 	X int32
 	Y int32
+}
+
+// Makes it easier to copy sample points out of Go logs and test failures.
+func (p Point) GoString() string {
+	return fmt.Sprintf("{X:%d, Y:%d}", p.X, p.Y)
 }
 
 type Snake struct {
@@ -95,26 +102,40 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 
 	// Create start 8 points
 	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
-	startPoints := []Point{
+	cornerPoints := []Point{
 		{mn, mn},
-		{mn, md},
 		{mn, mx},
+		{mx, mn},
+		{mx, mx},
+	}
+	cardinalPoints := []Point{
+		{mn, md},
 		{md, mn},
 		{md, mx},
-		{mx, mn},
 		{mx, md},
-		{mx, mx},
 	}
 
 	// Sanity check
-	if len(b.Snakes) > len(startPoints) {
+	if len(b.Snakes) > (len(cornerPoints) + len(cardinalPoints)) {
 		return ErrorTooManySnakes
 	}
 
 	// Randomly order them
-	rand.Shuffle(len(startPoints), func(i int, j int) {
-		startPoints[i], startPoints[j] = startPoints[j], startPoints[i]
+	rand.Shuffle(len(cornerPoints), func(i int, j int) {
+		cornerPoints[i], cornerPoints[j] = cornerPoints[j], cornerPoints[i]
 	})
+	rand.Shuffle(len(cardinalPoints), func(i int, j int) {
+		cardinalPoints[i], cardinalPoints[j] = cardinalPoints[j], cardinalPoints[i]
+	})
+
+	var startPoints []Point
+	if rand.Intn(2) == 0 {
+		startPoints = append(startPoints, cornerPoints...)
+		startPoints = append(startPoints, cardinalPoints...)
+	} else {
+		startPoints = append(startPoints, cardinalPoints...)
+		startPoints = append(startPoints, cornerPoints...)
+	}
 
 	// Assign to snakes in order given
 	for i := 0; i < len(b.Snakes); i++ {

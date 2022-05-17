@@ -225,6 +225,64 @@ func TestPlaceSnakesDefault(t *testing.T) {
 	}
 }
 
+func TestPlaceSnakesFixed(t *testing.T) {
+	snakeIDs := make([]string, 8)
+
+	for _, test := range []struct {
+		label              string
+		rand               Rand
+		expectedSnakeHeads []Point
+	}{
+		{
+			label: "corners before cardinal directions",
+			rand:  MinRand,
+			expectedSnakeHeads: []Point{
+				{X: 1, Y: 1},
+				{X: 1, Y: 9},
+				{X: 9, Y: 1},
+				{X: 9, Y: 9},
+
+				{X: 1, Y: 5},
+				{X: 5, Y: 1},
+				{X: 5, Y: 9},
+				{X: 9, Y: 5},
+			},
+		},
+		{
+			label: "cardinal directions before corners",
+			rand:  MaxRand,
+			expectedSnakeHeads: []Point{
+				{X: 5, Y: 1},
+				{X: 5, Y: 9},
+				{X: 9, Y: 5},
+				{X: 1, Y: 5},
+
+				{X: 1, Y: 9},
+				{X: 9, Y: 1},
+				{X: 9, Y: 9},
+				{X: 1, Y: 1},
+			},
+		},
+	} {
+		t.Run(test.label, func(t *testing.T) {
+			boardState := &BoardState{
+				Width:  BoardSizeMedium,
+				Height: BoardSizeMedium,
+			}
+
+			err := PlaceSnakesAutomatically(test.rand, boardState, snakeIDs)
+			require.NoError(t, err)
+
+			var snakeHeads []Point
+			for _, snake := range boardState.Snakes {
+				require.Len(t, snake.Body, 3)
+				snakeHeads = append(snakeHeads, snake.Body[0])
+			}
+			require.Equalf(t, test.expectedSnakeHeads, snakeHeads, "%#v", snakeHeads)
+		})
+	}
+}
+
 func TestPlaceSnake(t *testing.T) {
 	// TODO: Should PlaceSnake check for boundaries?
 	boardState := NewBoardState(BoardSizeSmall, BoardSizeSmall)
