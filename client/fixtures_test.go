@@ -13,6 +13,7 @@ func exampleSnakeRequest() SnakeRequest {
 			},
 			Timeout: 33,
 			Source:  "league",
+			Map:     "standard",
 		},
 		Turn: 11,
 		Board: Board{

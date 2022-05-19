@@ -21,6 +21,7 @@
         }
       }
     },
+    "map": "standard",
     "timeout": 33,
     "source": "league"
   },

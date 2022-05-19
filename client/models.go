@@ -14,6 +14,7 @@ type SnakeRequest struct {
 type Game struct {
 	ID      string  `json:"id"`
 	Ruleset Ruleset `json:"ruleset"`
+	Map     string  `json:"map"`
 	Timeout int32   `json:"timeout"`
 	Source  string  `json:"source"`
 }
