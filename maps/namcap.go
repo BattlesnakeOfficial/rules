@@ -30,10 +30,10 @@ func (m NamcapMap) SetupBoard(initialBoardState *rules.BoardState, settings rule
 	}
 
 	snakePositions := []rules.Point{
-		{X: 1, Y: 1},
-		{X: 1, Y: 19},
-		{X: 17, Y: 1},
-		{X: 17, Y: 19},
+		{X: 4, Y: 7},
+		{X: 14, Y: 7},
+		{X: 4, Y: 17},
+		{X: 14, Y: 17},
 	}
 
 	if len(initialBoardState.Snakes) > len(snakePositions) {
@@ -49,8 +49,19 @@ func (m NamcapMap) SetupBoard(initialBoardState *rules.BoardState, settings rule
 		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, snake.Health)
 	}
 
-	for _, hazard := range hazards {
+	for _, hazard := range NamcapHazards {
 		editor.AddHazard(hazard)
+	}
+
+	foodPositions := []rules.Point{
+		{X: 6, Y: 9},
+		{X: 6, Y: 13},
+		{X: 12, Y: 9},
+		{X: 12, Y: 13},
+	}
+
+	for _, food := range foodPositions {
+		editor.AddFood(food)
 	}
 
 	return nil
@@ -60,7 +71,7 @@ func (m NamcapMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.
 	return nil
 }
 
-var hazards []rules.Point = []rules.Point{
+var NamcapHazards []rules.Point = []rules.Point{
 	{X: 0, Y: 20},
 	{X: 1, Y: 20},
 	{X: 2, Y: 20},
@@ -131,10 +142,16 @@ var hazards []rules.Point = []rules.Point{
 	{X: 16, Y: 14},
 	{X: 17, Y: 14},
 	{X: 18, Y: 14},
+	{X: 0, Y: 13},
+	{X: 1, Y: 13},
+	{X: 2, Y: 13},
 	{X: 3, Y: 13},
 	{X: 5, Y: 13},
 	{X: 13, Y: 13},
 	{X: 15, Y: 13},
+	{X: 16, Y: 13},
+	{X: 17, Y: 13},
+	{X: 18, Y: 13},
 	{X: 0, Y: 12},
 	{X: 1, Y: 12},
 	{X: 2, Y: 12},
@@ -166,10 +183,16 @@ var hazards []rules.Point = []rules.Point{
 	{X: 16, Y: 10},
 	{X: 17, Y: 10},
 	{X: 18, Y: 10},
+	{X: 0, Y: 9},
+	{X: 1, Y: 9},
+	{X: 2, Y: 9},
 	{X: 3, Y: 9},
 	{X: 5, Y: 9},
 	{X: 13, Y: 9},
 	{X: 15, Y: 9},
+	{X: 16, Y: 9},
+	{X: 17, Y: 9},
+	{X: 18, Y: 9},
 	{X: 0, Y: 8},
 	{X: 1, Y: 8},
 	{X: 2, Y: 8},
