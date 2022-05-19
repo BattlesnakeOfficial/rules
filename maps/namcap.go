@@ -68,6 +68,23 @@ func (m NamcapMap) SetupBoard(initialBoardState *rules.BoardState, settings rule
 }
 
 func (m NamcapMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	rand := settings.GetRand(lastBoardState.Turn)
+
+	// Respect FoodSpawnChance setting
+	if rand.Intn(100) > int(settings.FoodSpawnChance) {
+		return nil
+	}
+
+	// Don't spawn food on top of hazards - if we pick a hazard tile, skip this turn
+	foodX, foodY := rand.Intn(int(lastBoardState.Width)), rand.Intn(int(lastBoardState.Height))
+	for _, hazard := range lastBoardState.Hazards {
+		if hazard.X == int32(foodX) && hazard.Y == int32(foodY) {
+			return nil
+		}
+	}
+
+	editor.AddFood(rules.Point{X: int32(foodX), Y: int32(foodY)})
+
 	return nil
 }
 
