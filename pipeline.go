@@ -11,14 +11,12 @@ const (
 	StageHazardDamageStandard = "hazard_damage.standard"
 	StageEliminationStandard  = "elimination.standard"
 
-	StageGameOverSoloSnake                   = "game_over.solo_snake"
-	StageGameOverBySquad                     = "game_over.by_squad"
-	StageSpawnFoodNoFood                     = "spawn_food.no_food"
-	StageSpawnHazardsShrinkMap               = "spawn_hazards.shrink_map"
-	StageEliminationResurrectSquadCollisions = "elimination.resurrect_squad_collisions"
-	StageModifySnakesAlwaysGrow              = "modify_snakes.always_grow"
-	StageMovementWrapBoundaries              = "movement.wrap_boundaries"
-	StageModifySnakesShareAttributes         = "modify_snakes.share_attributes"
+	StageGameOverSoloSnake           = "game_over.solo_snake"
+	StageSpawnFoodNoFood             = "spawn_food.no_food"
+	StageSpawnHazardsShrinkMap       = "spawn_hazards.shrink_map"
+	StageModifySnakesAlwaysGrow      = "modify_snakes.always_grow"
+	StageMovementWrapBoundaries      = "movement.wrap_boundaries"
+	StageModifySnakesShareAttributes = "modify_snakes.share_attributes"
 )
 
 // globalRegistry is a global, default mapping of stage names to stage functions.
@@ -26,21 +24,18 @@ const (
 // Plugins that wish to extend the available game stages should call RegisterPipelineStageError
 // to add additional stages.
 var globalRegistry = StageRegistry{
-	StageSpawnFoodNoFood:                     RemoveFoodConstrictor,
-	StageSpawnFoodStandard:                   SpawnFoodStandard,
-	StageGameOverSoloSnake:                   GameOverSolo,
-	StageGameOverBySquad:                     GameOverSquad,
-	StageGameOverStandard:                    GameOverStandard,
-	StageHazardDamageStandard:                DamageHazardsStandard,
-	StageSpawnHazardsShrinkMap:               PopulateHazardsRoyale,
-	StageStarvationStandard:                  ReduceSnakeHealthStandard,
-	StageEliminationResurrectSquadCollisions: ResurrectSnakesSquad,
-	StageFeedSnakesStandard:                  FeedSnakesStandard,
-	StageEliminationStandard:                 EliminateSnakesStandard,
-	StageModifySnakesAlwaysGrow:              GrowSnakesConstrictor,
-	StageMovementStandard:                    MoveSnakesStandard,
-	StageMovementWrapBoundaries:              MoveSnakesWrapped,
-	StageModifySnakesShareAttributes:         ShareAttributesSquad,
+	StageSpawnFoodNoFood:        RemoveFoodConstrictor,
+	StageSpawnFoodStandard:      SpawnFoodStandard,
+	StageGameOverSoloSnake:      GameOverSolo,
+	StageGameOverStandard:       GameOverStandard,
+	StageHazardDamageStandard:   DamageHazardsStandard,
+	StageSpawnHazardsShrinkMap:  PopulateHazardsRoyale,
+	StageStarvationStandard:     ReduceSnakeHealthStandard,
+	StageFeedSnakesStandard:     FeedSnakesStandard,
+	StageEliminationStandard:    EliminateSnakesStandard,
+	StageModifySnakesAlwaysGrow: GrowSnakesConstrictor,
+	StageMovementStandard:       MoveSnakesStandard,
+	StageMovementWrapBoundaries: MoveSnakesWrapped,
 }
 
 // StageFunc represents a single stage of an ordered pipeline and applies custom logic to the board state each turn.

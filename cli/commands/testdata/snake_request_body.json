@@ -11,7 +11,7 @@
         "hazardMap": "",
         "hazardMapAuthor": "",
         "royale": {
-          "shrinkEveryNTurns": 0
+          "shrinkEveryNTurns": 25
         },
         "squad": {
           "allowBodyCollisions": false,

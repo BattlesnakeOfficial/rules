@@ -27,7 +27,7 @@ type Settings struct {
 	HazardMap           string         `json:"hazardMap"`
 	HazardMapAuthor     string         `json:"hazardMapAuthor"`
 	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"`
+	SquadSettings       SquadSettings  `json:"squad"` // Deprecated, provided with default fields for API compatibility
 
 	rand Rand
 	seed int64
@@ -41,7 +41,7 @@ func (settings Settings) GetRand(turn int) Rand {
 	}
 
 	if settings.seed != 0 {
-		return NewSeedRand(settings.seed + int64(turn+1))
+		return NewSeedRand(settings.seed + int64(turn))
 	}
 
 	// Default to global random number generator if neither seed or rand are set.
@@ -64,13 +64,11 @@ func (settings Settings) WithSeed(seed int64) Settings {
 
 // RoyaleSettings contains settings that are specific to the "royale" game mode
 type RoyaleSettings struct {
-	seed              int64
 	ShrinkEveryNTurns int `json:"shrinkEveryNTurns"`
 }
 
 // SquadSettings contains settings that are specific to the "squad" game mode
 type SquadSettings struct {
-	squadMap            map[string]string
 	AllowBodyCollisions bool `json:"allowBodyCollisions"`
 	SharedElimination   bool `json:"sharedElimination"`
 	SharedHealth        bool `json:"sharedHealth"`
@@ -81,14 +79,12 @@ type rulesetBuilder struct {
 	params map[string]string // game customisation parameters
 	seed   int64             // used for random events in games
 	rand   Rand              // used for random number generation
-	squads map[string]string // Snake ID -> Squad Name
 }
 
 // NewRulesetBuilder returns an instance of a builder for the Ruleset types.
 func NewRulesetBuilder() *rulesetBuilder {
 	return &rulesetBuilder{
 		params: map[string]string{},
-		squads: map[string]string{},
 	}
 }
 
@@ -122,66 +118,27 @@ func (rb *rulesetBuilder) WithRand(rand Rand) *rulesetBuilder {
 	return rb
 }
 
-// AddSnakeToSquad adds the specified snake (by ID) to a squad with the given name.
-// This configuration may be ignored by game modes if they do not support squads.
-func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBuilder {
-	rb.squads[snakeID] = squadName
-	return rb
-}
-
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
 func (rb rulesetBuilder) Ruleset() PipelineRuleset {
-	standardRuleset := &StandardRuleset{
-		FoodSpawnChance:     paramsInt(rb.params, ParamFoodSpawnChance, 0),
-		MinimumFood:         paramsInt(rb.params, ParamMinimumFood, 0),
-		HazardDamagePerTurn: paramsInt(rb.params, ParamHazardDamagePerTurn, 0),
-		HazardMap:           rb.params[ParamHazardMap],
-		HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
-	}
-
 	name, ok := rb.params[ParamGameType]
 	if !ok {
-		return standardRuleset
+		name = GameTypeStandard
 	}
 
 	switch name {
+	case GameTypeStandard:
+		return rb.PipelineRuleset(name, NewPipeline(standardRulesetStages...))
 	case GameTypeConstrictor:
-		return &ConstrictorRuleset{
-			StandardRuleset: *standardRuleset,
-		}
+		return rb.PipelineRuleset(name, NewPipeline(constrictorRulesetStages...))
 	case GameTypeRoyale:
-		return &RoyaleRuleset{
-			StandardRuleset:   *standardRuleset,
-			Seed:              rb.seed,
-			ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
-		}
+		return rb.PipelineRuleset(name, NewPipeline(royaleRulesetStages...))
 	case GameTypeSolo:
-		return &SoloRuleset{
-			StandardRuleset: *standardRuleset,
-		}
+		return rb.PipelineRuleset(name, NewPipeline(soloRulesetStages...))
 	case GameTypeWrapped:
-		return &WrappedRuleset{
-			StandardRuleset: *standardRuleset,
-		}
-	case GameTypeSquad:
-		return &SquadRuleset{
-			StandardRuleset:     *standardRuleset,
-			SquadMap:            rb.squadMap(),
-			AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
-			SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
-			SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
-			SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
-		}
+		return rb.PipelineRuleset(name, NewPipeline(wrappedRulesetStages...))
+	default:
+		return rb.PipelineRuleset(name, NewPipeline(standardRulesetStages...))
 	}
-	return standardRuleset
-}
-
-func (rb rulesetBuilder) squadMap() map[string]string {
-	squadMap := map[string]string{}
-	for id, squad := range rb.squads {
-		squadMap[id] = squad
-	}
-	return squadMap
 }
 
 // PipelineRuleset provides an implementation of the Ruleset using a pipeline with a name.
@@ -198,15 +155,7 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 			HazardMap:           rb.params[ParamHazardMap],
 			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
 			RoyaleSettings: RoyaleSettings{
-				seed:              rb.seed,
 				ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
-			},
-			SquadSettings: SquadSettings{
-				squadMap:            rb.squadMap(),
-				AllowBodyCollisions: paramsBool(rb.params, ParamAllowBodyCollisions, false),
-				SharedElimination:   paramsBool(rb.params, ParamSharedElimination, false),
-				SharedHealth:        paramsBool(rb.params, ParamSharedHealth, false),
-				SharedLength:        paramsBool(rb.params, ParamSharedLength, false),
 			},
 			rand: rb.rand,
 			seed: rb.seed,

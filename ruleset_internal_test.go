@@ -41,30 +41,11 @@ func TestRulesetError(t *testing.T) {
 }
 
 func TestRulesetBuilderInternals(t *testing.T) {
-
 	// test Royale with seed
 	rsb := NewRulesetBuilder().WithSeed(3).WithParams(map[string]string{ParamGameType: GameTypeRoyale})
 	require.Equal(t, int64(3), rsb.seed)
 	require.Equal(t, GameTypeRoyale, rsb.Ruleset().Name())
-	require.Equal(t, int64(3), rsb.Ruleset().(*RoyaleRuleset).Seed)
-
-	// test squad configuration
-	rsb = NewRulesetBuilder().
-		WithParams(map[string]string{
-			ParamGameType: GameTypeSquad,
-		}).
-		AddSnakeToSquad("snek1", "squad1").
-		AddSnakeToSquad("snek2", "squad1").
-		AddSnakeToSquad("snek3", "squad2").
-		AddSnakeToSquad("snek4", "squad2")
-
-	require.NotNil(t, rsb.Ruleset())
-	require.Equal(t, GameTypeSquad, rsb.Ruleset().Name())
-	require.Equal(t, 4, len(rsb.squads))
-	require.Equal(t, "squad1", rsb.Ruleset().(*SquadRuleset).SquadMap["snek1"])
-	require.Equal(t, "squad1", rsb.Ruleset().(*SquadRuleset).SquadMap["snek2"])
-	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek3"])
-	require.Equal(t, "squad2", rsb.Ruleset().(*SquadRuleset).SquadMap["snek4"])
+	require.Equal(t, int64(3), rsb.Ruleset().Settings().Seed())
 
 	// test parameter merging
 	rsb = NewRulesetBuilder().

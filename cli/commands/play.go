@@ -27,7 +27,6 @@ type SnakeState struct {
 	Name      string
 	ID        string
 	LastMove  string
-	Squad     string
 	Character rune
 	Color     string
 	Head      string
@@ -41,7 +40,6 @@ var Width int
 var Height int
 var Names []string
 var URLs []string
-var Squads []string
 var Timeout int
 var TurnDuration int
 var Sequential bool
@@ -61,11 +59,6 @@ var ShrinkEveryNTurns int
 var defaultConfig = map[string]string{
 	// default to standard ruleset
 	rules.ParamGameType: "standard",
-	// squad settings default to true (not zero value)
-	rules.ParamSharedElimination:   "true",
-	rules.ParamSharedHealth:        "true",
-	rules.ParamSharedLength:        "true",
-	rules.ParamAllowBodyCollisions: "true",
 }
 
 var playCmd = &cobra.Command{
@@ -83,7 +76,6 @@ func init() {
 	playCmd.Flags().IntVarP(&Height, "height", "H", 11, "Height of Board")
 	playCmd.Flags().StringArrayVarP(&Names, "name", "n", nil, "Name of Snake")
 	playCmd.Flags().StringArrayVarP(&URLs, "url", "u", nil, "URL of Snake")
-	playCmd.Flags().StringArrayVarP(&Names, "squad", "S", nil, "Squad of Snake")
 	playCmd.Flags().IntVarP(&Timeout, "timeout", "t", 500, "Request Timeout")
 	playCmd.Flags().BoolVarP(&Sequential, "sequential", "s", false, "Use Sequential Processing")
 	playCmd.Flags().StringVarP(&GameType, "gametype", "g", "standard", "Type of Game Rules")
@@ -209,14 +201,7 @@ func initialiseGameConfig() {
 }
 
 func getRuleset(seed int64, snakeStates map[string]SnakeState) rules.Ruleset {
-	rb := rules.NewRulesetBuilder().WithSeed(seed).WithParams(defaultConfig)
-
-	for _, s := range snakeStates {
-		rb.AddSnakeToSquad(s.ID, s.Squad)
-	}
-
-	return rb.Ruleset()
-
+	return rules.NewRulesetBuilder().WithSeed(seed).WithParams(defaultConfig).Ruleset()
 }
 
 func initializeBoardFromArgs(ruleset rules.Ruleset, snakeStates map[string]SnakeState) *rules.BoardState {
@@ -393,7 +378,6 @@ func convertRulesSnake(snake rules.Snake, snakeState SnakeState) client.Snake {
 		Head:    client.CoordFromPoint(snake.Body[0]),
 		Length:  len(snake.Body),
 		Shout:   "",
-		Squad:   snakeState.Squad,
 		Customizations: client.Customizations{
 			Head:  snakeState.Head,
 			Tail:  snakeState.Tail,
@@ -428,7 +412,6 @@ func buildSnakesFromOptions() map[string]SnakeState {
 	snakes := map[string]SnakeState{}
 	numNames := len(Names)
 	numURLs := len(URLs)
-	numSquads := len(Squads)
 	if numNames > numURLs {
 		numSnakes = numNames
 	} else {
@@ -440,7 +423,6 @@ func buildSnakesFromOptions() map[string]SnakeState {
 	for i := int(0); i < numSnakes; i++ {
 		var snakeName string
 		var snakeURL string
-		var snakeSquad string
 
 		id := uuid.New().String()
 
@@ -464,14 +446,6 @@ func buildSnakesFromOptions() map[string]SnakeState {
 			snakeURL = "https://example.com"
 		}
 
-		if GameType == "squad" {
-			if i < numSquads {
-				snakeSquad = Squads[i]
-			} else {
-				log.Printf("[WARN]: Squad for URL %v is missing: a default squad will be applied\n", URLs[i])
-				snakeSquad = strconv.Itoa(i / 2)
-			}
-		}
 		snakeState := SnakeState{
 			Name: snakeName, URL: snakeURL, ID: id, LastMove: "up", Character: bodyChars[i%8],
 		}
@@ -494,9 +468,6 @@ func buildSnakesFromOptions() map[string]SnakeState {
 				snakeState.Tail = pingResponse.Tail
 				snakeState.Color = pingResponse.Color
 			}
-		}
-		if GameType == "squad" {
-			snakeState.Squad = snakeSquad
 		}
 		snakes[snakeState.ID] = snakeState
 	}

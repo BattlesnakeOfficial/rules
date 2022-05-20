@@ -24,7 +24,6 @@ const (
 	EliminatedByOutOfHealth         = "out-of-health"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
-	EliminatedBySquad               = "squad-eliminated"
 
 	// Error constants
 	ErrorTooManySnakes   = RulesetError("too many snakes for fixed start positions")
@@ -41,7 +40,6 @@ const (
 	GameTypeConstrictor = "constrictor"
 	GameTypeRoyale      = "royale"
 	GameTypeSolo        = "solo"
-	GameTypeSquad       = "squad"
 	GameTypeStandard    = "standard"
 	GameTypeWrapped     = "wrapped"
 

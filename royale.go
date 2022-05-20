@@ -2,7 +2,6 @@ package rules
 
 import (
 	"errors"
-	"math/rand"
 )
 
 var royaleRulesetStages = []string{
@@ -18,8 +17,6 @@ var royaleRulesetStages = []string{
 
 type RoyaleRuleset struct {
 	StandardRuleset
-
-	Seed int64
 
 	ShrinkEveryNTurns int
 }
@@ -55,7 +52,7 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 		return false, nil
 	}
 
-	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
+	randGenerator := settings.GetRand(0)
 
 	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
 	minX, maxX := 0, b.Width-1
@@ -91,7 +88,6 @@ func (r *RoyaleRuleset) IsGameOver(b *BoardState) (bool, error) {
 func (r RoyaleRuleset) Settings() Settings {
 	s := r.StandardRuleset.Settings()
 	s.RoyaleSettings = RoyaleSettings{
-		seed:              r.Seed,
 		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
 	}
 	return s

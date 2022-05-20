@@ -79,18 +79,13 @@ func TestSettingsRequestSerialization(t *testing.T) {
 			rules.ParamHazardDamagePerTurn: "19",
 			rules.ParamHazardMap:           "hz_spiral",
 			rules.ParamHazardMapAuthor:     "altersaddle",
-			// squad
-			rules.ParamAllowBodyCollisions: "true",
-			rules.ParamSharedElimination:   "false",
-			rules.ParamSharedHealth:        "true",
-			rules.ParamSharedLength:        "false",
 			// royale
 			rules.ParamShrinkEveryNTurns: "17",
 		})
 
 	for _, gt := range []string{
 		rules.GameTypeStandard, rules.GameTypeRoyale, rules.GameTypeSolo,
-		rules.GameTypeWrapped, rules.GameTypeSquad, rules.GameTypeConstrictor,
+		rules.GameTypeWrapped, rules.GameTypeConstrictor,
 	} {
 		t.Run(gt, func(t *testing.T) {
 			// apply game type
@@ -128,7 +123,6 @@ func TestConvertRulesSnakes(t *testing.T) {
 					ID:        "one",
 					Name:      "ONE",
 					URL:       "http://example1.com",
-					Squad:     "squadA",
 					Head:      "a",
 					Tail:      "b",
 					Color:     "#012345",
@@ -146,7 +140,6 @@ func TestConvertRulesSnakes(t *testing.T) {
 					Head:    client.Coord{X: 3, Y: 3},
 					Length:  2,
 					Shout:   "",
-					Squad:   "squadA",
 					Customizations: client.Customizations{
 						Color: "#012345",
 						Head:  "a",
