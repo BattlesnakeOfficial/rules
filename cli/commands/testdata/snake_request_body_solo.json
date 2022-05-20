@@ -1,6 +1,6 @@
 {
   "game": {
-    "id": "",
+    "id": "GAME_ID",
     "ruleset": {
       "name": "solo",
       "version": "cli",
@@ -8,8 +8,8 @@
         "foodSpawnChance": 11,
         "minimumFood": 7,
         "hazardDamagePerTurn": 19,
-        "hazardMap": "hz_spiral",
-        "hazardMapAuthor": "altersaddle",
+        "hazardMap": "",
+        "hazardMapAuthor": "",
         "royale": {
           "shrinkEveryNTurns": 17
         },
@@ -21,7 +21,7 @@
         }
       }
     },
-    "map": "",
+    "map": "standard",
     "timeout": 500,
     "source": ""
   },

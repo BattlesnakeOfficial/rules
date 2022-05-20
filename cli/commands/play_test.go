@@ -10,6 +10,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func buildDefaultGameState() *GameState {
+	gameState := &GameState{
+		Width:               11,
+		Height:              11,
+		Names:               nil,
+		Timeout:             500,
+		Sequential:          false,
+		GameType:            "standard",
+		MapName:             "standard",
+		ViewMap:             false,
+		UseColor:            false,
+		Seed:                1,
+		TurnDelay:           0,
+		TurnDuration:        0,
+		DebugRequests:       false,
+		Output:              "",
+		FoodSpawnChance:     15,
+		MinimumFood:         1,
+		HazardDamagePerTurn: 14,
+		ShrinkEveryNTurns:   25,
+	}
+
+	return gameState
+}
+
 func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
 	s2 := rules.Snake{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}}
@@ -34,12 +59,16 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 		Tail:  "bolt",
 		Color: "#654321",
 	}
-	snakeStates := map[string]SnakeState{
+
+	gameState := buildDefaultGameState()
+	gameState.initialize()
+	gameState.gameID = "GAME_ID"
+	gameState.snakeStates = map[string]SnakeState{
 		s1State.ID: s1State,
 		s2State.ID: s2State,
 	}
-	initialiseGameConfig() // initialise default config
-	snakeRequest := getIndividualBoardStateForSnake(state, s1State, snakeStates, getRuleset(0, snakeStates))
+
+	snakeRequest := gameState.getRequestBodyForSnake(state, s1State)
 	requestBody := serialiseSnakeRequest(snakeRequest)
 
 	test.RequireJSONMatchesFixture(t, "testdata/snake_request_body.json", string(requestBody))
@@ -69,29 +98,25 @@ func TestSettingsRequestSerialization(t *testing.T) {
 		Tail:  "bolt",
 		Color: "#654321",
 	}
-	snakeStates := map[string]SnakeState{s1State.ID: s1State, s2State.ID: s2State}
-
-	rsb := rules.NewRulesetBuilder().
-		WithParams(map[string]string{
-			// standard
-			rules.ParamFoodSpawnChance:     "11",
-			rules.ParamMinimumFood:         "7",
-			rules.ParamHazardDamagePerTurn: "19",
-			rules.ParamHazardMap:           "hz_spiral",
-			rules.ParamHazardMapAuthor:     "altersaddle",
-			// royale
-			rules.ParamShrinkEveryNTurns: "17",
-		})
 
 	for _, gt := range []string{
 		rules.GameTypeStandard, rules.GameTypeRoyale, rules.GameTypeSolo,
 		rules.GameTypeWrapped, rules.GameTypeConstrictor,
 	} {
 		t.Run(gt, func(t *testing.T) {
-			// apply game type
-			ruleset := rsb.WithParams(map[string]string{rules.ParamGameType: gt}).Ruleset()
+			gameState := buildDefaultGameState()
 
-			snakeRequest := getIndividualBoardStateForSnake(state, s1State, snakeStates, ruleset)
+			gameState.FoodSpawnChance = 11
+			gameState.MinimumFood = 7
+			gameState.HazardDamagePerTurn = 19
+			gameState.ShrinkEveryNTurns = 17
+			gameState.GameType = gt
+
+			gameState.initialize()
+			gameState.gameID = "GAME_ID"
+			gameState.snakeStates = map[string]SnakeState{s1State.ID: s1State, s2State.ID: s2State}
+
+			snakeRequest := gameState.getRequestBodyForSnake(state, s1State)
 			requestBody := serialiseSnakeRequest(snakeRequest)
 			t.Log(string(requestBody))
 
