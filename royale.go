@@ -9,7 +9,6 @@ var royaleRulesetStages = []string{
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
-	StageSpawnFoodStandard,
 	StageEliminationStandard,
 	StageSpawnHazardsShrinkMap,
 	StageGameOverStandard,

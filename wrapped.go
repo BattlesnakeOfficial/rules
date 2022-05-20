@@ -5,7 +5,6 @@ var wrappedRulesetStages = []string{
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
-	StageSpawnFoodStandard,
 	StageEliminationStandard,
 	StageGameOverStandard,
 }

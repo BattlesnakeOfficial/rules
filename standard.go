@@ -18,7 +18,6 @@ var standardRulesetStages = []string{
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
-	StageSpawnFoodStandard,
 	StageEliminationStandard,
 	StageGameOverStandard,
 }
@@ -387,6 +386,7 @@ func growSnake(snake *Snake) {
 	}
 }
 
+// Deprecated: handled by maps.Standard
 func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	if IsInitialization(b, settings, moves) {
 		return false, nil
