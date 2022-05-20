@@ -29,6 +29,11 @@ func (m RoyaleHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings 
 }
 
 func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	// Use StandardMap to populate food
+	if err := (StandardMap{}).UpdateBoard(lastBoardState, settings, editor); err != nil {
+		return err
+	}
+
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := lastBoardState.Turn + 1
 
