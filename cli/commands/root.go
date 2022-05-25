@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -18,6 +19,8 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	rootCmd.AddCommand(NewPlayCommand())
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

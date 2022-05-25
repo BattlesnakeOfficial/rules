@@ -94,15 +94,14 @@ func TestRoyaleHazards(t *testing.T) {
 			Width:  test.Width,
 			Height: test.Height,
 		}
-		r := RoyaleRuleset{
-			StandardRuleset: StandardRuleset{
-				HazardDamagePerTurn: 1,
+		settings := Settings{
+			HazardDamagePerTurn: 1,
+			RoyaleSettings: RoyaleSettings{
+				ShrinkEveryNTurns: test.ShrinkEveryNTurns,
 			},
-			Seed:              seed,
-			ShrinkEveryNTurns: test.ShrinkEveryNTurns,
-		}
+		}.WithSeed(seed)
 
-		_, err := PopulateHazardsRoyale(b, r.Settings(), mockSnakeMoves())
+		_, err := PopulateHazardsRoyale(b, settings, mockSnakeMoves())
 		require.Equal(t, test.Error, err)
 		if err == nil {
 			// Obstacles should match
@@ -119,64 +118,6 @@ func TestRoyaleHazards(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestRoyalDamageNextTurn(t *testing.T) {
-	seed := int64(45897034512311)
-
-	base := &BoardState{Width: 10, Height: 10, Snakes: []Snake{{ID: "one", Health: 100, Body: []Point{{9, 1}, {9, 1}, {9, 1}}}}}
-	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 30}, Seed: seed, ShrinkEveryNTurns: 10}
-	m := []SnakeMove{{ID: "one", Move: "down"}}
-
-	stateAfterTurn := func(prevState *BoardState, turn int) *BoardState {
-		nextState := prevState.Clone()
-		nextState.Turn = turn - 1
-		_, err := PopulateHazardsRoyale(nextState, r.Settings(), nil)
-		require.NoError(t, err)
-		nextState.Turn = turn
-		return nextState
-	}
-
-	prevState := stateAfterTurn(base, 9)
-	next, err := r.CreateNextBoardState(prevState, m)
-	require.NoError(t, err)
-	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, 99, next.Snakes[0].Health)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, 10, len(next.Hazards)) // X = 0
-
-	prevState = stateAfterTurn(base, 19)
-	next, err = r.CreateNextBoardState(prevState, m)
-	require.NoError(t, err)
-	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, 99, next.Snakes[0].Health)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, 20, len(next.Hazards)) // X = 9
-
-	prevState = stateAfterTurn(base, 20)
-	next, err = r.CreateNextBoardState(prevState, m)
-	require.NoError(t, err)
-	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, 69, next.Snakes[0].Health)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, 20, len(next.Hazards))
-
-	prevState.Snakes[0].Health = 15
-	next, err = r.CreateNextBoardState(prevState, m)
-	require.NoError(t, err)
-	require.Equal(t, EliminatedByOutOfHealth, next.Snakes[0].EliminatedCause)
-	require.Equal(t, 0, next.Snakes[0].Health)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, 20, len(next.Hazards))
-
-	prevState.Food = append(prevState.Food, Point{9, 0})
-	next, err = r.CreateNextBoardState(prevState, m)
-	require.NoError(t, err)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, 100, next.Snakes[0].Health)
-	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
-	require.Equal(t, 20, len(next.Hazards))
 }
 
 // Checks that hazards get placed
@@ -264,13 +205,13 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		},
 		ShrinkEveryNTurns: 1,
 	}
-	rand.Seed(0)
 	rb := NewRulesetBuilder().WithParams(map[string]string{
 		ParamGameType:            GameTypeRoyale,
 		ParamHazardDamagePerTurn: "1",
 		ParamShrinkEveryNTurns:   "1",
-	})
+	}).WithSeed(1234)
 	for _, gc := range cases {
+		rand.Seed(1234)
 		gc.requireValidNextState(t, &r)
 		// also test a RulesBuilder constructed instance
 		gc.requireValidNextState(t, rb.Ruleset())

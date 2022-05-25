@@ -38,3 +38,9 @@ func GetMap(id string) (GameMap, error) {
 func RegisterMap(id string, m GameMap) {
 	globalRegistry.RegisterMap(id, m)
 }
+
+func TestMap(id string, m GameMap, callback func()) {
+	globalRegistry[id] = m
+	callback()
+	delete(globalRegistry, id)
+}

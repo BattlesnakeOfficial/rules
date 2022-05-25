@@ -5,7 +5,6 @@ var soloRulesetStages = []string{
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
-	StageSpawnFoodStandard,
 	StageEliminationStandard,
 	StageGameOverSoloSnake,
 }

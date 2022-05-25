@@ -32,14 +32,14 @@ Usage:
   battlesnake play [flags]
 
 Flags:
-  -W, --width int                 Width of Board (default 11)
-  -H, --height int                Height of Board (default 11)
+  -W, --width int                   Width of Board (default 11)
+  -H, --height int                  Height of Board (default 11)
   -n, --name stringArray            Name of Snake
   -u, --url stringArray             URL of Snake
-  -S, --squad stringArray           Squad of Snake
   -t, --timeout int               Request Timeout (default 500)
   -s, --sequential                  Use Sequential Processing
   -g, --gametype string             Type of Game Rules (default "standard")
+  -m, --map string                  Game map to use to populate the board (default "standard")
   -v, --viewmap                     View the Map Each Turn
   -c, --color                       Use color to draw the map
   -r, --seed int                    Random Seed (default 1649588785026867900)

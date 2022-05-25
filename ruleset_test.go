@@ -59,7 +59,6 @@ func TestSoloRulesetSettings(t *testing.T) {
 
 func TestRoyaleRulesetSettings(t *testing.T) {
 	ruleset := rules.RoyaleRuleset{
-		Seed:              30,
 		ShrinkEveryNTurns: 12,
 		StandardRuleset: rules.StandardRuleset{
 			MinimumFood:         5,
@@ -94,32 +93,6 @@ func TestConstrictorRulesetSettings(t *testing.T) {
 	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
 }
 
-func TestSquadRulesetSettings(t *testing.T) {
-	ruleset := rules.SquadRuleset{
-		AllowBodyCollisions: true,
-		SharedElimination:   false,
-		SharedHealth:        true,
-		SharedLength:        false,
-		StandardRuleset: rules.StandardRuleset{
-			MinimumFood:         5,
-			FoodSpawnChance:     10,
-			HazardDamagePerTurn: 10,
-			HazardMap:           "hz_spiral",
-			HazardMapAuthor:     "altersaddle",
-		},
-	}
-	assert.Equal(t, ruleset.AllowBodyCollisions, ruleset.Settings().SquadSettings.AllowBodyCollisions)
-	assert.Equal(t, ruleset.SharedElimination, ruleset.Settings().SquadSettings.SharedElimination)
-	assert.Equal(t, ruleset.SharedHealth, ruleset.Settings().SquadSettings.SharedHealth)
-	assert.Equal(t, ruleset.SharedLength, ruleset.Settings().SquadSettings.SharedLength)
-
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
 func TestRulesetBuilder(t *testing.T) {
 	// Test that a fresh instance can produce a Ruleset
 	require.NotNil(t, rules.NewRulesetBuilder().Ruleset())
@@ -131,22 +104,11 @@ func TestRulesetBuilder(t *testing.T) {
 	// make sure it works okay for lots of game types
 	expectedResults := []struct {
 		GameType string
-		Snakes   map[string]string
 	}{
 		{GameType: rules.GameTypeStandard},
 		{GameType: rules.GameTypeWrapped},
 		{GameType: rules.GameTypeRoyale},
 		{GameType: rules.GameTypeSolo},
-		{GameType: rules.GameTypeSquad, Snakes: map[string]string{
-			"one":   "s1",
-			"two":   "s1",
-			"three": "s2",
-			"four":  "s2",
-			"five":  "s3",
-			"six":   "s3",
-			"seven": "s4",
-			"eight": "s4",
-		}},
 		{GameType: rules.GameTypeConstrictor},
 	}
 
@@ -163,11 +125,6 @@ func TestRulesetBuilder(t *testing.T) {
 				rules.ParamHazardMap:           "test",
 				rules.ParamHazardMapAuthor:     "tester",
 			})
-
-			// add any snake squads
-			for id, squad := range expected.Snakes {
-				rsb = rsb.AddSnakeToSquad(id, squad)
-			}
 
 			require.NotNil(t, rsb.Ruleset())
 			require.Equal(t, expected.GameType, rsb.Ruleset().Name())
@@ -200,8 +157,8 @@ func TestRulesetBuilderGetRand(t *testing.T) {
 	rand1 := ruleset.Settings().GetRand(turn)
 
 	// Should produce a predictable series of numbers based on a seed
-	require.Equal(t, 80, rand1.Intn(100))
-	require.Equal(t, 94, rand1.Intn(100))
+	require.Equal(t, 83, rand1.Intn(100))
+	require.Equal(t, 15, rand1.Intn(100))
 
 	// Should produce the same number if re-initialized
 	require.Equal(
@@ -211,6 +168,6 @@ func TestRulesetBuilderGetRand(t *testing.T) {
 	)
 
 	// Should produce a different series of numbers for another turn
-	require.Equal(t, 22, rand1.Intn(100))
-	require.Equal(t, 16, rand1.Intn(100))
+	require.Equal(t, 69, rand1.Intn(100))
+	require.Equal(t, 86, rand1.Intn(100))
 }

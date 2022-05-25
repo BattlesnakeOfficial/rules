@@ -11,7 +11,7 @@
         "hazardMap": "hz_spiral",
         "hazardMapAuthor": "altersaddle",
         "royale": {
-          "shrinkEveryNTurns": 0
+          "shrinkEveryNTurns": 17
         },
         "squad": {
           "allowBodyCollisions": true,
