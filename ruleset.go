@@ -21,9 +21,9 @@ type SnakeMove struct {
 // Settings contains all settings relevant to a game.
 // It is used by game logic to take a previous game state and produce a next game state.
 type Settings struct {
-	FoodSpawnChance     int32          `json:"foodSpawnChance"`
-	MinimumFood         int32          `json:"minimumFood"`
-	HazardDamagePerTurn int32          `json:"hazardDamagePerTurn"`
+	FoodSpawnChance     int            `json:"foodSpawnChance"`
+	MinimumFood         int            `json:"minimumFood"`
+	HazardDamagePerTurn int            `json:"hazardDamagePerTurn"`
 	HazardMap           string         `json:"hazardMap"`
 	HazardMapAuthor     string         `json:"hazardMapAuthor"`
 	RoyaleSettings      RoyaleSettings `json:"royale"`
@@ -34,7 +34,7 @@ type Settings struct {
 }
 
 // Get a random number generator initialized based on the seed and current turn.
-func (settings Settings) GetRand(turn int32) Rand {
+func (settings Settings) GetRand(turn int) Rand {
 	// Allow overriding the random generator for testing
 	if settings.rand != nil {
 		return settings.rand
@@ -65,7 +65,7 @@ func (settings Settings) WithSeed(seed int64) Settings {
 // RoyaleSettings contains settings that are specific to the "royale" game mode
 type RoyaleSettings struct {
 	seed              int64
-	ShrinkEveryNTurns int32 `json:"shrinkEveryNTurns"`
+	ShrinkEveryNTurns int `json:"shrinkEveryNTurns"`
 }
 
 // SquadSettings contains settings that are specific to the "squad" game mode
@@ -132,9 +132,9 @@ func (rb *rulesetBuilder) AddSnakeToSquad(snakeID, squadName string) *rulesetBui
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
 func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	standardRuleset := &StandardRuleset{
-		FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
-		MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
-		HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
+		FoodSpawnChance:     paramsInt(rb.params, ParamFoodSpawnChance, 0),
+		MinimumFood:         paramsInt(rb.params, ParamMinimumFood, 0),
+		HazardDamagePerTurn: paramsInt(rb.params, ParamHazardDamagePerTurn, 0),
 		HazardMap:           rb.params[ParamHazardMap],
 		HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
 	}
@@ -153,7 +153,7 @@ func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 		return &RoyaleRuleset{
 			StandardRuleset:   *standardRuleset,
 			Seed:              rb.seed,
-			ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
+			ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
 		}
 	case GameTypeSolo:
 		return &SoloRuleset{
@@ -192,14 +192,14 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRulese
 		name:     name,
 		pipeline: p,
 		settings: Settings{
-			FoodSpawnChance:     paramsInt32(rb.params, ParamFoodSpawnChance, 0),
-			MinimumFood:         paramsInt32(rb.params, ParamMinimumFood, 0),
-			HazardDamagePerTurn: paramsInt32(rb.params, ParamHazardDamagePerTurn, 0),
+			FoodSpawnChance:     paramsInt(rb.params, ParamFoodSpawnChance, 0),
+			MinimumFood:         paramsInt(rb.params, ParamMinimumFood, 0),
+			HazardDamagePerTurn: paramsInt(rb.params, ParamHazardDamagePerTurn, 0),
 			HazardMap:           rb.params[ParamHazardMap],
 			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
 			RoyaleSettings: RoyaleSettings{
 				seed:              rb.seed,
-				ShrinkEveryNTurns: paramsInt32(rb.params, ParamShrinkEveryNTurns, 0),
+				ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
 			},
 			SquadSettings: SquadSettings{
 				squadMap:            rb.squadMap(),
@@ -224,14 +224,14 @@ func paramsBool(params map[string]string, paramName string, defaultValue bool) b
 	return defaultValue
 }
 
-// paramsInt32 returns the int32 value for the specified parameter.
+// paramsInt returns the int value for the specified parameter.
 // If the parameter doesn't exist, the default value will be returned.
 // If the parameter does exist, but is not a valid int, the default value will be returned.
-func paramsInt32(params map[string]string, paramName string, defaultValue int32) int32 {
+func paramsInt(params map[string]string, paramName string, defaultValue int) int {
 	if val, ok := params[paramName]; ok {
 		i, err := strconv.Atoi(val)
 		if err == nil {
-			return int32(i)
+			return i
 		}
 	}
 	return defaultValue

@@ -21,7 +21,7 @@ type RoyaleRuleset struct {
 
 	Seed int64
 
-	ShrinkEveryNTurns int32
+	ShrinkEveryNTurns int
 }
 
 func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
@@ -58,9 +58,9 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	randGenerator := rand.New(rand.NewSource(settings.RoyaleSettings.seed))
 
 	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
-	minX, maxX := int32(0), b.Width-1
-	minY, maxY := int32(0), b.Height-1
-	for i := int32(0); i < numShrinks; i++ {
+	minX, maxX := 0, b.Width-1
+	minY, maxY := 0, b.Height-1
+	for i := 0; i < numShrinks; i++ {
 		switch randGenerator.Intn(4) {
 		case 0:
 			minX += 1
@@ -73,8 +73,8 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 		}
 	}
 
-	for x := int32(0); x < b.Width; x++ {
-		for y := int32(0); y < b.Height; y++ {
+	for x := 0; x < b.Width; x++ {
+		for y := 0; y < b.Height; y++ {
 			if x < minX || x > maxX || y < minY || y > maxY {
 				b.Hazards = append(b.Hazards, Point{x, y})
 			}

@@ -6,9 +6,9 @@ import (
 )
 
 type StandardRuleset struct {
-	FoodSpawnChance     int32 // [0, 100]
-	MinimumFood         int32
-	HazardDamagePerTurn int32
+	FoodSpawnChance     int // [0, 100]
+	MinimumFood         int
+	HazardDamagePerTurn int
 	HazardMap           string // optional
 	HazardMapAuthor     string // optional
 }
@@ -318,7 +318,7 @@ func snakeIsOutOfHealth(s *Snake) bool {
 	return s.Health <= 0
 }
 
-func snakeIsOutOfBounds(s *Snake, boardWidth int32, boardHeight int32) bool {
+func snakeIsOutOfBounds(s *Snake, boardWidth int, boardHeight int) bool {
 	for _, point := range s.Body {
 		if (point.X < 0) || (point.X >= boardWidth) {
 			return true
@@ -391,11 +391,11 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
-	numCurrentFood := int32(len(b.Food))
+	numCurrentFood := int(len(b.Food))
 	if numCurrentFood < settings.MinimumFood {
 		return false, PlaceFoodRandomly(GlobalRand, b, settings.MinimumFood-numCurrentFood)
 	}
-	if settings.FoodSpawnChance > 0 && int32(rand.Intn(100)) < settings.FoodSpawnChance {
+	if settings.FoodSpawnChance > 0 && int(rand.Intn(100)) < settings.FoodSpawnChance {
 		return false, PlaceFoodRandomly(GlobalRand, b, 1)
 	}
 	return false, nil

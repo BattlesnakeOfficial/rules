@@ -250,16 +250,16 @@ func TestEdgeCrossingEating(t *testing.T) {
 
 func TestWrap(t *testing.T) {
 	// no wrap
-	assert.Equal(t, int32(0), wrap(0, 0, 0))
-	assert.Equal(t, int32(0), wrap(0, 1, 0))
-	assert.Equal(t, int32(0), wrap(0, 0, 1))
-	assert.Equal(t, int32(1), wrap(1, 0, 1))
+	assert.Equal(t, 0, wrap(0, 0, 0))
+	assert.Equal(t, 0, wrap(0, 1, 0))
+	assert.Equal(t, 0, wrap(0, 0, 1))
+	assert.Equal(t, 1, wrap(1, 0, 1))
 
 	// wrap to min
-	assert.Equal(t, int32(0), wrap(2, 0, 1))
+	assert.Equal(t, 0, wrap(2, 0, 1))
 
 	// wrap to max
-	assert.Equal(t, int32(1), wrap(-1, 0, 1))
+	assert.Equal(t, 1, wrap(-1, 0, 1))
 }
 
 // Checks that snakes moving out of bounds get wrapped to the other side.

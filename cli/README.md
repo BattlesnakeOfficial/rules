@@ -32,25 +32,25 @@ Usage:
   battlesnake play [flags]
 
 Flags:
-  -W, --width int32                 Width of Board (default 11)
-  -H, --height int32                Height of Board (default 11)
+  -W, --width int                 Width of Board (default 11)
+  -H, --height int                Height of Board (default 11)
   -n, --name stringArray            Name of Snake
   -u, --url stringArray             URL of Snake
   -S, --squad stringArray           Squad of Snake
-  -t, --timeout int32               Request Timeout (default 500)
+  -t, --timeout int               Request Timeout (default 500)
   -s, --sequential                  Use Sequential Processing
   -g, --gametype string             Type of Game Rules (default "standard")
   -v, --viewmap                     View the Map Each Turn
   -c, --color                       Use color to draw the map
   -r, --seed int                    Random Seed (default 1649588785026867900)
-  -d, --delay int32                 Turn Delay in Milliseconds
-  -D, --duration int32              Minimum Turn Duration in Milliseconds
+  -d, --delay int                 Turn Delay in Milliseconds
+  -D, --duration int              Minimum Turn Duration in Milliseconds
       --debug-requests              Log body of all requests sent
   -o, --output string               File path to output game state to. Existing files will be overwritten
-      --foodSpawnChance int32       Percentage chance of spawning a new food every round (default 15)
-      --minimumFood int32           Minimum food to keep on the board every turn (default 1)
-      --hazardDamagePerTurn int32   Health damage a snake will take when ending its turn in a hazard (default 14)
-      --shrinkEveryNTurns int32     In Royale mode, the number of turns between generating new hazards (default 25)
+      --foodSpawnChance int       Percentage chance of spawning a new food every round (default 15)
+      --minimumFood int           Minimum food to keep on the board every turn (default 1)
+      --hazardDamagePerTurn int   Health damage a snake will take when ending its turn in a hazard (default 14)
+      --shrinkEveryNTurns int     In Royale mode, the number of turns between generating new hazards (default 25)
   -h, --help                        help for play
 
 Global Flags:

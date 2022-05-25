@@ -19,8 +19,8 @@ func sortPoints(p []Point) {
 
 func TestCreateDefaultBoardState(t *testing.T) {
 	tests := []struct {
-		Height          int32
-		Width           int32
+		Height          int
+		Width           int
 		IDs             []string
 		ExpectedNumFood int
 		Err             error
@@ -196,15 +196,15 @@ func TestPlaceSnakesDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.BoardState.Width, test.BoardState.Height, len(test.SnakeIDs)), func(t *testing.T) {
-			require.Equal(t, test.BoardState.Width*test.BoardState.Height, int32(len(GetUnoccupiedPoints(test.BoardState, true))))
+			require.Equal(t, test.BoardState.Width*test.BoardState.Height, len(GetUnoccupiedPoints(test.BoardState, true)))
 			err := PlaceSnakesAutomatically(MaxRand, test.BoardState, test.SnakeIDs)
 			require.Equal(t, test.Err, err, "Snakes: %d", len(test.BoardState.Snakes))
 			if err == nil {
 				for i := 0; i < len(test.BoardState.Snakes); i++ {
 					require.Len(t, test.BoardState.Snakes[i].Body, 3)
 					for _, point := range test.BoardState.Snakes[i].Body {
-						require.GreaterOrEqual(t, point.X, int32(0))
-						require.GreaterOrEqual(t, point.Y, int32(0))
+						require.GreaterOrEqual(t, point.X, 0)
+						require.GreaterOrEqual(t, point.Y, 0)
 						require.Less(t, point.X, test.BoardState.Width)
 						require.Less(t, point.Y, test.BoardState.Height)
 					}
@@ -400,8 +400,8 @@ func TestPlaceFood(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, len(test.BoardState.Food))
 		for _, point := range test.BoardState.Food {
-			require.GreaterOrEqual(t, point.X, int32(0))
-			require.GreaterOrEqual(t, point.Y, int32(0))
+			require.GreaterOrEqual(t, point.X, 0)
+			require.GreaterOrEqual(t, point.Y, 0)
 			require.Less(t, point.X, test.BoardState.Width)
 			require.Less(t, point.Y, test.BoardState.Height)
 		}
@@ -590,7 +590,7 @@ func TestGetDistanceBetweenPoints(t *testing.T) {
 	tests := []struct {
 		A        Point
 		B        Point
-		Expected int32
+		Expected int
 	}{
 		{Point{0, 0}, Point{0, 0}, 0},
 		{Point{0, 0}, Point{1, 0}, 1},
@@ -611,8 +611,8 @@ func TestGetDistanceBetweenPoints(t *testing.T) {
 
 func TestIsKnownBoardSize(t *testing.T) {
 	tests := []struct {
-		Width    int32
-		Height   int32
+		Width    int
+		Height   int
 		Expected bool
 	}{
 		{1, 1, false},

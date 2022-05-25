@@ -35,28 +35,28 @@ type SnakeState struct {
 }
 
 var GameId string
-var Turn int32
+var Turn int
 var HttpClient http.Client
-var Width int32
-var Height int32
+var Width int
+var Height int
 var Names []string
 var URLs []string
 var Squads []string
-var Timeout int32
-var TurnDuration int32
+var Timeout int
+var TurnDuration int
 var Sequential bool
 var GameType string
 var ViewMap bool
 var UseColor bool
 var Seed int64
-var TurnDelay int32
+var TurnDelay int
 var DebugRequests bool
 var Output string
 
-var FoodSpawnChance int32
-var MinimumFood int32
-var HazardDamagePerTurn int32
-var ShrinkEveryNTurns int32
+var FoodSpawnChance int
+var MinimumFood int
+var HazardDamagePerTurn int
+var ShrinkEveryNTurns int
 
 var defaultConfig = map[string]string{
 	// default to standard ruleset
@@ -79,26 +79,26 @@ var playCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(playCmd)
 
-	playCmd.Flags().Int32VarP(&Width, "width", "W", 11, "Width of Board")
-	playCmd.Flags().Int32VarP(&Height, "height", "H", 11, "Height of Board")
+	playCmd.Flags().IntVarP(&Width, "width", "W", 11, "Width of Board")
+	playCmd.Flags().IntVarP(&Height, "height", "H", 11, "Height of Board")
 	playCmd.Flags().StringArrayVarP(&Names, "name", "n", nil, "Name of Snake")
 	playCmd.Flags().StringArrayVarP(&URLs, "url", "u", nil, "URL of Snake")
 	playCmd.Flags().StringArrayVarP(&Names, "squad", "S", nil, "Squad of Snake")
-	playCmd.Flags().Int32VarP(&Timeout, "timeout", "t", 500, "Request Timeout")
+	playCmd.Flags().IntVarP(&Timeout, "timeout", "t", 500, "Request Timeout")
 	playCmd.Flags().BoolVarP(&Sequential, "sequential", "s", false, "Use Sequential Processing")
 	playCmd.Flags().StringVarP(&GameType, "gametype", "g", "standard", "Type of Game Rules")
 	playCmd.Flags().BoolVarP(&ViewMap, "viewmap", "v", false, "View the Map Each Turn")
 	playCmd.Flags().BoolVarP(&UseColor, "color", "c", false, "Use color to draw the map")
 	playCmd.Flags().Int64VarP(&Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
-	playCmd.Flags().Int32VarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
-	playCmd.Flags().Int32VarP(&TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
+	playCmd.Flags().IntVarP(&TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
+	playCmd.Flags().IntVarP(&TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
 	playCmd.Flags().BoolVar(&DebugRequests, "debug-requests", false, "Log body of all requests sent")
 	playCmd.Flags().StringVarP(&Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
 
-	playCmd.Flags().Int32Var(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
-	playCmd.Flags().Int32Var(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
-	playCmd.Flags().Int32Var(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
-	playCmd.Flags().Int32Var(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
+	playCmd.Flags().IntVar(&FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
+	playCmd.Flags().IntVar(&MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
+	playCmd.Flags().IntVar(&HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
+	playCmd.Flags().IntVar(&ShrinkEveryNTurns, "shrinkEveryNTurns", 25, "In Royale mode, the number of turns between generating new hazards")
 
 	playCmd.Flags().SortFlags = false
 }
@@ -256,7 +256,7 @@ func initializeBoardFromArgs(ruleset rules.Ruleset, snakeStates map[string]Snake
 	return state
 }
 
-func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, snakeStates map[string]SnakeState, turn int32) *rules.BoardState {
+func createNextBoardState(ruleset rules.Ruleset, state *rules.BoardState, snakeStates map[string]SnakeState, turn int) *rules.BoardState {
 	var moves []rules.SnakeMove
 	if Sequential {
 		for _, snakeState := range snakeStates {
@@ -391,7 +391,7 @@ func convertRulesSnake(snake rules.Snake, snakeState SnakeState) client.Snake {
 		Body:    client.CoordFromPointArray(snake.Body),
 		Latency: "0",
 		Head:    client.CoordFromPoint(snake.Body[0]),
-		Length:  int32(len(snake.Body)),
+		Length:  len(snake.Body),
 		Shout:   "",
 		Squad:   snakeState.Squad,
 		Customizations: client.Customizations{
@@ -518,15 +518,15 @@ func parseSnakeColor(color string) (int64, int64, int64) {
 	return 136, 136, 136
 }
 
-func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int32) {
+func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTurn int) {
 	var o bytes.Buffer
 	o.WriteString(fmt.Sprintf("Ruleset: %s, Seed: %d, Turn: %v\n", GameType, Seed, gameTurn))
 	board := make([][]string, state.Width)
 	for i := range board {
 		board[i] = make([]string, state.Height)
 	}
-	for y := int32(0); y < state.Height; y++ {
-		for x := int32(0); x < state.Width; x++ {
+	for y := 0; y < state.Height; y++ {
+		for x := 0; x < state.Width; x++ {
 			if UseColor {
 				board[x][y] = TERM_FG_LIGHTGRAY + "□"
 			} else {
@@ -579,7 +579,7 @@ func printMap(state *rules.BoardState, snakeStates map[string]SnakeState, gameTu
 		if UseColor {
 			o.WriteString(TERM_BG_WHITE)
 		}
-		for x := int32(0); x < state.Width; x++ {
+		for x := 0; x < state.Width; x++ {
 			o.WriteString(board[x][y])
 		}
 		if UseColor {
