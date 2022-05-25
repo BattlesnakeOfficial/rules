@@ -38,10 +38,10 @@ func TestRoyaleName(t *testing.T) {
 func TestRoyaleHazards(t *testing.T) {
 	seed := int64(25543234525)
 	tests := []struct {
-		Width             int32
-		Height            int32
-		Turn              int32
-		ShrinkEveryNTurns int32
+		Width             int
+		Height            int
+		Turn              int
+		ShrinkEveryNTurns int
 		Error             error
 		ExpectedHazards   []Point
 	}{
@@ -128,7 +128,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 30}, Seed: seed, ShrinkEveryNTurns: 10}
 	m := []SnakeMove{{ID: "one", Move: "down"}}
 
-	stateAfterTurn := func(prevState *BoardState, turn int32) *BoardState {
+	stateAfterTurn := func(prevState *BoardState, turn int) *BoardState {
 		nextState := prevState.Clone()
 		nextState.Turn = turn - 1
 		_, err := PopulateHazardsRoyale(nextState, r.Settings(), nil)
@@ -141,7 +141,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	next, err := r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, int32(99), next.Snakes[0].Health)
+	require.Equal(t, 99, next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 10, len(next.Hazards)) // X = 0
 
@@ -149,7 +149,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, int32(99), next.Snakes[0].Health)
+	require.Equal(t, 99, next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards)) // X = 9
 
@@ -157,7 +157,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, int32(69), next.Snakes[0].Health)
+	require.Equal(t, 69, next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 
@@ -165,7 +165,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	next, err = r.CreateNextBoardState(prevState, m)
 	require.NoError(t, err)
 	require.Equal(t, EliminatedByOutOfHealth, next.Snakes[0].EliminatedCause)
-	require.Equal(t, int32(0), next.Snakes[0].Health)
+	require.Equal(t, 0, next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 
@@ -174,7 +174,7 @@ func TestRoyalDamageNextTurn(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, NotEliminated, next.Snakes[0].EliminatedCause)
-	require.Equal(t, int32(100), next.Snakes[0].Health)
+	require.Equal(t, 100, next.Snakes[0].Health)
 	require.Equal(t, Point{9, 0}, next.Snakes[0].Body[0])
 	require.Equal(t, 20, len(next.Hazards))
 }

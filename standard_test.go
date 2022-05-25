@@ -22,8 +22,8 @@ func TestSanity(t *testing.T) {
 	state, err = r.ModifyInitialBoardState(state)
 	require.NoError(t, err)
 	require.NotNil(t, state)
-	require.Equal(t, int32(0), state.Width)
-	require.Equal(t, int32(0), state.Height)
+	require.Equal(t, 0, state.Width)
+	require.Equal(t, 0, state.Height)
 	require.Len(t, state.Food, 0)
 	require.Len(t, state.Snakes, 0)
 
@@ -33,8 +33,8 @@ func TestSanity(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.NotNil(t, next)
-	require.Equal(t, int32(0), state.Width)
-	require.Equal(t, int32(0), state.Height)
+	require.Equal(t, 0, state.Width)
+	require.Equal(t, 0, state.Height)
 	require.Len(t, state.Snakes, 0)
 }
 
@@ -564,9 +564,9 @@ func TestMoveSnakes(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, b.Snakes, 3)
 
-		require.Equal(t, int32(111111), b.Snakes[0].Health)
-		require.Equal(t, int32(222222), b.Snakes[1].Health)
-		require.Equal(t, int32(1), b.Snakes[2].Health)
+		require.Equal(t, 111111, b.Snakes[0].Health)
+		require.Equal(t, 222222, b.Snakes[1].Health)
+		require.Equal(t, 1, b.Snakes[2].Health)
 
 		require.Len(t, b.Snakes[0].Body, 2)
 		require.Len(t, b.Snakes[1].Body, 4)
@@ -804,35 +804,35 @@ func TestReduceSnakeHealth(t *testing.T) {
 	r := StandardRuleset{}
 	_, err := ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
-	require.Equal(t, b.Snakes[0].Health, int32(98))
-	require.Equal(t, b.Snakes[1].Health, int32(1))
-	require.Equal(t, b.Snakes[2].Health, int32(50))
+	require.Equal(t, b.Snakes[0].Health, 98)
+	require.Equal(t, b.Snakes[1].Health, 1)
+	require.Equal(t, b.Snakes[2].Health, 50)
 
 	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
-	require.Equal(t, b.Snakes[0].Health, int32(97))
-	require.Equal(t, b.Snakes[1].Health, int32(0))
-	require.Equal(t, b.Snakes[2].Health, int32(50))
+	require.Equal(t, b.Snakes[0].Health, 97)
+	require.Equal(t, b.Snakes[1].Health, 0)
+	require.Equal(t, b.Snakes[2].Health, 50)
 
 	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
-	require.Equal(t, b.Snakes[0].Health, int32(96))
-	require.Equal(t, b.Snakes[1].Health, int32(-1))
-	require.Equal(t, b.Snakes[2].Health, int32(50))
+	require.Equal(t, b.Snakes[0].Health, 96)
+	require.Equal(t, b.Snakes[1].Health, -1)
+	require.Equal(t, b.Snakes[2].Health, 50)
 
 	_, err = ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
-	require.Equal(t, b.Snakes[0].Health, int32(95))
-	require.Equal(t, b.Snakes[1].Health, int32(-2))
-	require.Equal(t, b.Snakes[2].Health, int32(50))
+	require.Equal(t, b.Snakes[0].Health, 95)
+	require.Equal(t, b.Snakes[1].Health, -2)
+	require.Equal(t, b.Snakes[2].Health, 50)
 }
 
 func TestSnakeIsOutOfHealth(t *testing.T) {
 	tests := []struct {
-		Health   int32
+		Health   int
 		Expected bool
 	}{
-		{Health: math.MinInt32, Expected: true},
+		{Health: math.MinInt, Expected: true},
 		{Health: -10, Expected: true},
 		{Health: -2, Expected: true},
 		{Health: -1, Expected: true},
@@ -840,7 +840,7 @@ func TestSnakeIsOutOfHealth(t *testing.T) {
 		{Health: 1, Expected: false},
 		{Health: 2, Expected: false},
 		{Health: 10, Expected: false},
-		{Health: math.MaxInt32, Expected: false},
+		{Health: math.MaxInt, Expected: false},
 	}
 
 	for _, test := range tests {
@@ -850,16 +850,16 @@ func TestSnakeIsOutOfHealth(t *testing.T) {
 }
 
 func TestSnakeIsOutOfBounds(t *testing.T) {
-	boardWidth := int32(10)
-	boardHeight := int32(100)
+	boardWidth := 10
+	boardHeight := 100
 
 	tests := []struct {
 		Point    Point
 		Expected bool
 	}{
-		{Point{X: math.MinInt32, Y: math.MinInt32}, true},
-		{Point{X: math.MinInt32, Y: 0}, true},
-		{Point{X: 0, Y: math.MinInt32}, true},
+		{Point{X: math.MinInt, Y: math.MinInt}, true},
+		{Point{X: math.MinInt, Y: 0}, true},
+		{Point{X: 0, Y: math.MinInt}, true},
 		{Point{X: -1, Y: -1}, true},
 		{Point{X: -1, Y: 0}, true},
 		{Point{X: 0, Y: -1}, true},
@@ -876,12 +876,12 @@ func TestSnakeIsOutOfBounds(t *testing.T) {
 		{Point{X: 11, Y: 9}, true},
 		{Point{X: 11, Y: 10}, true},
 		{Point{X: 11, Y: 11}, true},
-		{Point{X: math.MaxInt32, Y: 11}, true},
+		{Point{X: math.MaxInt, Y: 11}, true},
 		{Point{X: 9, Y: 99}, false},
 		{Point{X: 9, Y: 100}, true},
 		{Point{X: 9, Y: 101}, true},
-		{Point{X: 9, Y: math.MaxInt32}, true},
-		{Point{X: math.MaxInt32, Y: math.MaxInt32}, true},
+		{Point{X: 9, Y: math.MaxInt}, true},
+		{Point{X: math.MaxInt, Y: math.MaxInt}, true},
 	}
 
 	for _, test := range tests {
@@ -1339,10 +1339,10 @@ func TestMaybeDamageHazards(t *testing.T) {
 
 func TestHazardDamagePerTurn(t *testing.T) {
 	tests := []struct {
-		Health                   int32
-		HazardDamagePerTurn      int32
+		Health                   int
+		HazardDamagePerTurn      int
 		Food                     bool
-		ExpectedHealth           int32
+		ExpectedHealth           int
 		ExpectedEliminationCause string
 		Error                    error
 	}{
@@ -1461,7 +1461,7 @@ func TestMaybeFeedSnakes(t *testing.T) {
 
 func TestMaybeSpawnFoodMinimum(t *testing.T) {
 	tests := []struct {
-		MinimumFood  int32
+		MinimumFood  int
 		Food         []Point
 		ExpectedFood int
 	}{
@@ -1530,7 +1530,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 	tests := []struct {
 		Seed         int64
 		Food         []Point
-		ExpectedFood int32
+		ExpectedFood int
 	}{
 		// Use pre-tested seeds and results
 		{123, []Point{}, 1},
@@ -1556,7 +1556,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		rand.Seed(test.Seed)
 		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
-		require.Equal(t, test.ExpectedFood, int32(len(b.Food)), "Seed %d", test.Seed)
+		require.Equal(t, test.ExpectedFood, len(b.Food), "Seed %d", test.Seed)
 	}
 }
 

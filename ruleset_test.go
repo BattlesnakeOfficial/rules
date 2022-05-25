@@ -172,9 +172,9 @@ func TestRulesetBuilder(t *testing.T) {
 			require.NotNil(t, rsb.Ruleset())
 			require.Equal(t, expected.GameType, rsb.Ruleset().Name())
 			// All the standard settings should always be copied over
-			require.Equal(t, int32(10), rsb.Ruleset().Settings().FoodSpawnChance)
-			require.Equal(t, int32(12), rsb.Ruleset().Settings().HazardDamagePerTurn)
-			require.Equal(t, int32(5), rsb.Ruleset().Settings().MinimumFood)
+			require.Equal(t, 10, rsb.Ruleset().Settings().FoodSpawnChance)
+			require.Equal(t, 12, rsb.Ruleset().Settings().HazardDamagePerTurn)
+			require.Equal(t, 5, rsb.Ruleset().Settings().MinimumFood)
 			require.Equal(t, "test", rsb.Ruleset().Settings().HazardMap)
 			require.Equal(t, "tester", rsb.Ruleset().Settings().HazardMapAuthor)
 		})
@@ -194,7 +194,7 @@ func TestStageFuncContract(t *testing.T) {
 
 func TestRulesetBuilderGetRand(t *testing.T) {
 	var seed int64 = 12345
-	var turn int32 = 5
+	var turn int = 5
 	ruleset := rules.NewRulesetBuilder().WithSeed(seed).PipelineRuleset("example", rules.NewPipeline(rules.StageGameOverStandard))
 
 	rand1 := ruleset.Settings().GetRand(turn)

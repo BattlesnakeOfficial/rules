@@ -12,8 +12,8 @@ func TestConstrictorRulesetInterface(t *testing.T) {
 
 func TestConstrictorModifyInitialBoardState(t *testing.T) {
 	tests := []struct {
-		Height int32
-		Width  int32
+		Height int
+		Width  int
 		IDs    []string
 	}{
 		{1, 1, []string{}},

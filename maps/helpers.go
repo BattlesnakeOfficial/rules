@@ -4,7 +4,7 @@ import "github.com/BattlesnakeOfficial/rules"
 
 // SetupBoard is a shortcut for looking up a map by ID and initializing a new board state with it.
 func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeIDs []string) (*rules.BoardState, error) {
-	boardState := rules.NewBoardState(int32(width), int32(height))
+	boardState := rules.NewBoardState(width, height)
 
 	rules.InitializeSnakes(boardState, snakeIDs)
 

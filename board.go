@@ -3,17 +3,17 @@ package rules
 import "fmt"
 
 type BoardState struct {
-	Turn    int32
-	Height  int32
-	Width   int32
+	Turn    int
+	Height  int
+	Width   int
 	Food    []Point
 	Snakes  []Snake
 	Hazards []Point
 }
 
 type Point struct {
-	X int32
-	Y int32
+	X int
+	Y int
 }
 
 // Makes it easier to copy sample points out of Go logs and test failures.
@@ -24,14 +24,14 @@ func (p Point) GoString() string {
 type Snake struct {
 	ID               string
 	Body             []Point
-	Health           int32
+	Health           int
 	EliminatedCause  string
-	EliminatedOnTurn int32
+	EliminatedOnTurn int
 	EliminatedBy     string
 }
 
 // NewBoardState returns an empty but fully initialized BoardState
-func NewBoardState(width, height int32) *BoardState {
+func NewBoardState(width, height int) *BoardState {
 	return &BoardState{
 		Turn:    0,
 		Height:  height,
@@ -66,7 +66,7 @@ func (prevState *BoardState) Clone() *BoardState {
 // "default" board state with snakes and food.
 // In a real game, the engine may generate the board without calling this
 // function, or customize the results based on game-specific settings.
-func CreateDefaultBoardState(rand Rand, width int32, height int32, snakeIDs []string) (*BoardState, error) {
+func CreateDefaultBoardState(rand Rand, width int, height int, snakeIDs []string) (*BoardState, error) {
 	initialBoardState := NewBoardState(width, height)
 
 	err := PlaceSnakesAutomatically(rand, initialBoardState, snakeIDs)
@@ -101,7 +101,7 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 	}
 
 	// Create start 8 points
-	mn, md, mx := int32(1), (b.Width-1)/2, b.Width-2
+	mn, md, mx := 1, (b.Width-1)/2, b.Width-2
 	cornerPoints := []Point{
 		{mn, mn},
 		{mn, mx},
@@ -207,7 +207,7 @@ func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 	if isKnownBoardSize(b) {
 		return PlaceFoodFixed(rand, b)
 	}
-	return PlaceFoodRandomly(rand, b, int32(len(b.Snakes)))
+	return PlaceFoodRandomly(rand, b, len(b.Snakes))
 }
 
 func PlaceFoodFixed(rand Rand, b *BoardState) error {
@@ -289,8 +289,8 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 }
 
 // PlaceFoodRandomly adds up to n new food to the board in random unoccupied squares
-func PlaceFoodRandomly(rand Rand, b *BoardState, n int32) error {
-	for i := int32(0); i < n; i++ {
+func PlaceFoodRandomly(rand Rand, b *BoardState, n int) error {
+	for i := 0; i < n; i++ {
 		unoccupiedPoints := GetUnoccupiedPoints(b, false)
 		if len(unoccupiedPoints) > 0 {
 			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
@@ -300,7 +300,7 @@ func PlaceFoodRandomly(rand Rand, b *BoardState, n int32) error {
 	return nil
 }
 
-func absInt32(n int32) int32 {
+func absInt(n int) int {
 	if n < 0 {
 		return -n
 	}
@@ -323,10 +323,10 @@ func GetEvenUnoccupiedPoints(b *BoardState) []Point {
 }
 
 func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
-	pointIsOccupied := map[int32]map[int32]bool{}
+	pointIsOccupied := map[int]map[int]bool{}
 	for _, p := range b.Food {
 		if _, xExists := pointIsOccupied[p.X]; !xExists {
-			pointIsOccupied[p.X] = map[int32]bool{}
+			pointIsOccupied[p.X] = map[int]bool{}
 		}
 		pointIsOccupied[p.X][p.Y] = true
 	}
@@ -336,7 +336,7 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 		}
 		for i, p := range snake.Body {
 			if _, xExists := pointIsOccupied[p.X]; !xExists {
-				pointIsOccupied[p.X] = map[int32]bool{}
+				pointIsOccupied[p.X] = map[int]bool{}
 			}
 			pointIsOccupied[p.X][p.Y] = true
 
@@ -349,7 +349,7 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 				}
 				for _, nextP := range nextMovePoints {
 					if _, xExists := pointIsOccupied[nextP.X]; !xExists {
-						pointIsOccupied[nextP.X] = map[int32]bool{}
+						pointIsOccupied[nextP.X] = map[int]bool{}
 					}
 					pointIsOccupied[nextP.X][nextP.Y] = true
 				}
@@ -358,8 +358,8 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	}
 
 	unoccupiedPoints := []Point{}
-	for x := int32(0); x < b.Width; x++ {
-		for y := int32(0); y < b.Height; y++ {
+	for x := 0; x < b.Width; x++ {
+		for y := 0; y < b.Height; y++ {
 			if _, xExists := pointIsOccupied[x]; xExists {
 				if isOccupied, yExists := pointIsOccupied[x][y]; yExists {
 					if isOccupied {
@@ -373,8 +373,8 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	return unoccupiedPoints
 }
 
-func getDistanceBetweenPoints(a, b Point) int32 {
-	return absInt32(a.X-b.X) + absInt32(a.Y-b.Y)
+func getDistanceBetweenPoints(a, b Point) int {
+	return absInt(a.X-b.X) + absInt(a.Y-b.Y)
 }
 
 func isKnownBoardSize(b *BoardState) bool {

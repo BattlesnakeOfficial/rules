@@ -43,7 +43,7 @@ type Editor interface {
 	RemoveHazard(rules.Point)
 
 	// Updates the body and health of a snake.
-	PlaceSnake(id string, body []rules.Point, health int32)
+	PlaceSnake(id string, body []rules.Point, health int)
 }
 
 // An Editor backed by a BoardState.
@@ -91,7 +91,7 @@ func (editor *BoardStateEditor) RemoveHazard(p rules.Point) {
 	}
 }
 
-func (editor *BoardStateEditor) PlaceSnake(id string, body []rules.Point, health int32) {
+func (editor *BoardStateEditor) PlaceSnake(id string, body []rules.Point, health int) {
 	for index, snake := range editor.Snakes {
 		if snake.ID == id {
 			editor.Snakes[index].Body = body

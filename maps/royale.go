@@ -47,9 +47,9 @@ func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 	randGenerator := settings.GetRand(0)
 
 	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
-	minX, maxX := int32(0), lastBoardState.Width-1
-	minY, maxY := int32(0), lastBoardState.Height-1
-	for i := int32(0); i < numShrinks; i++ {
+	minX, maxX := 0, lastBoardState.Width-1
+	minY, maxY := 0, lastBoardState.Height-1
+	for i := 0; i < numShrinks; i++ {
 		switch randGenerator.Intn(4) {
 		case 0:
 			minX += 1
@@ -62,8 +62,8 @@ func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 		}
 	}
 
-	for x := int32(0); x < lastBoardState.Width; x++ {
-		for y := int32(0); y < lastBoardState.Height; y++ {
+	for x := 0; x < lastBoardState.Width; x++ {
+		for y := 0; y < lastBoardState.Height; y++ {
 			if x < minX || x > maxX || y < minY || y > maxY {
 				editor.AddHazard(rules.Point{X: x, Y: y})
 			}

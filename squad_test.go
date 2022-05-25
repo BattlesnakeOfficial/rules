@@ -121,8 +121,8 @@ func TestSquadShareSquadHealth(t *testing.T) {
 	testSnakes := []struct {
 		SnakeID        string
 		SquadID        string
-		Health         int32
-		ExpectedHealth int32
+		Health         int
+		ExpectedHealth int
 	}{
 		// Red Squad
 		{"R1", "red", 11, 88},

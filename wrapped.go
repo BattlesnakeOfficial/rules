@@ -52,7 +52,7 @@ func (r *WrappedRuleset) IsGameOver(b *BoardState) (bool, error) {
 	return GameOverStandard(b, r.Settings(), nil)
 }
 
-func wrap(value, min, max int32) int32 {
+func wrap(value, min, max int) int {
 	if value < min {
 		return max
 	}
