@@ -25,7 +25,7 @@ func (m ArcadeMazeMap) Meta() Metadata {
 func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
 
-	if initialBoardState.Width != 19 && initialBoardState.Height != 21 {
+	if initialBoardState.Width != 19 || initialBoardState.Height != 21 {
 		return rules.RulesetError("This map can only be played on a 19X21 board")
 	}
 
