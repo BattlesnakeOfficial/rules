@@ -87,3 +87,37 @@ func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rule
 	}
 	return nil
 }
+
+// drawRing draws a ring of hazard points offset from the outer edge of the board
+func drawRing(bw, bh, hOffset, vOffset int) []rules.Point {
+	// calculate the start/end point of the horizontal borders
+	xStart := hOffset - 1
+	xEnd := bw - hOffset
+
+	// calculate start/end point of the vertical borders
+	yStart := vOffset - 1
+	yEnd := bh - vOffset
+
+	// we can pre-determine how many points will be in the ring and allocate a slice of exactly that size
+	numPoints := 2*(xEnd-xStart+1) + 2*(yEnd-yStart+1)
+	numPoints = numPoints - 4 // remove the overlapping 4 points
+	hazards := make([]rules.Point, 0, numPoints)
+
+	// draw horizontal walls
+	for x := xStart; x <= xEnd; x++ {
+		hazards = append(hazards,
+			rules.Point{X: x, Y: yStart},
+			rules.Point{X: x, Y: yEnd},
+		)
+	}
+
+	// draw vertical walls, but don't include corners that the horizontal walls already included
+	for y := yStart + 1; y <= yEnd-1; y++ {
+		hazards = append(hazards,
+			rules.Point{X: xStart, Y: y},
+			rules.Point{X: xEnd, Y: y},
+		)
+	}
+
+	return hazards
+}
