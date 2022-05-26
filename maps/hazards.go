@@ -7,7 +7,8 @@ import (
 type InnerBorderHazardsMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("hz_inner_wall", RoyaleHazardsMap{})
+	globalRegistry.RegisterMap("hz_inner_wall", InnerBorderHazardsMap{})
+	globalRegistry.RegisterMap("hz_rings", ConcentricRingsHazardsMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -41,10 +42,6 @@ func (m InnerBorderHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, set
 }
 
 type ConcentricRingsHazardsMap struct{}
-
-func init() {
-	globalRegistry.RegisterMap("hz_rings", RoyaleHazardsMap{})
-}
 
 func (m ConcentricRingsHazardsMap) ID() string {
 	return "hz_rings"
