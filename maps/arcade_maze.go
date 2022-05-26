@@ -4,25 +4,25 @@ import (
 	"github.com/BattlesnakeOfficial/rules"
 )
 
-type NamcapMap struct{}
+type ArcadeMazeMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("namcap", NamcapMap{})
+	globalRegistry.RegisterMap("arcade_maze", ArcadeMazeMap{})
 }
 
-func (m NamcapMap) ID() string {
-	return "namcap"
+func (m ArcadeMazeMap) ID() string {
+	return "arcade_maze"
 }
 
-func (m NamcapMap) Meta() Metadata {
+func (m ArcadeMazeMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Namcap",
-		Description: "Generic dot eating game with supernatural enemies",
+		Name:        "Arcade Maze",
+		Description: "Generic arcade maze map with hazard walls",
 		Author:      "Battlesnake",
 	}
 }
 
-func (m NamcapMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
 
 	if initialBoardState.Width != 19 && initialBoardState.Height != 21 {
@@ -49,46 +49,64 @@ func (m NamcapMap) SetupBoard(initialBoardState *rules.BoardState, settings rule
 		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, snake.Health)
 	}
 
-	for _, hazard := range NamcapHazards {
+	for _, hazard := range ArcadeMazeHazards {
 		editor.AddHazard(hazard)
 	}
 
-	foodPositions := []rules.Point{
-		{X: 6, Y: 9},
-		{X: 6, Y: 13},
-		{X: 12, Y: 9},
-		{X: 12, Y: 13},
-	}
-
-	for _, food := range foodPositions {
-		editor.AddFood(food)
-	}
+	// Add food in center
+	editor.AddFood(rules.Point{X: 9, Y: 11})
 
 	return nil
 }
 
-func (m NamcapMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
 
 	// Respect FoodSpawnChance setting
-	if rand.Intn(100) > int(settings.FoodSpawnChance) {
+	if rand.Intn(100) > settings.FoodSpawnChance {
 		return nil
 	}
 
-	// Don't spawn food on top of hazards - if we pick a hazard tile, skip this turn
-	foodX, foodY := rand.Intn(int(lastBoardState.Width)), rand.Intn(int(lastBoardState.Height))
-	for _, hazard := range lastBoardState.Hazards {
-		if hazard.X == int32(foodX) && hazard.Y == int32(foodY) {
-			return nil
-		}
+	foodPositions := []rules.Point{
+		{X: 3, Y: 11},
+		{X: 9, Y: 11},
+		{X: 15, Y: 11},
 	}
 
-	editor.AddFood(rules.Point{X: int32(foodX), Y: int32(foodY)})
+	rand.Shuffle(len(foodPositions), func(i int, j int) {
+		foodPositions[i], foodPositions[j] = foodPositions[j], foodPositions[i]
+	})
+
+	for _, food := range foodPositions {
+		tileIsOccupied := false
+
+	snakeLoop:
+		for _, snake := range lastBoardState.Snakes {
+			for _, point := range snake.Body {
+				if point.X == food.X && point.Y == food.Y {
+					tileIsOccupied = true
+					break snakeLoop
+				}
+			}
+		}
+
+		for _, existingFood := range lastBoardState.Food {
+			if existingFood.X == food.X && existingFood.Y == food.Y {
+				tileIsOccupied = true
+				break
+			}
+		}
+
+		if !tileIsOccupied {
+			editor.AddFood(food)
+			break
+		}
+	}
 
 	return nil
 }
 
-var NamcapHazards []rules.Point = []rules.Point{
+var ArcadeMazeHazards []rules.Point = []rules.Point{
 	{X: 0, Y: 20},
 	{X: 1, Y: 20},
 	{X: 2, Y: 20},
@@ -173,27 +191,16 @@ var NamcapHazards []rules.Point = []rules.Point{
 	{X: 2, Y: 12},
 	{X: 3, Y: 12},
 	{X: 5, Y: 12},
-	{X: 7, Y: 12},
-	{X: 8, Y: 12},
-	{X: 10, Y: 12},
-	{X: 11, Y: 12},
 	{X: 13, Y: 12},
 	{X: 15, Y: 12},
 	{X: 16, Y: 12},
 	{X: 17, Y: 12},
 	{X: 18, Y: 12},
-	{X: 7, Y: 11},
-	{X: 11, Y: 11},
 	{X: 0, Y: 10},
 	{X: 1, Y: 10},
 	{X: 2, Y: 10},
 	{X: 3, Y: 10},
 	{X: 5, Y: 10},
-	{X: 7, Y: 10},
-	{X: 8, Y: 10},
-	{X: 9, Y: 10},
-	{X: 10, Y: 10},
-	{X: 11, Y: 10},
 	{X: 13, Y: 10},
 	{X: 15, Y: 10},
 	{X: 16, Y: 10},
