@@ -64,3 +64,28 @@ func TestConcentricRingsHazardsMap(t *testing.T) {
 		})
 	}
 }
+
+func TestColumnsHazardsMap(t *testing.T) {
+	m := maps.ColumnsHazardsMap{}
+	state := rules.NewBoardState(11, 11)
+	settings := rules.Settings{}
+
+	// ensure the ring of hazards is added to the board at setup
+	editor := maps.NewBoardStateEditor(state)
+	require.Empty(t, state.Hazards)
+	err := m.SetupBoard(state, settings, editor)
+	require.NoError(t, err)
+	require.NotEmpty(t, state.Hazards)
+	require.Len(t, state.Hazards, 25)
+
+	// a few spot checks
+	require.Contains(t, state.Hazards, rules.Point{X: 1, Y: 1})
+	require.Contains(t, state.Hazards, rules.Point{X: 1, Y: 5})
+	require.Contains(t, state.Hazards, rules.Point{X: 9, Y: 1})
+	require.Contains(t, state.Hazards, rules.Point{X: 9, Y: 9})
+	require.NotContains(t, state.Hazards, rules.Point{X: 0, Y: 1})
+	require.NotContains(t, state.Hazards, rules.Point{X: 8, Y: 4})
+	require.NotContains(t, state.Hazards, rules.Point{X: 2, Y: 2})
+	require.NotContains(t, state.Hazards, rules.Point{X: 4, Y: 9})
+	require.NotContains(t, state.Hazards, rules.Point{X: 1, Y: 0})
+}

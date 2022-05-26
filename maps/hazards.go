@@ -9,6 +9,7 @@ type InnerBorderHazardsMap struct{}
 func init() {
 	globalRegistry.RegisterMap("hz_inner_wall", InnerBorderHazardsMap{})
 	globalRegistry.RegisterMap("hz_rings", ConcentricRingsHazardsMap{})
+	globalRegistry.RegisterMap("hz_columns", ColumnsHazardsMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -79,5 +80,39 @@ func (m ConcentricRingsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 }
 
 func (m ConcentricRingsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+}
+
+type ColumnsHazardsMap struct{}
+
+func (m ColumnsHazardsMap) ID() string {
+	return "hz_columns"
+}
+
+func (m ColumnsHazardsMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_columns",
+		Description: "Creates a static map on turn 0 that fills in odd squares, i.e. (1,1), (1,3), (3,3) ... with hazard sauce",
+		Author:      "Battlesnake",
+	}
+}
+
+func (m ColumnsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := (StandardMap{}).SetupBoard(lastBoardState, settings, editor); err != nil {
+		return err
+	}
+
+	for x := 0; x < lastBoardState.Width; x++ {
+		for y := 0; y < lastBoardState.Height; y++ {
+			if x%2 == 1 && y%2 == 1 {
+				editor.AddHazard(rules.Point{X: x, Y: y})
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m ColumnsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 }
