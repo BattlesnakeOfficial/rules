@@ -2,7 +2,6 @@ package maps
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/BattlesnakeOfficial/rules"
 )
@@ -95,7 +94,6 @@ func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rule
 
 // drawRing draws a ring of hazard points offset from the outer edge of the board
 func drawRing(bw, bh, hOffset, vOffset int) ([]rules.Point, error) {
-	fmt.Println(bw, bh, hOffset, vOffset)
 	if bw < 1 {
 		return nil, errors.New("board width too small")
 	}
