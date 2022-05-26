@@ -37,3 +37,30 @@ func TestInnerBorderHazardsMap(t *testing.T) {
 		})
 	}
 }
+
+func TestConcentricRingsHazardsMap(t *testing.T) {
+
+	tests := []struct {
+		boardSize       int
+		expectedHazards int
+	}{
+		{11, 48},
+	}
+
+	for _, tc := range tests {
+
+		t.Run(fmt.Sprintf("%dx%d", tc.boardSize, tc.boardSize), func(t *testing.T) {
+			m := maps.ConcentricRingsHazardsMap{}
+			state := rules.NewBoardState(tc.boardSize, tc.boardSize)
+			settings := rules.Settings{}
+
+			// ensure the ring of hazards is added to the board at setup
+			editor := maps.NewBoardStateEditor(state)
+			require.Empty(t, state.Hazards)
+			err := m.SetupBoard(state, settings, editor)
+			require.NoError(t, err)
+			require.NotEmpty(t, state.Hazards)
+			require.Len(t, state.Hazards, tc.expectedHazards)
+		})
+	}
+}
