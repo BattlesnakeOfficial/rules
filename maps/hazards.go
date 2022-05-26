@@ -29,7 +29,11 @@ func (m InnerBorderHazardsMap) SetupBoard(lastBoardState *rules.BoardState, sett
 	}
 
 	// draw the initial, single ring of hazards
-	hazards := drawRing(lastBoardState.Width, lastBoardState.Height, 2, 2)
+	hazards, err := drawRing(lastBoardState.Width, lastBoardState.Height, 2, 2)
+	if err != nil {
+		return err
+	}
+
 	for _, p := range hazards {
 		editor.AddHazard(p)
 	}
@@ -62,7 +66,10 @@ func (m ConcentricRingsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 
 	// draw concentric rings of hazards
 	for offset := 2; offset < lastBoardState.Width/2; offset += 2 {
-		hazards := drawRing(lastBoardState.Width, lastBoardState.Height, offset, offset)
+		hazards, err := drawRing(lastBoardState.Width, lastBoardState.Height, offset, offset)
+		if err != nil {
+			return err
+		}
 		for _, p := range hazards {
 			editor.AddHazard(p)
 		}

@@ -8,7 +8,38 @@ import (
 )
 
 func TestDrawRing(t *testing.T) {
-	ring := drawRing(11, 11, 2, 2)
+	_, err := drawRing(0, 11, 2, 2)
+	require.Equal(t, "board width too small", err.Error())
+
+	_, err = drawRing(11, 0, 2, 2)
+	require.Equal(t, "board height too small", err.Error())
+
+	_, err = drawRing(11, 11, 10, 2)
+	require.Equal(t, "horizontal offset too large", err.Error())
+
+	_, err = drawRing(11, 11, 2, 10)
+	require.Equal(t, "vertical offset too large", err.Error())
+
+	_, err = drawRing(11, 11, 0, 2)
+	require.Equal(t, "horizontal offset too small", err.Error())
+
+	_, err = drawRing(11, 11, 2, 0)
+	require.Equal(t, "vertical offset too small", err.Error())
+
+	_, err = drawRing(19, 1, 4, 4)
+	require.Equal(t, "vertical offset too large", err.Error())
+
+	_, err = drawRing(19, 1, 6, 6)
+	require.Equal(t, "vertical offset too large", err.Error())
+
+	_, err = drawRing(14, 7, 6, 6)
+	require.Equal(t, "vertical offset too large", err.Error())
+
+	_, err = drawRing(18, 10, 8, 8)
+	require.NoError(t, err)
+
+	ring, err := drawRing(11, 11, 2, 2)
+	require.NoError(t, err)
 
 	// ring should not be empty
 	require.NotEmpty(t, ring)

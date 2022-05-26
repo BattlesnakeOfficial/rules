@@ -1,6 +1,11 @@
 package maps
 
-import "github.com/BattlesnakeOfficial/rules"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/BattlesnakeOfficial/rules"
+)
 
 // SetupBoard is a shortcut for looking up a map by ID and initializing a new board state with it.
 func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeIDs []string) (*rules.BoardState, error) {
@@ -89,7 +94,32 @@ func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rule
 }
 
 // drawRing draws a ring of hazard points offset from the outer edge of the board
-func drawRing(bw, bh, hOffset, vOffset int) []rules.Point {
+func drawRing(bw, bh, hOffset, vOffset int) ([]rules.Point, error) {
+	fmt.Println(bw, bh, hOffset, vOffset)
+	if bw < 1 {
+		return nil, errors.New("board width too small")
+	}
+
+	if bh < 1 {
+		return nil, errors.New("board height too small")
+	}
+
+	if hOffset >= bw-1 {
+		return nil, errors.New("horizontal offset too large")
+	}
+
+	if vOffset >= bh-1 {
+		return nil, errors.New("vertical offset too large")
+	}
+
+	if hOffset < 1 {
+		return nil, errors.New("horizontal offset too small")
+	}
+
+	if vOffset < 1 {
+		return nil, errors.New("vertical offset too small")
+	}
+
 	// calculate the start/end point of the horizontal borders
 	xStart := hOffset - 1
 	xEnd := bw - hOffset
@@ -99,8 +129,15 @@ func drawRing(bw, bh, hOffset, vOffset int) []rules.Point {
 	yEnd := bh - vOffset
 
 	// we can pre-determine how many points will be in the ring and allocate a slice of exactly that size
-	numPoints := 2*(xEnd-xStart+1) + 2*(yEnd-yStart+1)
-	numPoints = numPoints - 4 // remove the overlapping 4 points
+	numPoints := 2 * (xEnd - xStart + 1) // horizontal hazard points
+
+	// Add vertical walls, if there are any.
+	// Sometimes there are no vertical walls when the ring height is only 2.
+	// In that case, the vertical walls are handled by the horizontal walls
+	if yEnd >= yStart {
+		numPoints += 2*(yEnd-yStart+1) - 4
+	}
+
 	hazards := make([]rules.Point, 0, numPoints)
 
 	// draw horizontal walls
@@ -119,5 +156,5 @@ func drawRing(bw, bh, hOffset, vOffset int) []rules.Point {
 		)
 	}
 
-	return hazards
+	return hazards, nil
 }
