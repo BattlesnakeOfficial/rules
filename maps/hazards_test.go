@@ -70,7 +70,6 @@ func TestColumnsHazardsMap(t *testing.T) {
 	state := rules.NewBoardState(11, 11)
 	settings := rules.Settings{}
 
-	// ensure the ring of hazards is added to the board at setup
 	editor := maps.NewBoardStateEditor(state)
 	require.Empty(t, state.Hazards)
 	err := m.SetupBoard(state, settings, editor)
@@ -88,4 +87,27 @@ func TestColumnsHazardsMap(t *testing.T) {
 	require.NotContains(t, state.Hazards, rules.Point{X: 2, Y: 2})
 	require.NotContains(t, state.Hazards, rules.Point{X: 4, Y: 9})
 	require.NotContains(t, state.Hazards, rules.Point{X: 1, Y: 0})
+}
+
+func TestRiversAndBridgetsHazardsMap(t *testing.T) {
+	// check error handling
+	m := maps.RiverAndBridgesHazardsMap{}
+	settings := rules.Settings{}
+
+	// check error for unsupported board sizes
+	state := rules.NewBoardState(9, 9)
+	editor := maps.NewBoardStateEditor(state)
+	err := m.SetupBoard(state, settings, editor)
+	require.Error(t, err)
+
+	// check all the supported sizes
+	for _, size := range []int{11, 19, 25} {
+		state = rules.NewBoardState(size, size)
+		editor = maps.NewBoardStateEditor(state)
+		require.Empty(t, state.Hazards)
+		err = m.SetupBoard(state, settings, editor)
+		require.NoError(t, err)
+		require.NotEmpty(t, state.Hazards)
+	}
+
 }
