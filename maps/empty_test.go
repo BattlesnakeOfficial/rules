@@ -1,18 +1,19 @@
-package maps
+package maps_test
 
 import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/maps"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEmptyMapInterface(t *testing.T) {
-	var _ GameMap = EmptyMap{}
+	var _ maps.GameMap = maps.EmptyMap{}
 }
 
 func TestEmptyMapSetupBoard(t *testing.T) {
-	m := EmptyMap{}
+	m := maps.EmptyMap{}
 	settings := rules.Settings{}
 
 	tests := []struct {
@@ -122,7 +123,7 @@ func TestEmptyMapSetupBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := rules.NewBoardState(test.initialBoardState.Width, test.initialBoardState.Height)
-			editor := NewBoardStateEditor(nextBoardState)
+			editor := maps.NewBoardStateEditor(nextBoardState)
 			settings := settings.WithRand(test.rand)
 
 			err := m.SetupBoard(test.initialBoardState, settings, editor)
@@ -137,7 +138,7 @@ func TestEmptyMapSetupBoard(t *testing.T) {
 }
 
 func TestEmptyMapUpdateBoard(t *testing.T) {
-	m := EmptyMap{}
+	m := maps.EmptyMap{}
 	initialBoardState := &rules.BoardState{
 		Width:   2,
 		Height:  2,
@@ -151,7 +152,7 @@ func TestEmptyMapUpdateBoard(t *testing.T) {
 	}.WithRand(rules.MaxRand)
 	nextBoardState := initialBoardState.Clone()
 
-	err := m.UpdateBoard(initialBoardState.Clone(), settings, NewBoardStateEditor(nextBoardState))
+	err := m.UpdateBoard(initialBoardState.Clone(), settings, maps.NewBoardStateEditor(nextBoardState))
 
 	require.NoError(t, err)
 	require.Equal(t, &rules.BoardState{

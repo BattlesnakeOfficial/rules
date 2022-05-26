@@ -1,19 +1,20 @@
-package maps
+package maps_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/maps"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStandardMapInterface(t *testing.T) {
-	var _ GameMap = StandardMap{}
+	var _ maps.GameMap = maps.StandardMap{}
 }
 
 func TestStandardMapSetupBoard(t *testing.T) {
-	m := StandardMap{}
+	m := maps.StandardMap{}
 	settings := rules.Settings{}
 
 	tests := []struct {
@@ -143,7 +144,7 @@ func TestStandardMapSetupBoard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := rules.NewBoardState(test.initialBoardState.Width, test.initialBoardState.Height)
-			editor := NewBoardStateEditor(nextBoardState)
+			editor := maps.NewBoardStateEditor(nextBoardState)
 			settings := settings.WithRand(test.rand)
 
 			err := m.SetupBoard(test.initialBoardState, settings, editor)
@@ -158,7 +159,7 @@ func TestStandardMapSetupBoard(t *testing.T) {
 }
 
 func TestStandardMapUpdateBoard(t *testing.T) {
-	m := StandardMap{}
+	m := maps.StandardMap{}
 
 	tests := []struct {
 		name              string
@@ -303,7 +304,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			nextBoardState := test.initialBoardState.Clone()
 			settings := test.settings.WithRand(test.rand)
-			editor := NewBoardStateEditor(nextBoardState)
+			editor := maps.NewBoardStateEditor(nextBoardState)
 
 			err := m.UpdateBoard(test.initialBoardState.Clone(), settings, editor)
 

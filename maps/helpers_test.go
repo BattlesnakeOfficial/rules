@@ -1,32 +1,33 @@
-package maps
+package maps_test
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/maps"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSetupBoard_NotFound(t *testing.T) {
-	_, err := SetupBoard("does_not_exist", rules.Settings{}, 10, 10, []string{})
+	_, err := maps.SetupBoard("does_not_exist", rules.Settings{}, 10, 10, []string{})
 
 	require.EqualError(t, err, rules.ErrorMapNotFound.Error())
 }
 
 func TestSetupBoard_Error(t *testing.T) {
-	testMap := StubMap{
+	testMap := maps.StubMap{
 		Id:    t.Name(),
 		Error: errors.New("bad map update"),
 	}
-	TestMap(testMap.ID(), testMap, func() {
-		_, err := SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{})
+	maps.TestMap(testMap.ID(), testMap, func() {
+		_, err := maps.SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{})
 		require.EqualError(t, err, "bad map update")
 	})
 }
 
 func TestSetupBoard(t *testing.T) {
-	testMap := StubMap{
+	testMap := maps.StubMap{
 		Id: t.Name(),
 		SnakePositions: map[string]rules.Point{
 			"1": {X: 3, Y: 4},
@@ -42,8 +43,8 @@ func TestSetupBoard(t *testing.T) {
 		},
 	}
 
-	TestMap(testMap.ID(), testMap, func() {
-		boardState, err := SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{"1", "2"})
+	maps.TestMap(testMap.ID(), testMap, func() {
+		boardState, err := maps.SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{"1", "2"})
 
 		require.NoError(t, err)
 
@@ -65,7 +66,7 @@ func TestSetupBoard(t *testing.T) {
 }
 
 func TestUpdateBoard(t *testing.T) {
-	testMap := StubMap{
+	testMap := maps.StubMap{
 		Id: t.Name(),
 		SnakePositions: map[string]rules.Point{
 			"1": {X: 3, Y: 4},
@@ -98,8 +99,8 @@ func TestUpdateBoard(t *testing.T) {
 		},
 	}
 
-	TestMap(testMap.ID(), testMap, func() {
-		boardState, err := UpdateBoard(testMap.ID(), previousBoardState, rules.Settings{})
+	maps.TestMap(testMap.ID(), testMap, func() {
+		boardState, err := maps.UpdateBoard(testMap.ID(), previousBoardState, rules.Settings{})
 
 		require.NoError(t, err)
 
