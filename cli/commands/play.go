@@ -209,7 +209,7 @@ func (gameState *GameState) Run() {
 
 	isDraw := true
 	if gameState.GameType == "solo" {
-		log.Printf("[DONE]: Game completed after %v turns.", boardState.Turn)
+    log.Printf("[DONE]: Game completed after %v turns. EliminatedCause: %v Snakes in Game: %v", boardState.Turn, boardState.Snakes[0].Body, len(boardState.Snakes))
 		if exportGame {
 			// These checks for exportGame are present to avoid vacuuming up RAM when an export is not requred.
 			for _, snakeState := range gameState.snakeStates {

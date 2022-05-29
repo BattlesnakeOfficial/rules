@@ -13,7 +13,9 @@ var globalRegistry = MapRegistry{}
 
 // RegisterMap adds a stage to the registry.
 // If a map has already been registered this will panic.
-func (registry MapRegistry) RegisterMap(id string, m GameMap) {
+func (registry MapRegistry) RegisterMap(m GameMap) {
+  id := m.ID();
+
 	if _, ok := registry[id]; ok {
 		panic(fmt.Sprintf("map '%s' has already been registered", id))
 	}
@@ -35,8 +37,8 @@ func GetMap(id string) (GameMap, error) {
 }
 
 // RegisterMap adds a map to the global registry.
-func RegisterMap(id string, m GameMap) {
-	globalRegistry.RegisterMap(id, m)
+func RegisterMap(m GameMap) {
+	globalRegistry.RegisterMap(m)
 }
 
 func TestMap(id string, m GameMap, callback func()) {

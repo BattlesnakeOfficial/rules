@@ -7,7 +7,7 @@ import (
 type StandardMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("standard", StandardMap{})
+	globalRegistry.RegisterMap(StandardMap{})
 }
 
 func (m StandardMap) ID() string {

@@ -7,7 +7,7 @@ import (
 type EmptyMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("empty", EmptyMap{})
+	globalRegistry.RegisterMap(EmptyMap{})
 }
 
 func (m EmptyMap) ID() string {

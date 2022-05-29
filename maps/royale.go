@@ -9,7 +9,7 @@ import (
 type RoyaleHazardsMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("royale", RoyaleHazardsMap{})
+	globalRegistry.RegisterMap(RoyaleHazardsMap{})
 }
 
 func (m RoyaleHazardsMap) ID() string {

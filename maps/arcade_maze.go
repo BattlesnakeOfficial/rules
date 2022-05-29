@@ -7,7 +7,7 @@ import (
 type ArcadeMazeMap struct{}
 
 func init() {
-	globalRegistry.RegisterMap("arcade_maze", ArcadeMazeMap{})
+	globalRegistry.RegisterMap(ArcadeMazeMap{})
 }
 
 func (m ArcadeMazeMap) ID() string {
