@@ -4,6 +4,7 @@ import "math/rand"
 
 type Rand interface {
 	Intn(n int) int
+	Range(min, max int) int
 	Shuffle(n int, swap func(i, j int))
 }
 
@@ -11,6 +12,10 @@ type Rand interface {
 var GlobalRand globalRand
 
 type globalRand struct{}
+
+func (globalRand) Range(min, max int) int {
+	return rand.Intn(max-min+1) + min
+}
 
 func (globalRand) Intn(n int) int {
 	return rand.Intn(n)
@@ -36,6 +41,10 @@ func (s seedRand) Intn(n int) int {
 	return s.rand.Intn(n)
 }
 
+func (s seedRand) Range(min, max int) int {
+	return s.rand.Intn(max-min+1) + min
+}
+
 func (s seedRand) Shuffle(n int, swap func(i, j int)) {
 	s.rand.Shuffle(n, swap)
 }
@@ -51,6 +60,10 @@ func (minRand) Intn(n int) int {
 	return 0
 }
 
+func (minRand) Range(min, max int) int {
+	return min
+}
+
 func (minRand) Shuffle(n int, swap func(i, j int)) {
 	// no shuffling
 }
@@ -62,6 +75,10 @@ type maxRand struct{}
 
 func (maxRand) Intn(n int) int {
 	return n - 1
+}
+
+func (maxRand) Range(min, max int) int {
+	return max
 }
 
 func (maxRand) Shuffle(n int, swap func(i, j int)) {

@@ -111,3 +111,24 @@ func TestRiversAndBridgetsHazardsMap(t *testing.T) {
 	}
 
 }
+
+func TestSpiralHazardsMap(t *testing.T) {
+	// check error handling
+	m := maps.SpiralHazardsMap{}
+	settings := rules.Settings{}
+	settings = settings.WithSeed(10)
+
+	state := rules.NewBoardState(11, 11)
+	editor := maps.NewBoardStateEditor(state)
+	err := m.SetupBoard(state, settings, editor)
+	require.NoError(t, err)
+
+	for i := 1; i < 400; i++ {
+		err = m.UpdateBoard(state, settings, editor)
+		require.NoError(t, err)
+		state.Turn = i
+	}
+	fmt.Println(state.Hazards)
+	require.NotEmpty(t, state.Hazards)
+	t.Fail()
+}

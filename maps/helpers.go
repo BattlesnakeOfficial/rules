@@ -156,3 +156,26 @@ func drawRing(bw, bh, hOffset, vOffset int) ([]rules.Point, error) {
 
 	return hazards, nil
 }
+
+func maxInt(n1 int, n ...int) int {
+	max := n1
+	for _, v := range n {
+		if v > max {
+			max = v
+		}
+	}
+
+	return max
+}
+
+func isOnBoard(w, h, x, y int) bool {
+	if x >= w || x < 0 {
+		return false
+	}
+
+	if y >= h || y < 0 {
+		return false
+	}
+
+	return true
+}

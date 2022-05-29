@@ -3,6 +3,7 @@ package maps
 import (
 	"errors"
 	"fmt"
+	"math"
 
 	"github.com/BattlesnakeOfficial/rules"
 )
@@ -119,6 +120,97 @@ func (m ColumnsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings
 
 func (m ColumnsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+}
+
+type SpiralHazardsMap struct{}
+
+func (m SpiralHazardsMap) ID() string {
+	return "hz_spiral"
+}
+
+func (m SpiralHazardsMap) Meta() Metadata {
+	return Metadata{
+		Name: "hz_spiral",
+		Description: `Generates a dynamic hazard map that grows in a spiral pattern clockwise from a random point on
+ the map. Each 2 turns a new hazard square is added to the map`,
+		Author: "altersaddle",
+	}
+}
+
+func (m SpiralHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m SpiralHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+
+	currentTurn := lastBoardState.Turn + 1
+	spawnEveryNTurns := 3
+
+	// no-op if we're not on a turn that spawns hazards
+	if currentTurn < spawnEveryNTurns || currentTurn%spawnEveryNTurns != 0 {
+		return nil
+	}
+
+	rand := settings.GetRand(0)
+	spawnArea := 0.3 // Center spiral in the middle 0.6 of the board
+
+	// randomly choose a location between the start point and the edge of the board
+	spawnOffsetX := int(math.Floor(float64(lastBoardState.Width) * spawnArea))
+	maxX := lastBoardState.Width - 1 - spawnOffsetX
+	startX := rand.Range(spawnOffsetX, maxX)
+	spawnOffsetY := int(math.Floor(float64(lastBoardState.Height) * spawnArea))
+	maxY := lastBoardState.Height - 1 - spawnOffsetY
+	startY := rand.Range(spawnOffsetY, maxY)
+	fmt.Println(spawnOffsetX, spawnOffsetY, startX, startY, maxX, maxY)
+
+	if currentTurn == spawnEveryNTurns {
+		editor.AddHazard(rules.Point{X: startX, Y: startY})
+		return nil
+	}
+
+	// determine number of rings in spiral
+	numRings := maxInt(startX, startY, lastBoardState.Width-startX, lastBoardState.Height-startY)
+
+	turnCtr := spawnEveryNTurns
+	for ring := 0; ring < numRings; ring++ {
+		offset := ring + 1
+		x := startX - ring
+		y := startY + offset
+
+		numSquaresInRing := 8 * offset
+		for i := 0; i < numSquaresInRing; i++ {
+			turnCtr += spawnEveryNTurns
+
+			if turnCtr > currentTurn {
+				break
+			}
+
+			if turnCtr == currentTurn && isOnBoard(lastBoardState.Width, lastBoardState.Height, x, y) {
+				editor.AddHazard(rules.Point{X: x, Y: y})
+			}
+
+			// move the "cursor"
+			if y == startY+offset && x < startX+offset {
+				// top line, move right
+				x += 1
+			} else if x == startX+offset && y > startY-offset {
+
+				// right side, go down
+				y -= 1
+			} else if y == startY-offset && x > startX-offset {
+				// bottom line, move left
+				x -= 1
+			} else if x == startX-offset && y < startY+offset {
+				y += 1
+			}
+		}
+	}
+
+	return nil
 }
 
 type RiverAndBridgesHazardsMap struct{}
