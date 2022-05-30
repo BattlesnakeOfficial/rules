@@ -225,7 +225,6 @@ func (m ScatterFillMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_scatter",
 		Description: `Fills the entire board with hazard squares that are set to appear on regular turn schedule. Each square is picked at random.`,
-		Author:      "altersaddle",
 	}
 }
 
