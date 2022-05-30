@@ -231,6 +231,7 @@ func (gameState *GameState) Run() {
 		}
 		if exportGame {
 			gameExporter.winner = winner
+			gameExporter.isDraw = isDraw
 		}
 	}
 
