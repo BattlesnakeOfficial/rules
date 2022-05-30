@@ -123,7 +123,7 @@ func TestSpiralHazardsMap(t *testing.T) {
 	err := m.SetupBoard(state, settings, editor)
 	require.NoError(t, err)
 
-	for i := 1; i < 1000; i++ {
+	for i := 0; i < 1000; i++ {
 		err = m.UpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 		state.Turn = i
