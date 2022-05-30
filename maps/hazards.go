@@ -17,6 +17,7 @@ func init() {
 	globalRegistry.RegisterMap("hz_rivers_bridges", RiverAndBridgesHazardsMap{})
 	globalRegistry.RegisterMap("hz_spiral", SpiralHazardsMap{})
 	globalRegistry.RegisterMap("hz_scatter", ScatterFillMap{})
+	globalRegistry.RegisterMap("hz_grow_box", DirectionalExpandingBoxMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -259,6 +260,116 @@ func (m ScatterFillMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	})
 
 	editor.AddHazard(positions[(currentTurn-2)/2])
+	return nil
+}
+
+type DirectionalExpandingBoxMap struct{}
+
+func (m DirectionalExpandingBoxMap) ID() string {
+	return "hz_grow_box"
+}
+
+func (m DirectionalExpandingBoxMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_grow_box",
+		Description: `Creates an area of hazard that expands from a point with one random side growing on a turn schedule.`,
+	}
+}
+
+func (m DirectionalExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m DirectionalExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+
+	currentTurn := lastBoardState.Turn + 1
+	startTurn := 1
+	spawnEveryNTurns := 15
+
+	// no-op if we're not on a turn that spawns hazards
+	if (currentTurn-startTurn)%spawnEveryNTurns != 0 {
+		return nil
+	}
+
+	// no-op if we have spawned the entire board already
+	if len(lastBoardState.Hazards) == lastBoardState.Width*lastBoardState.Height {
+		return nil
+	}
+
+	rand := settings.GetRand(0)
+	startX := rand.Range(2, lastBoardState.Width-2)
+	startY := rand.Range(2, lastBoardState.Height-2)
+
+	if currentTurn == 1 {
+		editor.AddHazard(rules.Point{X: startX, Y: startY})
+		return nil
+	}
+
+	topLeft := rules.Point{X: startX, Y: startY}
+	bottomRight := rules.Point{X: startX, Y: startY}
+
+	// var growthDirection string
+	maxTurns := (currentTurn - startTurn) / spawnEveryNTurns
+	for i := 0; i < maxTurns; i++ {
+		directions := []string{}
+		if topLeft.X > 0 {
+			directions = append(directions, "left")
+		}
+		if topLeft.Y < lastBoardState.Height-1 {
+			directions = append(directions, "up")
+		}
+		if bottomRight.X < lastBoardState.Width-1 {
+			directions = append(directions, "right")
+		}
+		if bottomRight.Y > 0 {
+			directions = append(directions, "down")
+		}
+		if len(directions) == 0 {
+			return nil
+		}
+		choice := rand.Intn(len(directions))
+		growthDirection := directions[choice]
+
+		addHazards := i == maxTurns-1
+
+		if growthDirection == "left" {
+			x := topLeft.X - 1
+			if addHazards {
+				for y := bottomRight.Y; y < topLeft.Y+1; y++ {
+					editor.AddHazard(rules.Point{X: x, Y: y})
+				}
+			}
+			topLeft.X = x
+		} else if growthDirection == "right" {
+			x := bottomRight.X + 1
+			if addHazards {
+				for y := bottomRight.Y; y < topLeft.Y+1; y++ {
+					editor.AddHazard(rules.Point{X: x, Y: y})
+				}
+			}
+			bottomRight.X = x
+		} else if growthDirection == "up" {
+			y := topLeft.Y + 1
+			if addHazards {
+				for x := topLeft.X; x < bottomRight.X+1; x++ {
+					editor.AddHazard(rules.Point{X: x, Y: y})
+				}
+			}
+			topLeft.Y = y
+		} else if growthDirection == "down" {
+			y := bottomRight.Y - 1
+			if addHazards {
+				for x := topLeft.X; x < bottomRight.X+1; x++ {
+					editor.AddHazard(rules.Point{X: x, Y: y})
+				}
+			}
+			bottomRight.Y = y
+		}
+	}
 	return nil
 }
 
