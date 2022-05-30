@@ -15,6 +15,8 @@ func init() {
 	globalRegistry.RegisterMap("hz_rings", ConcentricRingsHazardsMap{})
 	globalRegistry.RegisterMap("hz_columns", ColumnsHazardsMap{})
 	globalRegistry.RegisterMap("hz_rivers_bridges", RiverAndBridgesHazardsMap{})
+	globalRegistry.RegisterMap("hz_spiral", SpiralHazardsMap{})
+	globalRegistry.RegisterMap("hz_scatter", ScatterFillMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -210,6 +212,54 @@ func (m SpiralHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 		}
 	}
 
+	return nil
+}
+
+type ScatterFillMap struct{}
+
+func (m ScatterFillMap) ID() string {
+	return "hz_scatter"
+}
+
+func (m ScatterFillMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_scatter",
+		Description: `Fills the entire board with hazard squares that are set to appear on regular turn schedule. Each square is picked at random.`,
+		Author:      "altersaddle",
+	}
+}
+
+func (m ScatterFillMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m ScatterFillMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+
+	currentTurn := lastBoardState.Turn + 1
+	spawnEveryNTurns := 2
+
+	// no-op if we're not on a turn that spawns hazards
+	if currentTurn < spawnEveryNTurns || currentTurn%spawnEveryNTurns != 0 {
+		return nil
+	}
+
+	positions := make([]rules.Point, 0, lastBoardState.Width*lastBoardState.Height)
+	for x := 0; x < lastBoardState.Width; x++ {
+		for y := 0; y < lastBoardState.Height; y++ {
+			positions = append(positions, rules.Point{X: x, Y: y})
+		}
+	}
+
+	rand := settings.GetRand(0)
+	rand.Shuffle(len(positions), func(i, j int) {
+		positions[i], positions[j] = positions[j], positions[i]
+	})
+
+	editor.AddHazard(positions[(currentTurn-2)/2])
 	return nil
 }
 

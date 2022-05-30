@@ -131,3 +131,24 @@ func TestSpiralHazardsMap(t *testing.T) {
 	require.NotEmpty(t, state.Hazards)
 	require.Equal(t, 11*11, len(state.Hazards), "hazards should eventually fille the entire map")
 }
+
+func TestScatterFillMap(t *testing.T) {
+	// check error handling
+	m := maps.ScatterFillMap{}
+	settings := rules.Settings{}
+	settings = settings.WithSeed(10)
+
+	state := rules.NewBoardState(11, 11)
+	editor := maps.NewBoardStateEditor(state)
+	err := m.SetupBoard(state, settings, editor)
+	require.NoError(t, err)
+
+	totalTurns := 11*11*2 + 2
+	for i := 0; i < totalTurns; i++ {
+		err = m.UpdateBoard(state, settings, editor)
+		require.NoError(t, err)
+		state.Turn = i
+	}
+	require.NotEmpty(t, state.Hazards)
+	require.Equal(t, 11*11, len(state.Hazards), "hazards should eventually fill the entire map")
+}
