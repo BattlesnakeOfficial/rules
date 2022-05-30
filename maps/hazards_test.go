@@ -123,12 +123,11 @@ func TestSpiralHazardsMap(t *testing.T) {
 	err := m.SetupBoard(state, settings, editor)
 	require.NoError(t, err)
 
-	for i := 1; i < 400; i++ {
+	for i := 1; i < 1000; i++ {
 		err = m.UpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 		state.Turn = i
 	}
-	fmt.Println(state.Hazards)
 	require.NotEmpty(t, state.Hazards)
-	t.Fail()
+	require.Equal(t, 11*11, len(state.Hazards), "hazards should eventually fille the entire map")
 }
