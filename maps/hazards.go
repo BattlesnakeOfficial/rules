@@ -19,6 +19,7 @@ func init() {
 	globalRegistry.RegisterMap("hz_scatter", ScatterFillMap{})
 	globalRegistry.RegisterMap("hz_grow_box", DirectionalExpandingBoxMap{})
 	globalRegistry.RegisterMap("hz_expand_box", ExpandingBoxMap{})
+	globalRegistry.RegisterMap("hz_expand_scatter", ExpandingScatterMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -413,7 +414,6 @@ func (m ExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings 
 
 	rand := settings.GetRand(0)
 
-	// hazards = []
 	startX := rand.Range(2, lastBoardState.Width-2)
 	startY := rand.Range(2, lastBoardState.Width-2)
 
@@ -442,6 +442,82 @@ func (m ExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings 
 			}
 		}
 	}
+
+	return nil
+}
+
+type ExpandingScatterMap struct{}
+
+func (m ExpandingScatterMap) ID() string {
+	return "hz_expand_scatter"
+}
+
+func (m ExpandingScatterMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_expand_scatter",
+		Description: `Builds an expanding hazard area that grows from a central point in rings that are randomly filled in on a regular turn schedule.`,
+	}
+}
+
+func (m ExpandingScatterMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m ExpandingScatterMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+
+	currentTurn := lastBoardState.Turn + 1
+	startTurn := 1 // first hazard appears on turn 1
+	spawnEveryNTurns := 2
+
+	// no-op if we're not on a turn that spawns hazards
+	if (currentTurn-startTurn)%spawnEveryNTurns != 0 {
+		return nil
+	}
+
+	// no-op if we have spawned the entire board already
+	if len(lastBoardState.Hazards) == lastBoardState.Width*lastBoardState.Height {
+		return nil
+	}
+
+	rand := settings.GetRand(0)
+
+	startX := rand.Range(1, lastBoardState.Width-1)
+	startY := rand.Range(1, lastBoardState.Width-1)
+
+	if currentTurn == startTurn {
+		editor.AddHazard(rules.Point{X: startX, Y: startY})
+		return nil
+	}
+
+	// determine number of rings in spiral
+	numRings := maxInt(startX, startY, lastBoardState.Width-startX, lastBoardState.Height-startY)
+
+	allPositions := []rules.Point{}
+	for ring := 0; ring < numRings; ring++ {
+		offset := ring + 1
+		positions := []rules.Point{}
+		for x := startX - offset; x < startX+offset+1; x++ {
+			for y := startY - offset; y < startY+offset+1; y++ {
+				if isOnBoard(lastBoardState.Width, lastBoardState.Height, x, y) {
+					if ((x == startX-offset || x == startX+offset) && y >= startY-offset && y <= startY+offset) || ((y == startY-offset || y == startY+offset) && x >= startX-offset && x <= startX+offset) {
+						positions = append(positions, rules.Point{X: x, Y: y})
+					}
+				}
+			}
+		}
+		// shuffle the positions so they are added scattered/randomly
+		rand.Shuffle(len(positions), func(i, j int) {
+			positions[i], positions[j] = positions[j], positions[i]
+		})
+		allPositions = append(allPositions, positions...)
+	}
+
+	chosenPos := currentTurn/spawnEveryNTurns - 1
+	editor.AddHazard(allPositions[chosenPos])
 
 	return nil
 }
