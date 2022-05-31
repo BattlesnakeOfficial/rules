@@ -170,7 +170,6 @@ func (m SpiralHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 	spawnOffsetY := int(math.Floor(float64(lastBoardState.Height) * spawnArea))
 	maxY := lastBoardState.Height - 1 - spawnOffsetY
 	startY := rand.Range(spawnOffsetY, maxY)
-	fmt.Println(spawnOffsetX, spawnOffsetY, startX, startY, maxX, maxY)
 
 	if currentTurn == spawnEveryNTurns {
 		editor.AddHazard(rules.Point{X: startX, Y: startY})
