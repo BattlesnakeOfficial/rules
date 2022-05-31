@@ -18,6 +18,7 @@ func init() {
 	globalRegistry.RegisterMap("hz_spiral", SpiralHazardsMap{})
 	globalRegistry.RegisterMap("hz_scatter", ScatterFillMap{})
 	globalRegistry.RegisterMap("hz_grow_box", DirectionalExpandingBoxMap{})
+	globalRegistry.RegisterMap("hz_expand_box", ExpandingBoxMap{})
 }
 
 func (m InnerBorderHazardsMap) ID() string {
@@ -370,6 +371,78 @@ func (m DirectionalExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState
 			bottomRight.Y = y
 		}
 	}
+	return nil
+}
+
+type ExpandingBoxMap struct{}
+
+func (m ExpandingBoxMap) ID() string {
+	return "hz_expand_box"
+}
+
+func (m ExpandingBoxMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_expand_box",
+		Description: `Generates an area of hazard that expands from a random point on the board outward in concentric rings on a periodic turn schedule.`,
+	}
+}
+
+func (m ExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m ExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+
+	currentTurn := lastBoardState.Turn + 1
+	startTurn := 1 // first hazard appears on turn 1
+	spawnEveryNTurns := 20
+
+	// no-op if we're not on a turn that spawns hazards
+	if (currentTurn-startTurn)%spawnEveryNTurns != 0 {
+		return nil
+	}
+
+	// no-op if we have spawned the entire board already
+	if len(lastBoardState.Hazards) == lastBoardState.Width*lastBoardState.Height {
+		return nil
+	}
+
+	rand := settings.GetRand(0)
+
+	// hazards = []
+	startX := rand.Range(2, lastBoardState.Width-2)
+	startY := rand.Range(2, lastBoardState.Width-2)
+
+	if currentTurn == startTurn {
+		editor.AddHazard(rules.Point{X: startX, Y: startY})
+		return nil
+	}
+
+	// determine number of rings in spiral
+	numRings := maxInt(startX, startY, lastBoardState.Width-startX, lastBoardState.Height-startY)
+
+	// no-op when iterations exceed the max rings
+	if currentTurn/spawnEveryNTurns > numRings {
+		return nil
+	}
+
+	ring := currentTurn/spawnEveryNTurns - 1
+	offset := ring + 1
+
+	for x := startX - offset; x < startX+offset+1; x++ {
+		for y := startY - offset; y < startY+offset+1; y++ {
+			if isOnBoard(lastBoardState.Width, lastBoardState.Height, x, y) {
+				if ((x == startX-offset || x == startX+offset) && y >= startY-offset && y <= startY+offset) || ((y == startY-offset || y == startY+offset) && x >= startX-offset && x <= startX+offset) {
+					editor.AddHazard(rules.Point{X: x, Y: y})
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
