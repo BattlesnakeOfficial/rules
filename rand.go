@@ -4,6 +4,8 @@ import "math/rand"
 
 type Rand interface {
 	Intn(n int) int
+	// Range produces a random integer in the range of [min,max] (inclusive)
+	// For example, Range(1,3) could produce the values 1, 2 or 3.
 	Range(min, max int) int
 	Shuffle(n int, swap func(i, j int))
 }
