@@ -1,8 +1,6 @@
 package maps
 
 import (
-	"errors"
-	"fmt"
 	"math"
 
 	"github.com/BattlesnakeOfficial/rules"
@@ -541,10 +539,9 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 		return err
 	}
 
-	key := fmt.Sprintf("%dx%d", lastBoardState.Width, lastBoardState.Height)
-	hazards, ok := riversAndBridgesMaps[key]
+	hazards, ok := riversAndBridgesMaps[rules.Point{X: lastBoardState.Width, Y: lastBoardState.Height}]
 	if !ok {
-		return errors.New("Board size is not supported by this map")
+		return rules.RulesetError("Board size is not supported by this map")
 	}
 	for _, p := range hazards {
 		editor.AddHazard(p)
@@ -557,8 +554,8 @@ func (m RiverAndBridgesHazardsMap) UpdateBoard(lastBoardState *rules.BoardState,
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 }
 
-var riversAndBridgesMaps = map[string][]rules.Point{
-	"11x11": {
+var riversAndBridgesMaps = map[rules.Point][]rules.Point{
+	{X: 11, Y: 11}: {
 		{X: 5, Y: 10},
 		{X: 5, Y: 9},
 		{X: 5, Y: 7},
@@ -577,7 +574,7 @@ var riversAndBridgesMaps = map[string][]rules.Point{
 		{X: 1, Y: 5},
 		{X: 0, Y: 5},
 	},
-	"19x19": {
+	{X: 19, Y: 19}: {
 		{X: 9, Y: 0},
 		{X: 9, Y: 1},
 		{X: 9, Y: 2},
@@ -616,7 +613,7 @@ var riversAndBridgesMaps = map[string][]rules.Point{
 		{X: 10, Y: 8},
 		{X: 10, Y: 10},
 	},
-	"25x25": {
+	{X: 25, Y: 25}: {
 		{X: 12, Y: 24},
 		{X: 12, Y: 21},
 		{X: 12, Y: 20},
