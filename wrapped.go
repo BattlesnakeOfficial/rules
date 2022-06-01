@@ -1,12 +1,12 @@
 package rules
 
 var wrappedRulesetStages = []string{
+	StageGameOverStandard,
 	StageMovementWrapBoundaries,
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
 	StageEliminationStandard,
-	StageGameOverStandard,
 }
 
 type WrappedRuleset struct {

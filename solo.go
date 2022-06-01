@@ -1,12 +1,12 @@
 package rules
 
 var soloRulesetStages = []string{
+	StageGameOverSoloSnake,
 	StageMovementStandard,
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
 	StageEliminationStandard,
-	StageGameOverSoloSnake,
 }
 
 type SoloRuleset struct {
@@ -17,6 +17,11 @@ func (r *SoloRuleset) Name() string { return GameTypeSolo }
 
 func (r SoloRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
 	return NewPipeline(soloRulesetStages...).Execute(bs, s, sm)
+}
+
+func (r *SoloRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
+	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
+	return nextState, err
 }
 
 func (r *SoloRuleset) IsGameOver(b *BoardState) (bool, error) {

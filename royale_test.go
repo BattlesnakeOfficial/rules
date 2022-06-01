@@ -13,9 +13,14 @@ func TestRoyaleRulesetInterface(t *testing.T) {
 }
 
 func TestRoyaleDefaultSanity(t *testing.T) {
-	boardState := &BoardState{}
+	boardState := &BoardState{
+		Snakes: []Snake{
+			{ID: "1", Body: []Point{{X: 0, Y: 0}}},
+			{ID: "2", Body: []Point{{X: 0, Y: 1}}},
+		},
+	}
 	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 1}, ShrinkEveryNTurns: 0}
-	_, err := r.CreateNextBoardState(boardState, []SnakeMove{{"", ""}})
+	_, err := r.CreateNextBoardState(boardState, []SnakeMove{{"1", "right"}, {"2", "right"}})
 	require.Error(t, err)
 	require.Equal(t, errors.New("royale game can't shrink more frequently than every turn"), err)
 
