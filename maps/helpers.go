@@ -1,8 +1,6 @@
 package maps
 
 import (
-	"errors"
-
 	"github.com/BattlesnakeOfficial/rules"
 )
 
@@ -95,27 +93,27 @@ func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rule
 // drawRing draws a ring of hazard points offset from the outer edge of the board
 func drawRing(bw, bh, hOffset, vOffset int) ([]rules.Point, error) {
 	if bw < 1 {
-		return nil, errors.New("board width too small")
+		return nil, rules.RulesetError("board width too small")
 	}
 
 	if bh < 1 {
-		return nil, errors.New("board height too small")
+		return nil, rules.RulesetError("board height too small")
 	}
 
 	if hOffset >= bw-1 {
-		return nil, errors.New("horizontal offset too large")
+		return nil, rules.RulesetError("horizontal offset too large")
 	}
 
 	if vOffset >= bh-1 {
-		return nil, errors.New("vertical offset too large")
+		return nil, rules.RulesetError("vertical offset too large")
 	}
 
 	if hOffset < 1 {
-		return nil, errors.New("horizontal offset too small")
+		return nil, rules.RulesetError("horizontal offset too small")
 	}
 
 	if vOffset < 1 {
-		return nil, errors.New("vertical offset too small")
+		return nil, rules.RulesetError("vertical offset too small")
 	}
 
 	// calculate the start/end point of the horizontal borders
