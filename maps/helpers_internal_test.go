@@ -7,6 +7,44 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestMaxInt(t *testing.T) {
+	// simple case
+	n := maxInt(0, 1, 2, 3)
+	require.Equal(t, 3, n)
+
+	// use negative, out of order
+	n = maxInt(0, -1, 200, 3)
+	require.Equal(t, 200, n)
+
+	// use only 1 value, and negative
+	n = maxInt(-99)
+	require.Equal(t, -99, n)
+
+	// use duplicate values
+	n = maxInt(3, 3, 3)
+	require.Equal(t, 3, n)
+
+	// use duplicate and other values
+	n = maxInt(-1, 3, 5, 3, 3, 2)
+	require.Equal(t, 5, n)
+}
+
+func TestIsOnBoard(t *testing.T) {
+	// a few spot checks
+	require.True(t, isOnBoard(11, 11, 0, 0))
+	require.False(t, isOnBoard(11, 11, -1, 0))
+	require.True(t, isOnBoard(11, 11, 10, 10))
+	require.False(t, isOnBoard(11, 11, 11, 11))
+	require.True(t, isOnBoard(2, 2, 1, 1))
+
+	// exhaustive check on a small, non-square board
+	for x := 0; x < 4; x++ {
+		for y := 0; y < 9; y++ {
+			require.True(t, isOnBoard(4, 9, x, y))
+		}
+	}
+}
+
 func TestDrawRing(t *testing.T) {
 	_, err := drawRing(0, 11, 2, 2)
 	require.Equal(t, "board width too small", err.Error())
