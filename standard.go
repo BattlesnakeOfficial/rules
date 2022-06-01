@@ -14,12 +14,12 @@ type StandardRuleset struct {
 }
 
 var standardRulesetStages = []string{
+	StageGameOverStandard,
 	StageMovementStandard,
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
 	StageEliminationStandard,
-	StageGameOverStandard,
 }
 
 func (r *StandardRuleset) Name() string { return GameTypeStandard }

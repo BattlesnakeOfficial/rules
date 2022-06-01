@@ -2,46 +2,10 @@ package rules
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestConstrictorRulesetInterface(t *testing.T) {
 	var _ Ruleset = (*ConstrictorRuleset)(nil)
-}
-
-func TestConstrictorModifyInitialBoardState(t *testing.T) {
-	tests := []struct {
-		Height int
-		Width  int
-		IDs    []string
-	}{
-		{1, 1, []string{}},
-		{1, 1, []string{"one"}},
-		{2, 2, []string{"one"}},
-		{2, 2, []string{"one", "two"}},
-		{11, 1, []string{"one", "two"}},
-		{11, 11, []string{}},
-		{11, 11, []string{"one", "two", "three", "four", "five"}},
-	}
-	r := ConstrictorRuleset{}
-	for testNum, test := range tests {
-		state, err := CreateDefaultBoardState(MaxRand, test.Width, test.Height, test.IDs)
-		require.NoError(t, err)
-		require.NotNil(t, state)
-		state, err = r.ModifyInitialBoardState(state)
-		require.NoError(t, err)
-		require.NotNil(t, state)
-		require.Equal(t, test.Width, state.Width)
-		require.Equal(t, test.Height, state.Height)
-		require.Len(t, state.Food, 0, testNum)
-		// Verify snakes
-		require.Equal(t, len(test.IDs), len(state.Snakes))
-		for i, id := range test.IDs {
-			require.Equal(t, id, state.Snakes[i].ID)
-			require.Equal(t, state.Snakes[i].Body[2], state.Snakes[i].Body[1])
-		}
-	}
 }
 
 // Test that two equal snakes collide and both get eliminated

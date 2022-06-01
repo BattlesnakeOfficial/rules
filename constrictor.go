@@ -1,6 +1,7 @@
 package rules
 
 var constrictorRulesetStages = []string{
+	StageGameOverStandard,
 	StageMovementStandard,
 	StageStarvationStandard,
 	StageHazardDamageStandard,
@@ -8,7 +9,6 @@ var constrictorRulesetStages = []string{
 	StageEliminationStandard,
 	StageSpawnFoodNoFood,
 	StageModifySnakesAlwaysGrow,
-	StageGameOverStandard,
 }
 
 type ConstrictorRuleset struct {

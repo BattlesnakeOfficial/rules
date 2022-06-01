@@ -5,13 +5,13 @@ import (
 )
 
 var royaleRulesetStages = []string{
+	StageGameOverStandard,
 	StageMovementStandard,
 	StageStarvationStandard,
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
 	StageEliminationStandard,
 	StageSpawnHazardsShrinkMap,
-	StageGameOverStandard,
 }
 
 type RoyaleRuleset struct {
