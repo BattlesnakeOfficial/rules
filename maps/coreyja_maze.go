@@ -63,7 +63,7 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 }
 
 func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  // me := lastBoardState.Snakes[0]
+  me := lastBoardState.Snakes[0]
 
   if len(lastBoardState.Food) == 0 {
     // editor.PlaceSnake(me.ID, []rules.Point{{X: 0, Y: 1}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
@@ -94,6 +94,8 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 
       tries++
     }
+  } else {
+    editor.PlaceSnake(me.ID, me.Body, 100)
   }
 
   return nil
