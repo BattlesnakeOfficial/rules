@@ -48,7 +48,6 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 
   m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
 
-
   editor.ClearHazards()
 
   for _, point := range tempBoardState.Hazards {
@@ -101,9 +100,6 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 
 func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
   didSubdivide := false
-  /// We can only draw a vertical wall if there is enough space
-
-  // if (depth >= 3) { return false }
 
   log.Print("\n\n\n")
   log.Print(fmt.Sprintf("Subdividing room from %v to %v", lowPoint, highPoint))
@@ -118,10 +114,12 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
   newVerticalWall := make([]rules.Point, 0)
   newHorizontalWall := make([]rules.Point, 0)
 
-  if (highPoint.X - lowPoint.X <= 2 || highPoint.Y - lowPoint.Y <= 2) {
+  if (highPoint.X - lowPoint.X <= 2 && highPoint.Y - lowPoint.Y <= 2) {
     return false
   }
 
+  // TODO: We need to make sure all the walls aren't disallowed here
+  // I think thats our infinite loop problem
   if (highPoint.X - lowPoint.X >= 5) {
     for (verticalWallPosition == -1 || contains(disAllowedVertical, verticalWallPosition)) {
       verticalWallPosition = rand.Intn(highPoint.X - lowPoint.X - 2) + lowPoint.X + 1
@@ -149,9 +147,6 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 
     didSubdivide = true
   }
-
-  // disAllowedVertical = make([]int, 0)
-  // disAllowedHorizontal = make([]int, 0)
 
   /// Here we make cuts in the walls
   if len(newVerticalWall) >= 1 && len(newHorizontalWall) >= 1 {
