@@ -30,23 +30,23 @@ func (m CoreyjaMazeMap) Meta() Metadata {
 }
 
 func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  rand := settings.GetRand(0)
+  rand := settings.GetRand(initialBoardState.Turn)
 
   if len(initialBoardState.Snakes) != 1 {
     return rules.RulesetError("This map requires exactly one snake")
   }
 
-  if initialBoardState.Width != 25 || initialBoardState.Height != 25 {
-    return rules.RulesetError("This map can only be played on a 25x25 board")
-  }
+  // if initialBoardState.Width != 25 || initialBoardState.Height != 25 {
+  //   return rules.RulesetError("This map can only be played on a 25x25 board")
+  // }
 
   me := initialBoardState.Snakes[0]
-  editor.PlaceSnake(me.ID, []rules.Point{{X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
 
   tempBoardState := rules.NewBoardState(initialBoardState.Width, initialBoardState.Height)
 
+  topRightCorner := rules.Point{X: initialBoardState.Width -1 , Y: initialBoardState.Height - 1}
 
-  m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, rules.Point{X: 24, Y: 24}, make([]int, 0), make([]int, 0), 0)
+  m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
 
 
   editor.ClearHazards()
@@ -55,7 +55,8 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
     editor.AddHazard(point)
   }
 
-  editor.AddFood(rules.Point{X: 24, Y: 24})
+  editor.PlaceSnake(me.ID, []rules.Point{{X: 1, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
+  editor.AddFood(topRightCorner)
 
   // return errors.New("We don't want to actually setup the board right now")
   return nil
@@ -64,15 +65,36 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
   // me := lastBoardState.Snakes[0]
 
-  // if len(lastBoardState.Food) == 0 {
-  //   editor.PlaceSnake(me.ID, []rules.Point{{X: 0, Y: 1}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
+  if len(lastBoardState.Food) == 0 {
+    // editor.PlaceSnake(me.ID, []rules.Point{{X: 0, Y: 1}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
 
-  //   if len(lastBoardState.Snakes[0].Body) % 2 == 0 {
-  //     editor.AddFood(rules.Point{X: 20, Y: 20})
-  //   } else {
-  //     editor.AddFood(rules.Point{X: 3, Y: 3})
-  //   }
-  // }
+    // if len(lastBoardState.Snakes[0].Body) % 2 == 0 {
+    //   editor.AddFood(rules.Point{X: 20, Y: 20})
+    // } else {
+    //   editor.AddFood(rules.Point{X: 3, Y: 3})
+    // }
+    // m.SetupBoard(lastBoardState, settings, editor)
+
+    foodPlaced := false
+    tries := 0
+
+    for (!foodPlaced) {
+      rand := settings.GetRand(lastBoardState.Turn + tries)
+
+      x := rand.Intn(lastBoardState.Width)
+      y := rand.Intn(lastBoardState.Height)
+
+    log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
+
+
+      if containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
+        editor.AddFood(rules.Point{X: x, Y: y})
+        foodPlaced = true
+      }
+
+      tries++
+    }
+  }
 
   return nil
 }
@@ -232,6 +254,15 @@ func cutHoles(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rul
 }
 
 func contains(s []int, e int) bool {
+    for _, a := range s {
+        if a == e {
+            return true
+        }
+    }
+    return false
+}
+
+func containsPoint(s []rules.Point, e rules.Point) bool {
     for _, a := range s {
         if a == e {
             return true
