@@ -1,6 +1,12 @@
 package maps
 
 import (
+  // "errors"
+  "log"
+  "fmt"
+  // "os"
+  // "bufio"
+
   "github.com/BattlesnakeOfficial/rules"
 )
 
@@ -39,7 +45,9 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 
   tempBoardState := rules.NewBoardState(initialBoardState.Width, initialBoardState.Height)
 
-  m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, rules.Point{X: 24, Y: 24}, make([]int, 0), make([]int, 0))
+
+  m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, rules.Point{X: 24, Y: 24}, make([]int, 0), make([]int, 0), 0)
+
 
   editor.ClearHazards()
 
@@ -49,6 +57,7 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 
   editor.AddFood(rules.Point{X: 24, Y: 24})
 
+  // return errors.New("We don't want to actually setup the board right now")
   return nil
 }
 
@@ -68,19 +77,34 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
   return nil
 }
 
-func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int) bool {
+func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
   didSubdivide := false
   /// We can only draw a vertical wall if there is enough space
+
+  // if (depth >= 3) { return false }
+
+  log.Print("\n\n\n")
+  log.Print(fmt.Sprintf("Subdividing room from %v to %v", lowPoint, highPoint))
+  log.Print(fmt.Sprintf("disAllowedVertical %v", disAllowedVertical))
+  log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
+  printMap(tempBoardState)
+  fmt.Print("Press 'Enter' to continue...")
+  // bufio.NewReader(os.Stdin).ReadBytes('\n')
 
   verticalWallPosition := -1
   horizontalWallPosition := -1
   newVerticalWall := make([]rules.Point, 0)
   newHorizontalWall := make([]rules.Point, 0)
 
-  if (highPoint.X - lowPoint.X >= 4) {
+  if (highPoint.X - lowPoint.X <= 2 || highPoint.Y - lowPoint.Y <= 2) {
+    return false
+  }
+
+  if (highPoint.X - lowPoint.X >= 5) {
     for (verticalWallPosition == -1 || contains(disAllowedVertical, verticalWallPosition)) {
       verticalWallPosition = rand.Intn(highPoint.X - lowPoint.X - 2) + lowPoint.X + 1
     }
+    log.Print(fmt.Sprintf("drawing Vertical Wall at %v", verticalWallPosition))
 
     for y := lowPoint.Y; y <= highPoint.Y; y++ {
       newVerticalWall = append(newVerticalWall, rules.Point{X: verticalWallPosition, Y: y})
@@ -90,10 +114,11 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
   }
 
   /// We can only draw a horizontal wall if there is enough space
-  if (highPoint.Y - lowPoint.Y >= 4) {
+  if (highPoint.Y - lowPoint.Y >= 5) {
     for (horizontalWallPosition == -1 || contains(disAllowedHorizontal, horizontalWallPosition)) {
       horizontalWallPosition = rand.Intn(highPoint.Y - lowPoint.Y - 2) + lowPoint.Y + 1
     }
+    log.Print(fmt.Sprintf("drawing horizontal Wall at %v", horizontalWallPosition))
 
     for x := lowPoint.X; x <= highPoint.X; x++ {
       newHorizontalWall = append(newHorizontalWall, rules.Point{X: x, Y: horizontalWallPosition})
@@ -103,31 +128,46 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
     didSubdivide = true
   }
 
+  // disAllowedVertical = make([]int, 0)
+  // disAllowedHorizontal = make([]int, 0)
+
   /// Here we make cuts in the walls
-  if len(newVerticalWall) > 1 && len(newHorizontalWall) > 1 {
+  if len(newVerticalWall) >= 1 && len(newHorizontalWall) >= 1 {
+    log.Print("Need to cut with both walls")
     intersectionPoint := rules.Point{ X: verticalWallPosition, Y: horizontalWallPosition }
 
     newNewVerticalWall, verticalHoles := cutHoles(newVerticalWall, intersectionPoint, rand)
     newVerticalWall = newNewVerticalWall
-    disAllowedVertical = make([]int, 0)
+    // disAllowedVertical = make([]int, 0)
     for _, hole := range verticalHoles {
-      disAllowedVertical = append(disAllowedVertical, hole.X)
+      disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
     }
+    log.Print(fmt.Sprintf("Vertical Cuts are at %v", verticalHoles))
 
     newNewHorizontalWall, horizontalHoles := cutHoles(newHorizontalWall, intersectionPoint, rand)
     newHorizontalWall = newNewHorizontalWall
-    disAllowedHorizontal = make([]int, 0)
+    // disAllowedHorizontal = make([]int, 0)
     for _, hole := range horizontalHoles {
-      disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
+      disAllowedVertical = append(disAllowedVertical, hole.X)
     }
-  } else if len(newVerticalWall) > 1 {
-    segmentToRemove := rand.Intn(len(newVerticalWall))
+    log.Print(fmt.Sprintf("Horizontal Cuts are at %v", horizontalHoles))
+  } else if len(newVerticalWall) >= 1 {
+    log.Print("Only a vertical wall needs cut")
+    segmentToRemove := rand.Intn(len(newVerticalWall) - 1)
+    hole := newVerticalWall[segmentToRemove]
     newVerticalWall = remove(newVerticalWall, segmentToRemove)
-  } else if len(newHorizontalWall) > 1 {
-    segmentToRemove := rand.Intn(len(newHorizontalWall))
-    newHorizontalWall = remove(newHorizontalWall, segmentToRemove)
-  }
 
+    disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
+    log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+  } else if len(newHorizontalWall) >= 1 {
+    log.Print("Only a horizontal wall needs cut")
+    segmentToRemove := rand.Intn(len(newHorizontalWall) - 1)
+    hole := newHorizontalWall[segmentToRemove]
+    newHorizontalWall = remove(newHorizontalWall, segmentToRemove)
+
+    disAllowedVertical = append(disAllowedVertical, hole.X)
+    log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+  }
 
   for _, point := range newVerticalWall {
     tempBoardState.Hazards = append(tempBoardState.Hazards, point)
@@ -138,17 +178,17 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 
   /// We have both so need 4 sub-rooms
   if (verticalWallPosition != -1 && horizontalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition - 1}, disAllowedHorizontal, disAllowedVertical)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
 
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: verticalWallPosition - 1, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
   } else if (verticalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
   } else if (horizontalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
+    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
   }
 
   return didSubdivide
@@ -172,21 +212,23 @@ func pos(s []rules.Point, e rules.Point) int {
 func cutHoles(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rules.Point, []rules.Point) {
   holes := make([]rules.Point, 0)
 
-    index := pos(s, intersection)
+  index := pos(s, intersection)
 
+  if index != 0 {
     firstSegmentToRemove := rand.Intn(index)
     holes = append(holes, s[firstSegmentToRemove])
     s  = remove(s, firstSegmentToRemove)
+  }
 
-    if index != 0 && index != len(s) - 1 {
-      index = pos(s, intersection)
-      secondSegmentToRemove := rand.Intn(len(s) - index ) + index
+  index = pos(s, intersection)
+  if index != len(s) - 1 {
+    secondSegmentToRemove := rand.Intn(len(s) - index - 1) + index + 1
 
     holes = append(holes, s[secondSegmentToRemove])
-      s = remove(s, secondSegmentToRemove)
-    }
+    s = remove(s, secondSegmentToRemove)
+  }
 
-    return s, holes
+  return s, holes
 }
 
 func contains(s []int, e int) bool {
