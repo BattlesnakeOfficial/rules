@@ -65,16 +65,14 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
   me := lastBoardState.Snakes[0]
 
+  if len(me.Body) >= 6  {
+    // This will create a new maze
+    m.SetupBoard(lastBoardState, settings, editor)
+
+    return nil
+  }
+
   if len(lastBoardState.Food) == 0 {
-    // editor.PlaceSnake(me.ID, []rules.Point{{X: 0, Y: 1}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}}, 100)
-
-    // if len(lastBoardState.Snakes[0].Body) % 2 == 0 {
-    //   editor.AddFood(rules.Point{X: 20, Y: 20})
-    // } else {
-    //   editor.AddFood(rules.Point{X: 3, Y: 3})
-    // }
-    // m.SetupBoard(lastBoardState, settings, editor)
-
     foodPlaced := false
     tries := 0
 
@@ -84,10 +82,10 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
       x := rand.Intn(lastBoardState.Width)
       y := rand.Intn(lastBoardState.Height)
 
-    log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
+      log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
 
 
-      if containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
+      if !containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
         editor.AddFood(rules.Point{X: x, Y: y})
         foodPlaced = true
       }
@@ -266,7 +264,7 @@ func contains(s []int, e int) bool {
 
 func containsPoint(s []rules.Point, e rules.Point) bool {
     for _, a := range s {
-        if a == e {
+        if a.X == e.X && a.Y == e.Y {
             return true
         }
     }
