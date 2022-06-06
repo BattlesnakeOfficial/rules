@@ -1,6 +1,7 @@
 package rules_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
@@ -134,6 +135,94 @@ func TestRulesetBuilder(t *testing.T) {
 			require.Equal(t, 5, rsb.Ruleset().Settings().MinimumFood)
 			require.Equal(t, "test", rsb.Ruleset().Settings().HazardMap)
 			require.Equal(t, "tester", rsb.Ruleset().Settings().HazardMapAuthor)
+		})
+	}
+}
+
+func TestRulesetBuilderGameOver(t *testing.T) {
+	settings := rules.Settings{
+		RoyaleSettings: rules.RoyaleSettings{
+			ShrinkEveryNTurns: 12,
+		},
+	}
+	moves := []rules.SnakeMove{
+		{ID: "1", Move: "up"},
+	}
+	boardState := rules.NewBoardState(7, 7)
+	boardState.Snakes = append(boardState.Snakes, rules.Snake{
+		ID: "1",
+		Body: []rules.Point{
+			{X: 3, Y: 3},
+			{X: 3, Y: 3},
+			{X: 3, Y: 3},
+		},
+		Health: 100,
+	})
+
+	tests := []struct {
+		gameType string
+		solo     bool
+		gameOver bool
+	}{
+		{
+			gameType: rules.GameTypeStandard,
+			solo:     false,
+			gameOver: true,
+		},
+		{
+			gameType: rules.GameTypeConstrictor,
+			solo:     false,
+			gameOver: true,
+		},
+		{
+			gameType: rules.GameTypeRoyale,
+			solo:     false,
+			gameOver: true,
+		},
+		{
+			gameType: rules.GameTypeWrapped,
+			solo:     false,
+			gameOver: true,
+		},
+		{
+			gameType: rules.GameTypeSolo,
+			solo:     false,
+			gameOver: false,
+		},
+		{
+			gameType: rules.GameTypeStandard,
+			solo:     true,
+			gameOver: false,
+		},
+		{
+			gameType: rules.GameTypeConstrictor,
+			solo:     true,
+			gameOver: false,
+		},
+		{
+			gameType: rules.GameTypeRoyale,
+			solo:     true,
+			gameOver: false,
+		},
+		{
+			gameType: rules.GameTypeWrapped,
+			solo:     true,
+			gameOver: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%v_%v", test.gameType, test.solo), func(t *testing.T) {
+			rsb := rules.NewRulesetBuilder().WithParams(map[string]string{
+				rules.ParamGameType: test.gameType,
+			}).WithSolo(test.solo)
+
+			ruleset := rsb.Ruleset()
+
+			gameOver, _, err := ruleset.Execute(boardState, settings, moves)
+
+			require.NoError(t, err)
+			require.Equal(t, test.gameOver, gameOver)
 		})
 	}
 }
