@@ -120,10 +120,14 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 
   // TODO: We need to make sure all the walls aren't disallowed here
   // I think thats our infinite loop problem
-  if (highPoint.X - lowPoint.X >= 5) {
-    for (verticalWallPosition == -1 || contains(disAllowedVertical, verticalWallPosition)) {
-      verticalWallPosition = rand.Intn(highPoint.X - lowPoint.X - 2) + lowPoint.X + 1
+  verticalChoices := make([]int, 0)
+  for i := lowPoint.X + 1; i < highPoint.X - 1; i++ {
+    if !contains(disAllowedVertical, i) {
+      verticalChoices = append(verticalChoices, i)
     }
+  }
+  if len(verticalChoices) > 0 {
+    verticalWallPosition = verticalChoices[rand.Intn(len(verticalChoices))]
     log.Print(fmt.Sprintf("drawing Vertical Wall at %v", verticalWallPosition))
 
     for y := lowPoint.Y; y <= highPoint.Y; y++ {
@@ -134,10 +138,14 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
   }
 
   /// We can only draw a horizontal wall if there is enough space
-  if (highPoint.Y - lowPoint.Y >= 5) {
-    for (horizontalWallPosition == -1 || contains(disAllowedHorizontal, horizontalWallPosition)) {
-      horizontalWallPosition = rand.Intn(highPoint.Y - lowPoint.Y - 2) + lowPoint.Y + 1
+  horizontalChoices := make([]int, 0)
+  for i := lowPoint.Y + 1; i < highPoint.Y - 1; i++ {
+    if !contains(disAllowedHorizontal, i) {
+       horizontalChoices = append( horizontalChoices, i)
     }
+  }
+  if len(horizontalChoices) > 0 {
+    horizontalWallPosition = horizontalChoices[rand.Intn(len(horizontalChoices))]
     log.Print(fmt.Sprintf("drawing horizontal Wall at %v", horizontalWallPosition))
 
     for x := lowPoint.X; x <= highPoint.X; x++ {
@@ -149,7 +157,7 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
   }
 
   /// Here we make cuts in the walls
-  if len(newVerticalWall) >= 1 && len(newHorizontalWall) >= 1 {
+  if len(newVerticalWall) > 1 && len(newHorizontalWall) > 1 {
     log.Print("Need to cut with both walls")
     intersectionPoint := rules.Point{ X: verticalWallPosition, Y: horizontalWallPosition }
 
@@ -168,7 +176,7 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
       disAllowedVertical = append(disAllowedVertical, hole.X)
     }
     log.Print(fmt.Sprintf("Horizontal Cuts are at %v", horizontalHoles))
-  } else if len(newVerticalWall) >= 1 {
+  } else if len(newVerticalWall) > 1 {
     log.Print("Only a vertical wall needs cut")
     segmentToRemove := rand.Intn(len(newVerticalWall) - 1)
     hole := newVerticalWall[segmentToRemove]
@@ -176,7 +184,7 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 
     disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
     log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
-  } else if len(newHorizontalWall) >= 1 {
+  } else if len(newHorizontalWall) > 1 {
     log.Print("Only a horizontal wall needs cut")
     segmentToRemove := rand.Intn(len(newHorizontalWall) - 1)
     hole := newHorizontalWall[segmentToRemove]
