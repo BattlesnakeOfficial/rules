@@ -79,6 +79,7 @@ type rulesetBuilder struct {
 	params map[string]string // game customisation parameters
 	seed   int64             // used for random events in games
 	rand   Rand              // used for random number generation
+	solo   bool              // if true, only 1 alive snake is required to keep the game from ending
 }
 
 // NewRulesetBuilder returns an instance of a builder for the Ruleset types.
@@ -118,6 +119,12 @@ func (rb *rulesetBuilder) WithRand(rand Rand) *rulesetBuilder {
 	return rb
 }
 
+// WithSolo sets whether the ruleset is a solo game.
+func (rb *rulesetBuilder) WithSolo(value bool) *rulesetBuilder {
+	rb.solo = value
+	return rb
+}
+
 // Ruleset constructs a customised ruleset using the parameters passed to the builder.
 func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	name, ok := rb.params[ParamGameType]
@@ -125,20 +132,28 @@ func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 		name = GameTypeStandard
 	}
 
+	var stages []string
+	if rb.solo {
+		stages = append(stages, StageGameOverSoloSnake)
+	} else {
+		stages = append(stages, StageGameOverStandard)
+	}
+
 	switch name {
 	case GameTypeStandard:
-		return rb.PipelineRuleset(name, NewPipeline(standardRulesetStages...))
+		stages = append(stages, standardRulesetStages[1:]...)
 	case GameTypeConstrictor:
-		return rb.PipelineRuleset(name, NewPipeline(constrictorRulesetStages...))
+		stages = append(stages, constrictorRulesetStages[1:]...)
 	case GameTypeRoyale:
-		return rb.PipelineRuleset(name, NewPipeline(royaleRulesetStages...))
+		stages = append(stages, royaleRulesetStages[1:]...)
 	case GameTypeSolo:
-		return rb.PipelineRuleset(name, NewPipeline(soloRulesetStages...))
+		stages = soloRulesetStages
 	case GameTypeWrapped:
-		return rb.PipelineRuleset(name, NewPipeline(wrappedRulesetStages...))
+		stages = append(stages, wrappedRulesetStages[1:]...)
 	default:
-		return rb.PipelineRuleset(name, NewPipeline(standardRulesetStages...))
+		stages = append(stages, standardRulesetStages[1:]...)
 	}
+	return rb.PipelineRuleset(name, NewPipeline(stages...))
 }
 
 // PipelineRuleset provides an implementation of the Ruleset using a pipeline with a name.

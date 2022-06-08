@@ -133,7 +133,11 @@ func (gameState *GameState) initialize() {
 	}
 
 	// Build ruleset from settings
-	ruleset := rules.NewRulesetBuilder().WithSeed(gameState.Seed).WithParams(gameState.settings).Ruleset()
+	ruleset := rules.NewRulesetBuilder().
+		WithSeed(gameState.Seed).
+		WithParams(gameState.settings).
+		WithSolo(len(gameState.URLs) < 2).
+		Ruleset()
 	gameState.ruleset = ruleset
 
 	// Initialize snake states as empty until we can ping the snake URLs
