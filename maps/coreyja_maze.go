@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"bufio"
+	"bytes"
 	"log"
 	"os"
-  "bytes"
 
 	"github.com/BattlesnakeOfficial/rules"
 )
