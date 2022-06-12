@@ -12,7 +12,14 @@ import (
 	"github.com/BattlesnakeOfficial/rules"
 )
 
+// When this is flipped to `true` TWO things happen
+// 1. More println style debugging is done
+// 2. We print out the current game board in between each room sub-division,
+//    and wait for the CLI User to hit enter to sub-divide the next room. This
+//    allows you to see the maze get generated in realtime, which was super useful
+//    while debugging issues in the maze generation
 const DEBUG_MAZE_GENERATION = false
+
 const INITIAL_MAZE_SIZE = 10
 
 type CoreyjaMazeMap struct{}
@@ -82,6 +89,9 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 
 	snakeBody := []rules.Point{
 		{X: 0, Y: 0},
+    // Since we reserve the bottom row of the board for state,
+    // AND we center the maze within the board we know there will
+    // always be a `y: -1` that we can put the tail into
 		{X: 0, Y: -1},
 		{X: 0, Y: -1},
 	}
@@ -110,15 +120,12 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 }
 
 func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-
-	me := lastBoardState.Snakes[0]
-
 	currentLevel, e := m.ReadBitState(lastBoardState)
 	if e != nil {
 		return e
 	}
 
-	if len(me.Body) == 0 || len(lastBoardState.Food) == 0 {
+	if len(lastBoardState.Food) == 0 {
 		currentLevel += 1
 		m.WriteBitState(lastBoardState, currentLevel, editor)
 	}
@@ -409,6 +416,10 @@ func pos(s []rules.Point, e rules.Point) int {
 }
 
 //// DEBUGING HELPERS ////
+
+// This mostly copy pasted from the CLI which prints out the boardState
+// Copied here to not create a circular dependency
+// Removed some of the color picking logic to simplify things
 func printMap(boardState *rules.BoardState) {
 	var o bytes.Buffer
 	o.WriteString(fmt.Sprintf("Turn: %v\n", boardState.Turn))
