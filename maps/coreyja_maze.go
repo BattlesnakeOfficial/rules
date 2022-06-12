@@ -18,7 +18,7 @@ type CoreyjaMazeMap struct{}
 
 func init() {
 	mazeMap := CoreyjaMazeMap{}
-	globalRegistry.RegisterMap(mazeMap)
+	globalRegistry.RegisterMap("coreyja_maze", mazeMap)
 }
 
 func (m CoreyjaMazeMap) ID() string {
