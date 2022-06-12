@@ -26,7 +26,7 @@ type CoreyjaMazeMap struct{}
 
 func init() {
 	mazeMap := CoreyjaMazeMap{}
-	globalRegistry.RegisterMap("coreyja_maze", mazeMap)
+	globalRegistry.RegisterMap(mazeMap.ID(), mazeMap)
 }
 
 func (m CoreyjaMazeMap) ID() string {
@@ -89,9 +89,9 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 
 	snakeBody := []rules.Point{
 		{X: 0, Y: 0},
-    // Since we reserve the bottom row of the board for state,
-    // AND we center the maze within the board we know there will
-    // always be a `y: -1` that we can put the tail into
+		// Since we reserve the bottom row of the board for state,
+		// AND we center the maze within the board we know there will
+		// always be a `y: -1` that we can put the tail into
 		{X: 0, Y: -1},
 		{X: 0, Y: -1},
 	}
@@ -141,6 +141,8 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	// going without having to create a new maze.
 	// HOWEVER, the placement of the food doesn't guarantee we can grab it and keep going, it likes
 	// to be places in little nooks that we can't get out of
+	// Leaving this commented out for now, but might be a cool addition to add later if we can pick the
+	// food spawn a bit smarter
 
 	// if len(lastBoardState.Food) == 0 {
 	//   foodPlaced := false
@@ -171,6 +173,7 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	return nil
 }
 
+// Mostly based off this algorithm from Wikipedia: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method
 func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
 	didSubdivide := false
 
