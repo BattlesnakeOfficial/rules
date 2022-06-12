@@ -1,12 +1,12 @@
 package maps
 
 import (
-  "bytes"
+	"bytes"
+	"fmt"
 	"log"
-  "fmt"
-  "strconv"
+	"strconv"
 
-  "github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules"
 )
 
 type GameMap interface {
@@ -46,24 +46,24 @@ func printMap(boardState *rules.BoardState) {
 	}
 	for y := int(0); y < boardState.Height; y++ {
 		for x := int(0); x < boardState.Width; x++ {
-      board[x][y] = "◦"
+			board[x][y] = "◦"
 		}
 	}
 	for _, oob := range boardState.Hazards {
-    board[oob.X][oob.Y] = "░"
+		board[oob.X][oob.Y] = "░"
 	}
-  // o.WriteString(fmt.Sprintf("Hazards ░: %v\n", boardState.Hazards))
+	// o.WriteString(fmt.Sprintf("Hazards ░: %v\n", boardState.Hazards))
 	for _, f := range boardState.Food {
-    board[f.X][f.Y] = "⚕"
+		board[f.X][f.Y] = "⚕"
 	}
-  o.WriteString(fmt.Sprintf("Food ⚕: %v\n", boardState.Food))
+	o.WriteString(fmt.Sprintf("Food ⚕: %v\n", boardState.Food))
 	for _, s := range boardState.Snakes {
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < boardState.Width && b.Y >= 0 && b.Y < boardState.Height {
-        board[b.X][b.Y] = string("*")
+				board[b.X][b.Y] = string("*")
 			}
 		}
-    // o.WriteString(fmt.Sprintf("%v %c: %v\n", s))
+		// o.WriteString(fmt.Sprintf("%v %c: %v\n", s))
 	}
 	for y := boardState.Height - 1; y >= 0; y-- {
 		for x := int(0); x < boardState.Width; x++ {

@@ -1,14 +1,14 @@
 package maps
 
 import (
-  "fmt"
-  "strconv"
+	"fmt"
+	"strconv"
 
-  "os"
-  "bufio"
-  "log"
+	"bufio"
+	"log"
+	"os"
 
-  "github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules"
 )
 
 const DEBUG_MAZE_GENERATION = false
@@ -17,395 +17,392 @@ const INITIAL_MAZE_SIZE = 10
 type CoreyjaMazeMap struct{}
 
 func init() {
-  mazeMap := CoreyjaMazeMap{}
-  globalRegistry.RegisterMap(mazeMap)
+	mazeMap := CoreyjaMazeMap{}
+	globalRegistry.RegisterMap(mazeMap)
 }
 
 func (m CoreyjaMazeMap) ID() string {
-  return "coreyja_maze"
+	return "coreyja_maze"
 }
 
 func (m CoreyjaMazeMap) Meta() Metadata {
-  return Metadata{
-    Name:        "Coreyja Maze",
-    Description: "Solo Maze where you need to find the food",
-    Author:      "coreyja",
-  }
+	return Metadata{
+		Name:        "Coreyja Maze",
+		Description: "Solo Maze where you need to find the food",
+		Author:      "coreyja",
+	}
 }
 
 func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  if len(initialBoardState.Snakes) != 1 {
-    return rules.RulesetError("This map requires exactly one snake")
-  }
+	if len(initialBoardState.Snakes) != 1 {
+		return rules.RulesetError("This map requires exactly one snake")
+	}
 
-  if initialBoardState.Width < INITIAL_MAZE_SIZE || initialBoardState.Height < INITIAL_MAZE_SIZE {
-    return rules.RulesetError(
-      fmt.Sprintf("This map requires a board size of at least %dx%d", INITIAL_MAZE_SIZE, INITIAL_MAZE_SIZE))
-  }
+	if initialBoardState.Width < INITIAL_MAZE_SIZE || initialBoardState.Height < INITIAL_MAZE_SIZE {
+		return rules.RulesetError(
+			fmt.Sprintf("This map requires a board size of at least %dx%d", INITIAL_MAZE_SIZE, INITIAL_MAZE_SIZE))
+	}
 
-  m.CreateMaze(initialBoardState, settings, editor, 0)
+	m.CreateMaze(initialBoardState, settings, editor, 0)
 
-  return nil
+	return nil
 }
 
 func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
-  rand := settings.GetRand(initialBoardState.Turn)
+	rand := settings.GetRand(initialBoardState.Turn)
 
-  // Make sure the actual maze size can always fit in the CreateBoard
-  // This means that when you get to 'max' size each level stops making
-  // the maze bigger
-  actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
-  if actualBoardSize > int64(initialBoardState.Width) {
-    actualBoardSize = int64(initialBoardState.Width)
-  }
-  if actualBoardSize > int64(initialBoardState.Height - 2) {
-    actualBoardSize = int64(initialBoardState.Height - 2)
-  }
+	// Make sure the actual maze size can always fit in the CreateBoard
+	// This means that when you get to 'max' size each level stops making
+	// the maze bigger
+	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
+	if actualBoardSize > int64(initialBoardState.Width) {
+		actualBoardSize = int64(initialBoardState.Width)
+	}
+	if actualBoardSize > int64(initialBoardState.Height-2) {
+		actualBoardSize = int64(initialBoardState.Height - 2)
+	}
 
-  me := initialBoardState.Snakes[0]
+	me := initialBoardState.Snakes[0]
 
-  tempBoardState := rules.NewBoardState(int(actualBoardSize), int(actualBoardSize))
+	tempBoardState := rules.NewBoardState(int(actualBoardSize), int(actualBoardSize))
 
-  topRightCorner := rules.Point{X: int(actualBoardSize) - 1 , Y: int(actualBoardSize) - 1}
+	topRightCorner := rules.Point{X: int(actualBoardSize) - 1, Y: int(actualBoardSize) - 1}
 
-  editor.ClearHazards()
+	editor.ClearHazards()
 
-  m.WriteBitState(initialBoardState, currentLevel, editor);
+	m.WriteBitState(initialBoardState, currentLevel, editor)
 
-  m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
+	m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
 
-  for _, point := range tempBoardState.Hazards {
-    adjusted := m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-    editor.AddHazard(adjusted)
-  }
+	for _, point := range tempBoardState.Hazards {
+		adjusted := m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+		editor.AddHazard(adjusted)
+	}
 
-  snakeBody := []rules.Point{
-    {X: 0, Y: 0},
-    {X: 0, Y: -1},
-    {X: 0, Y: -1},
-  }
+	snakeBody := []rules.Point{
+		{X: 0, Y: 0},
+		{X: 0, Y: -1},
+		{X: 0, Y: -1},
+	}
 
-  adjustedSnakeBody := make([]rules.Point, len(snakeBody))
-  for i, point := range snakeBody {
-    adjustedSnakeBody[i] = m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-  }
-  editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
+	adjustedSnakeBody := make([]rules.Point, len(snakeBody))
+	for i, point := range snakeBody {
+		adjustedSnakeBody[i] = m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+	}
+	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
-  adjustedFood := m.AdjustPosition(topRightCorner, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-  editor.AddFood(adjustedFood)
+	adjustedFood := m.AdjustPosition(topRightCorner, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+	editor.AddFood(adjustedFood)
 
+	// Fill outside of the board with walls
+	xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2)
+	yAdjust := int((initialBoardState.Height - int(actualBoardSize)) / 2)
+	for x := 0; x < initialBoardState.Width; x++ {
+		for y := 1; y < initialBoardState.Height; y++ {
+			if x < xAdjust || y < yAdjust || x >= xAdjust+int(actualBoardSize) || y >= yAdjust+int(actualBoardSize) {
+				editor.AddHazard(rules.Point{X: x, Y: y})
+			}
+		}
+	}
 
-  // Fill outside of the board with walls
-  xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2);
-  yAdjust := int((initialBoardState.Height - int(actualBoardSize)) / 2);
-  for x := 0; x < initialBoardState.Width; x++ {
-    for y := 1; y < initialBoardState.Height; y++ {
-      if x < xAdjust || y < yAdjust || x >= xAdjust + int(actualBoardSize) || y >= yAdjust + int(actualBoardSize) {
-        editor.AddHazard(rules.Point{X: x, Y: y})
-      }
-    }
-  }
-
-  return nil
+	return nil
 }
-
 
 func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 
-  me := lastBoardState.Snakes[0]
+	me := lastBoardState.Snakes[0]
 
-  currentLevel, e := m.ReadBitState(lastBoardState);
-  if e != nil {
-    return e
-  }
+	currentLevel, e := m.ReadBitState(lastBoardState)
+	if e != nil {
+		return e
+	}
 
-  if len(me.Body) == 0  || len(lastBoardState.Food) == 0 {
-    currentLevel += 1
-    m.WriteBitState(lastBoardState, currentLevel, editor);
-  }
+	if len(me.Body) == 0 || len(lastBoardState.Food) == 0 {
+		currentLevel += 1
+		m.WriteBitState(lastBoardState, currentLevel, editor)
+	}
 
-  if len(lastBoardState.Food) == 0 {
-    // This will create a new maze
-    m.CreateMaze(lastBoardState, settings, editor, currentLevel)
+	if len(lastBoardState.Food) == 0 {
+		// This will create a new maze
+		m.CreateMaze(lastBoardState, settings, editor, currentLevel)
 
-    return nil
-  }
+		return nil
+	}
 
-  // NOTE: The following code tries to place a food on the existing maze so we can keep
-  // going without having to create a new maze.
-  // HOWEVER, the placement of the food doesn't guarantee we can grab it and keep going, it likes
-  // to be places in little nooks that we can't get out of
+	// NOTE: The following code tries to place a food on the existing maze so we can keep
+	// going without having to create a new maze.
+	// HOWEVER, the placement of the food doesn't guarantee we can grab it and keep going, it likes
+	// to be places in little nooks that we can't get out of
 
-  // if len(lastBoardState.Food) == 0 {
-  //   foodPlaced := false
-  //   tries := 0
-  //
-  //   for (!foodPlaced) {
-  //     rand := settings.GetRand(lastBoardState.Turn + tries)
-  //
-  //     x := rand.Intn(lastBoardState.Width)
-  //     y := rand.Intn(lastBoardState.Height)
-  //
-  //     if DEBUG_MAZE_GENERATION {
-  //       log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
-  //     }
-  //
-  //
-  //     if !containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
-  //       editor.AddFood(rules.Point{X: x, Y: y})
-  //       foodPlaced = true
-  //     }
-  //
-  //     tries++
-  //   }
-  // } else {
-  //   editor.PlaceSnake(me.ID, me.Body, 100)
-  // }
+	// if len(lastBoardState.Food) == 0 {
+	//   foodPlaced := false
+	//   tries := 0
+	//
+	//   for (!foodPlaced) {
+	//     rand := settings.GetRand(lastBoardState.Turn + tries)
+	//
+	//     x := rand.Intn(lastBoardState.Width)
+	//     y := rand.Intn(lastBoardState.Height)
+	//
+	//     if DEBUG_MAZE_GENERATION {
+	//       log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
+	//     }
+	//
+	//
+	//     if !containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
+	//       editor.AddFood(rules.Point{X: x, Y: y})
+	//       foodPlaced = true
+	//     }
+	//
+	//     tries++
+	//   }
+	// } else {
+	//   editor.PlaceSnake(me.ID, me.Body, 100)
+	// }
 
-  return nil
+	return nil
 }
 
 func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
-  didSubdivide := false
+	didSubdivide := false
 
-  if DEBUG_MAZE_GENERATION {
-    log.Print("\n\n\n")
-    log.Print(fmt.Sprintf("Subdividing room from %v to %v", lowPoint, highPoint))
-    log.Print(fmt.Sprintf("disAllowedVertical %v", disAllowedVertical))
-    log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
-    printMap(tempBoardState)
-    fmt.Print("Press 'Enter' to continue...")
-    bufio.NewReader(os.Stdin).ReadBytes('\n')
-  }
+	if DEBUG_MAZE_GENERATION {
+		log.Print("\n\n\n")
+		log.Print(fmt.Sprintf("Subdividing room from %v to %v", lowPoint, highPoint))
+		log.Print(fmt.Sprintf("disAllowedVertical %v", disAllowedVertical))
+		log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
+		printMap(tempBoardState)
+		fmt.Print("Press 'Enter' to continue...")
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+	}
 
-  verticalWallPosition := -1
-  horizontalWallPosition := -1
-  newVerticalWall := make([]rules.Point, 0)
-  newHorizontalWall := make([]rules.Point, 0)
+	verticalWallPosition := -1
+	horizontalWallPosition := -1
+	newVerticalWall := make([]rules.Point, 0)
+	newHorizontalWall := make([]rules.Point, 0)
 
-  if (highPoint.X - lowPoint.X <= 2 && highPoint.Y - lowPoint.Y <= 2) {
-    return false
-  }
+	if highPoint.X-lowPoint.X <= 2 && highPoint.Y-lowPoint.Y <= 2 {
+		return false
+	}
 
-  verticalChoices := make([]int, 0)
-  for i := lowPoint.X + 1; i < highPoint.X - 1; i++ {
-    if !contains(disAllowedVertical, i) {
-      verticalChoices = append(verticalChoices, i)
-    }
-  }
-  if len(verticalChoices) > 0 {
-    verticalWallPosition = verticalChoices[rand.Intn(len(verticalChoices))]
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("drawing Vertical Wall at %v", verticalWallPosition))
-    }
+	verticalChoices := make([]int, 0)
+	for i := lowPoint.X + 1; i < highPoint.X-1; i++ {
+		if !contains(disAllowedVertical, i) {
+			verticalChoices = append(verticalChoices, i)
+		}
+	}
+	if len(verticalChoices) > 0 {
+		verticalWallPosition = verticalChoices[rand.Intn(len(verticalChoices))]
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("drawing Vertical Wall at %v", verticalWallPosition))
+		}
 
-    for y := lowPoint.Y; y <= highPoint.Y; y++ {
-      newVerticalWall = append(newVerticalWall, rules.Point{X: verticalWallPosition, Y: y})
-    }
+		for y := lowPoint.Y; y <= highPoint.Y; y++ {
+			newVerticalWall = append(newVerticalWall, rules.Point{X: verticalWallPosition, Y: y})
+		}
 
-    didSubdivide = true
-  }
+		didSubdivide = true
+	}
 
-  /// We can only draw a horizontal wall if there is enough space
-  horizontalChoices := make([]int, 0)
-  for i := lowPoint.Y + 1; i < highPoint.Y - 1; i++ {
-    if !contains(disAllowedHorizontal, i) {
-       horizontalChoices = append( horizontalChoices, i)
-    }
-  }
-  if len(horizontalChoices) > 0 {
-    horizontalWallPosition = horizontalChoices[rand.Intn(len(horizontalChoices))]
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("drawing horizontal Wall at %v", horizontalWallPosition))
-    }
+	/// We can only draw a horizontal wall if there is enough space
+	horizontalChoices := make([]int, 0)
+	for i := lowPoint.Y + 1; i < highPoint.Y-1; i++ {
+		if !contains(disAllowedHorizontal, i) {
+			horizontalChoices = append(horizontalChoices, i)
+		}
+	}
+	if len(horizontalChoices) > 0 {
+		horizontalWallPosition = horizontalChoices[rand.Intn(len(horizontalChoices))]
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("drawing horizontal Wall at %v", horizontalWallPosition))
+		}
 
-    for x := lowPoint.X; x <= highPoint.X; x++ {
-      newHorizontalWall = append(newHorizontalWall, rules.Point{X: x, Y: horizontalWallPosition})
-    }
+		for x := lowPoint.X; x <= highPoint.X; x++ {
+			newHorizontalWall = append(newHorizontalWall, rules.Point{X: x, Y: horizontalWallPosition})
+		}
 
+		didSubdivide = true
+	}
 
-    didSubdivide = true
-  }
+	/// Here we make cuts in the walls
+	if len(newVerticalWall) > 1 && len(newHorizontalWall) > 1 {
+		if DEBUG_MAZE_GENERATION {
+			log.Print("Need to cut with both walls")
+		}
+		intersectionPoint := rules.Point{X: verticalWallPosition, Y: horizontalWallPosition}
 
-  /// Here we make cuts in the walls
-  if len(newVerticalWall) > 1 && len(newHorizontalWall) > 1 {
-    if DEBUG_MAZE_GENERATION {
-      log.Print("Need to cut with both walls")
-    }
-    intersectionPoint := rules.Point{ X: verticalWallPosition, Y: horizontalWallPosition }
+		newNewVerticalWall, verticalHoles := cutHoles(newVerticalWall, intersectionPoint, rand)
+		newVerticalWall = newNewVerticalWall
 
-    newNewVerticalWall, verticalHoles := cutHoles(newVerticalWall, intersectionPoint, rand)
-    newVerticalWall = newNewVerticalWall
+		for _, hole := range verticalHoles {
+			disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
+		}
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("Vertical Cuts are at %v", verticalHoles))
+		}
 
-    for _, hole := range verticalHoles {
-      disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
-    }
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("Vertical Cuts are at %v", verticalHoles))
-    }
+		newNewHorizontalWall, horizontalHoles := cutHoles(newHorizontalWall, intersectionPoint, rand)
+		newHorizontalWall = newNewHorizontalWall
+		for _, hole := range horizontalHoles {
+			disAllowedVertical = append(disAllowedVertical, hole.X)
+		}
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("Horizontal Cuts are at %v", horizontalHoles))
+		}
+	} else if len(newVerticalWall) > 1 {
+		if DEBUG_MAZE_GENERATION {
+			log.Print("Only a vertical wall needs cut")
+		}
+		segmentToRemove := rand.Intn(len(newVerticalWall) - 1)
+		hole := newVerticalWall[segmentToRemove]
+		newVerticalWall = remove(newVerticalWall, segmentToRemove)
 
-    newNewHorizontalWall, horizontalHoles := cutHoles(newHorizontalWall, intersectionPoint, rand)
-    newHorizontalWall = newNewHorizontalWall
-    for _, hole := range horizontalHoles {
-      disAllowedVertical = append(disAllowedVertical, hole.X)
-    }
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("Horizontal Cuts are at %v", horizontalHoles))
-    }
-  } else if len(newVerticalWall) > 1 {
-    if DEBUG_MAZE_GENERATION {
-      log.Print("Only a vertical wall needs cut")
-    }
-    segmentToRemove := rand.Intn(len(newVerticalWall) - 1)
-    hole := newVerticalWall[segmentToRemove]
-    newVerticalWall = remove(newVerticalWall, segmentToRemove)
+		disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+		}
+	} else if len(newHorizontalWall) > 1 {
+		if DEBUG_MAZE_GENERATION {
+			log.Print("Only a horizontal wall needs cut")
+		}
+		segmentToRemove := rand.Intn(len(newHorizontalWall) - 1)
+		hole := newHorizontalWall[segmentToRemove]
+		newHorizontalWall = remove(newHorizontalWall, segmentToRemove)
 
-    disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
-    }
-  } else if len(newHorizontalWall) > 1 {
-    if DEBUG_MAZE_GENERATION {
-      log.Print("Only a horizontal wall needs cut")
-    }
-    segmentToRemove := rand.Intn(len(newHorizontalWall) - 1)
-    hole := newHorizontalWall[segmentToRemove]
-    newHorizontalWall = remove(newHorizontalWall, segmentToRemove)
+		disAllowedVertical = append(disAllowedVertical, hole.X)
+		if DEBUG_MAZE_GENERATION {
+			log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+		}
+	}
 
-    disAllowedVertical = append(disAllowedVertical, hole.X)
-    if DEBUG_MAZE_GENERATION {
-      log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
-    }
-  }
+	for _, point := range newVerticalWall {
+		tempBoardState.Hazards = append(tempBoardState.Hazards, point)
+	}
+	for _, point := range newHorizontalWall {
+		tempBoardState.Hazards = append(tempBoardState.Hazards, point)
+	}
 
-  for _, point := range newVerticalWall {
-    tempBoardState.Hazards = append(tempBoardState.Hazards, point)
-  }
-  for _, point := range newHorizontalWall {
-    tempBoardState.Hazards = append(tempBoardState.Hazards, point)
-  }
+	/// We have both so need 4 sub-rooms
+	if verticalWallPosition != -1 && horizontalWallPosition != -1 {
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth+1)
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth+1)
 
-  /// We have both so need 4 sub-rooms
-  if (verticalWallPosition != -1 && horizontalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth+1)
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth+1)
+	} else if verticalWallPosition != -1 {
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth+1)
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth+1)
+	} else if horizontalWallPosition != -1 {
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth+1)
+		m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth+1)
+	}
 
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-  } else if (verticalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: verticalWallPosition, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: verticalWallPosition + 1, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-  } else if (horizontalWallPosition != -1) {
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: lowPoint.Y}, rules.Point{X: highPoint.X, Y: horizontalWallPosition}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-    m.SubdivideRoom(tempBoardState, rand, rules.Point{X: lowPoint.X, Y: horizontalWallPosition + 1}, rules.Point{X: highPoint.X, Y: highPoint.Y}, disAllowedHorizontal, disAllowedVertical, depth + 1)
-  }
-
-  return didSubdivide
+	return didSubdivide
 }
 
 //////// Maze Helpers ////////
 
 func (m CoreyjaMazeMap) AdjustPosition(mazePosition rules.Point, actualBoardSize int, boardHeight int, boardWidth int) rules.Point {
 
-  xAdjust := int((boardWidth - actualBoardSize) / 2);
-  yAdjust := int((boardHeight - actualBoardSize) / 2);
+	xAdjust := int((boardWidth - actualBoardSize) / 2)
+	yAdjust := int((boardHeight - actualBoardSize) / 2)
 
-  if DEBUG_MAZE_GENERATION {
-    fmt.Println(fmt.Sprintf("currentLevel: %v, boardHeight: %v, boardWidth: %v, xAdjust: %v, yAdjust: %v", actualBoardSize, boardHeight, boardWidth, xAdjust, yAdjust))
-  }
+	if DEBUG_MAZE_GENERATION {
+		fmt.Println(fmt.Sprintf("currentLevel: %v, boardHeight: %v, boardWidth: %v, xAdjust: %v, yAdjust: %v", actualBoardSize, boardHeight, boardWidth, xAdjust, yAdjust))
+	}
 
-  return rules.Point{X: mazePosition.X + xAdjust, Y: mazePosition.Y + yAdjust}
+	return rules.Point{X: mazePosition.X + xAdjust, Y: mazePosition.Y + yAdjust}
 }
 
 func (m CoreyjaMazeMap) ReadBitState(boardState *rules.BoardState) (int64, error) {
-  row := 0
-  width := boardState.Width
+	row := 0
+	width := boardState.Width
 
-  stringBits := ""
+	stringBits := ""
 
-  for i := 0; i < width; i++ {
-    if containsPoint(boardState.Hazards, rules.Point{X: i, Y: row}) {
-      stringBits += "1"
-    } else {
-      stringBits += "0"
-    }
-  }
+	for i := 0; i < width; i++ {
+		if containsPoint(boardState.Hazards, rules.Point{X: i, Y: row}) {
+			stringBits += "1"
+		} else {
+			stringBits += "0"
+		}
+	}
 
-  return strconv.ParseInt(stringBits, 2, 64)
+	return strconv.ParseInt(stringBits, 2, 64)
 }
 
 func (m CoreyjaMazeMap) WriteBitState(boardState *rules.BoardState, state int64, editor Editor) {
-  width := boardState.Width
+	width := boardState.Width
 
-  stringBits := strconv.FormatInt(state, 2)
-  paddingBits := fmt.Sprintf("%0*s", width, stringBits)
+	stringBits := strconv.FormatInt(state, 2)
+	paddingBits := fmt.Sprintf("%0*s", width, stringBits)
 
-  for i, c := range paddingBits {
-    point := rules.Point{X: i, Y: 0}
+	for i, c := range paddingBits {
+		point := rules.Point{X: i, Y: 0}
 
-    fmt.Println("i: ", i, "width: ", width)
+		fmt.Println("i: ", i, "width: ", width)
 
-    if c == '1' {
-      editor.AddHazard(point)
-    } else {
-      editor.RemoveHazard(point)
-    }
-  }
+		if c == '1' {
+			editor.AddHazard(point)
+		} else {
+			editor.RemoveHazard(point)
+		}
+	}
 }
 
 /// Return value is first the wall that has been cut, the second is the holes we cut out
 func cutHoles(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rules.Point, []rules.Point) {
-  holes := make([]rules.Point, 0)
+	holes := make([]rules.Point, 0)
 
-  index := pos(s, intersection)
+	index := pos(s, intersection)
 
-  if index != 0 {
-    firstSegmentToRemove := rand.Intn(index)
-    holes = append(holes, s[firstSegmentToRemove])
-    s  = remove(s, firstSegmentToRemove)
-  }
+	if index != 0 {
+		firstSegmentToRemove := rand.Intn(index)
+		holes = append(holes, s[firstSegmentToRemove])
+		s = remove(s, firstSegmentToRemove)
+	}
 
-  index = pos(s, intersection)
-  if index != len(s) - 1 {
-    secondSegmentToRemove := rand.Intn(len(s) - index - 1) + index + 1
+	index = pos(s, intersection)
+	if index != len(s)-1 {
+		secondSegmentToRemove := rand.Intn(len(s)-index-1) + index + 1
 
-    holes = append(holes, s[secondSegmentToRemove])
-    s = remove(s, secondSegmentToRemove)
-  }
+		holes = append(holes, s[secondSegmentToRemove])
+		s = remove(s, secondSegmentToRemove)
+	}
 
-  return s, holes
+	return s, holes
 }
 
 //////// Golang Helpers ////////
 
 func contains(s []int, e int) bool {
-    for _, a := range s {
-        if a == e {
-            return true
-        }
-    }
-    return false
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func containsPoint(s []rules.Point, e rules.Point) bool {
-    for _, a := range s {
-        if a.X == e.X && a.Y == e.Y {
-            return true
-        }
-    }
-    return false
+	for _, a := range s {
+		if a.X == e.X && a.Y == e.Y {
+			return true
+		}
+	}
+	return false
 }
 
 func remove(s []rules.Point, i int) []rules.Point {
-  s[i] = s[len(s)-1]
-  return s[:len(s)-1]
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
 
 func pos(s []rules.Point, e rules.Point) int {
-  for i, a := range s {
-    if a == e {
-      return i
-    }
-  }
-  return -1
+	for i, a := range s {
+		if a == e {
+			return i
+		}
+	}
+	return -1
 }
