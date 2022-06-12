@@ -1,11 +1,6 @@
 package maps
 
 import (
-	"bytes"
-	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/BattlesnakeOfficial/rules"
 )
 
@@ -21,57 +16,6 @@ type GameMap interface {
 
 	// Called every turn to optionally update the board.
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
-}
-
-// Parses a color string like "#ef03d3" to rgb values from 0 to 255 or returns
-// the default gray if any errors occure
-func parseSnakeColor(color string) (int64, int64, int64) {
-	if len(color) == 7 {
-		red, err_r := strconv.ParseInt(color[1:3], 16, 64)
-		green, err_g := strconv.ParseInt(color[3:5], 16, 64)
-		blue, err_b := strconv.ParseInt(color[5:], 16, 64)
-		if err_r == nil && err_g == nil && err_b == nil {
-			return red, green, blue
-		}
-	}
-	// Default gray color from Battlesnake board
-	return 136, 136, 136
-}
-func printMap(boardState *rules.BoardState) {
-	var o bytes.Buffer
-	o.WriteString(fmt.Sprintf("Turn: %v\n", boardState.Turn))
-	board := make([][]string, boardState.Width)
-	for i := range board {
-		board[i] = make([]string, boardState.Height)
-	}
-	for y := int(0); y < boardState.Height; y++ {
-		for x := int(0); x < boardState.Width; x++ {
-			board[x][y] = "◦"
-		}
-	}
-	for _, oob := range boardState.Hazards {
-		board[oob.X][oob.Y] = "░"
-	}
-	// o.WriteString(fmt.Sprintf("Hazards ░: %v\n", boardState.Hazards))
-	for _, f := range boardState.Food {
-		board[f.X][f.Y] = "⚕"
-	}
-	o.WriteString(fmt.Sprintf("Food ⚕: %v\n", boardState.Food))
-	for _, s := range boardState.Snakes {
-		for _, b := range s.Body {
-			if b.X >= 0 && b.X < boardState.Width && b.Y >= 0 && b.Y < boardState.Height {
-				board[b.X][b.Y] = string("*")
-			}
-		}
-		// o.WriteString(fmt.Sprintf("%v %c: %v\n", s))
-	}
-	for y := boardState.Height - 1; y >= 0; y-- {
-		for x := int(0); x < boardState.Width; x++ {
-			o.WriteString(board[x][y])
-		}
-		o.WriteString("\n")
-	}
-	log.Print(o.String())
 }
 
 type Metadata struct {
