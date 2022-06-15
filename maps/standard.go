@@ -19,6 +19,7 @@ func (m StandardMap) Meta() Metadata {
 		Name:        "Standard",
 		Description: "Standard snake placement and food spawning",
 		Author:      "Battlesnake",
+		Version:     1,
 	}
 }
 
