@@ -11,7 +11,6 @@ require (
 )
 
 require (
-	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
