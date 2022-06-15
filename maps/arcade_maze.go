@@ -69,7 +69,9 @@ func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 
 	foodPositions := []rules.Point{
 		{X: 3, Y: 11},
+		{X: 9, Y: 5},
 		{X: 9, Y: 11},
+		{X: 9, Y: 17},
 		{X: 15, Y: 11},
 	}
 
