@@ -19,6 +19,7 @@ func (m ArcadeMazeMap) Meta() Metadata {
 		Name:        "Arcade Maze",
 		Description: "Generic arcade maze map with hazard walls",
 		Author:      "Battlesnake",
+		Version:     "0.1.0",
 	}
 }
 

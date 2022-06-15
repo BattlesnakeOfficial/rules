@@ -1,6 +1,7 @@
 package maps
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
@@ -22,7 +23,7 @@ func TestRegisteredMaps(t *testing.T) {
 	for mapName, gameMap := range globalRegistry {
 		t.Run(mapName, func(t *testing.T) {
 			require.Equalf(t, mapName, gameMap.ID(), "%#v game map doesn't return its own ID", mapName)
-
+			require.True(t, gameMap.Meta().Version.IsValid(), fmt.Sprintf("registered maps must have a valid version - '%s' is not valid a semver string", gameMap.Meta().Version))
 			var setupBoardState *rules.BoardState
 
 			for width := 0; width < maxBoardWidth; width++ {
