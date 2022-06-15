@@ -2,7 +2,6 @@ package maps
 
 import (
 	"github.com/BattlesnakeOfficial/rules"
-	"github.com/blang/semver/v4"
 )
 
 type GameMap interface {
@@ -19,24 +18,13 @@ type GameMap interface {
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
-// version is an internal type used to represent the version of a game map.
-// A valid  version string conforms to semantic versioning (https://semver.org/).
-// Examples: ["0.0.1", "1.2.34", "0.1.0"].
-type version string
-
-// IsValid returns whether the version is a valid semantic version string
-func (v version) IsValid() bool {
-	_, err := semver.Parse(string(v))
-	return err == nil
-}
-
 type Metadata struct {
 	Name        string
 	Author      string
 	Description string
-	// Version is the current, semver version of the map.
-	// Must be a valid semver (https://semver.org/) string.
-	Version version
+	// Version is the current version of the game map.
+	// Each time a map is changed, the version number should be incremented by 1.
+	Version uint
 }
 
 // Editor is used by GameMap implementations to modify the board state.
