@@ -17,7 +17,7 @@ func (m ArcadeMazeMap) ID() string {
 func (m ArcadeMazeMap) Meta() Metadata {
 	return Metadata{
 		Name:        "Arcade Maze",
-		Description: "Generic arcade maze map with hazard walls",
+		Description: "Generic arcade maze map with deadly hazard walls.",
 		Author:      "Battlesnake",
 		Version:     1,
 	}
@@ -30,26 +30,31 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 		return rules.RulesetError("This map can only be played on a 19X21 board")
 	}
 
+	// Shuffle the first four starting locations
 	snakePositions := []rules.Point{
 		{X: 4, Y: 7},
 		{X: 14, Y: 7},
 		{X: 4, Y: 17},
 		{X: 14, Y: 17},
 	}
-
-	if len(initialBoardState.Snakes) > len(snakePositions) {
-		return rules.ErrorTooManySnakes
-	}
-
 	rand.Shuffle(len(snakePositions), func(i int, j int) {
 		snakePositions[i], snakePositions[j] = snakePositions[j], snakePositions[i]
 	})
 
+	// Add a fifth and sixth starting location that are always placed last
+	snakePositions = append(snakePositions, rules.Point{X: 9, Y: 9})
+	snakePositions = append(snakePositions, rules.Point{X: 9, Y: 13})
+
+	// Place snakes
+	if len(initialBoardState.Snakes) > len(snakePositions) {
+		return rules.ErrorTooManySnakes
+	}
 	for index, snake := range initialBoardState.Snakes {
 		head := snakePositions[index]
 		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, snake.Health)
 	}
 
+	// Place static hazards
 	for _, hazard := range ArcadeMazeHazards {
 		editor.AddHazard(hazard)
 	}
@@ -69,11 +74,18 @@ func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 	}
 
 	foodPositions := []rules.Point{
+		{X: 1, Y: 1},
 		{X: 3, Y: 11},
+		{X: 4, Y: 7},
+		{X: 4, Y: 17},
+		{X: 9, Y: 1},
 		{X: 9, Y: 5},
 		{X: 9, Y: 11},
 		{X: 9, Y: 17},
+		{X: 14, Y: 7},
+		{X: 14, Y: 17},
 		{X: 15, Y: 11},
+		{X: 17, Y: 1},
 	}
 
 	rand.Shuffle(len(foodPositions), func(i int, j int) {
