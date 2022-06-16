@@ -23,7 +23,11 @@ func TestRegisteredMaps(t *testing.T) {
 	for mapName, gameMap := range globalRegistry {
 		t.Run(mapName, func(t *testing.T) {
 			require.Equalf(t, mapName, gameMap.ID(), "%#v game map doesn't return its own ID", mapName)
-			require.True(t, gameMap.Meta().Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", gameMap.Meta().Version))
+			meta := gameMap.Meta()
+			require.True(t, meta.Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", meta.Version))
+			require.NotZero(t, meta.MinPlayers, "registered maps must have minimum players set")
+			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players set")
+			require.NotEmpty(t, meta.Sizes, "registered maps must have at least one supported size declared")
 			var setupBoardState *rules.BoardState
 
 			for width := 0; width < maxBoardWidth; width++ {

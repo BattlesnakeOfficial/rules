@@ -18,6 +18,52 @@ type GameMap interface {
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
+// dimensions is an internal type used to encapsulate the configuration of a particular map size.
+type dimensions struct {
+	// Width is the width, in number of map squares, of the map.
+	// The value 0 has a special meaning to mean unlimited.
+	Width uint
+	// Height is the height, in number of map squares, of the map.
+	// The value 0 has a special meaning to mean unlimited.
+	Height uint
+}
+
+// sizes is an interal type used to encapsulate the configuration of supported map sizes.
+type sizes []dimensions
+
+// IsUnlimited reports whether the supported sizes are unlimited.
+// Note that even for unlimited sizes, there will be an upper bound that can actually be run and visualised.
+func (d sizes) IsUnlimited() bool {
+	return len(d) == 0 && d[0].Width == 0
+}
+
+// UnlimitedSizes creates sizes for a map that has no fixed sizes (supports unlimited sizes).
+func UnlimitedSizes() sizes {
+	return sizes{dimensions{Width: 0, Height: 0}}
+}
+
+// FixedSizes creates dimensions for a map that has 1 or more fixed sizes.
+// The arguments are expected to be multiples of 2, with the first of each pair being width
+// and the second of each pair being height.
+// Examples:
+// - FixedSizes(9,11) creates a map that supports only a width of 9 and a height of 11.
+// - FixedSizes(11,11,19,19) creates dimension for a map that supports sizes 11x11 and 19x19
+//
+// Panics if the list of sizes is not a multiple of 2.
+func FixedSizes(a, b uint, c ...uint) sizes {
+	if len(c)%2 != 0 {
+		panic("invalid map dimensions - an odd number of sizes was specified")
+	}
+
+	s := make(sizes, 0, 1+len(c))
+	s = append(s, dimensions{Width: a, Height: b})
+	for i := 0; i < len(c); i += 2 {
+		s = append(s, dimensions{Width: c[i], Height: c[i+1]})
+	}
+
+	return s
+}
+
 type Metadata struct {
 	Name        string
 	Author      string
@@ -25,6 +71,15 @@ type Metadata struct {
 	// Version is the current version of the game map.
 	// Each time a map is changed, the version number should be incremented by 1.
 	Version uint
+	// MinPlayers is the minimum number of players that the map supports.
+	MinPlayers uint
+	// MaxPlayers is the maximum number of players that the map supports.
+	MaxPlayers uint
+	// Sizes is a list of supported map sizes. Map sizes can fall into one of 3 categories:
+	//   1. one fixed size (i.e. [11x11])
+	//   2. several, fixed sizes (i.e. [11x11, 19x19, 25x25])
+	//   3. "unlimited" sizes (the map is not fixed and can scale to any reasonable size)
+	Sizes []dimensions
 }
 
 // Editor is used by GameMap implementations to modify the board state.

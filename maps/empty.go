@@ -20,6 +20,8 @@ func (m EmptyMap) Meta() Metadata {
 		Description: "Default snake placement with no food",
 		Author:      "Battlesnake",
 		Version:     1,
+		MinPlayers:  1,
+		MaxPlayers:  0,
 	}
 }
 
