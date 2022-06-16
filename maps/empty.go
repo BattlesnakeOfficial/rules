@@ -21,7 +21,8 @@ func (m EmptyMap) Meta() Metadata {
 		Author:      "Battlesnake",
 		Version:     1,
 		MinPlayers:  1,
-		MaxPlayers:  0,
+		MaxPlayers:  8,
+		Sizes:       UnlimitedSizes(),
 	}
 }
 
