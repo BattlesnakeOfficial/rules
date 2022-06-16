@@ -21,7 +21,7 @@ func (m ArcadeMazeMap) Meta() Metadata {
 		Author:      "Battlesnake",
 		Version:     1,
 		MinPlayers:  1,
-		MaxPlayers:  4,
+		MaxPlayers:  6,
 		Sizes:       FixedSizes(19, 21),
 	}
 }
