@@ -34,7 +34,7 @@ type sizes []dimensions
 // IsUnlimited reports whether the supported sizes are unlimited.
 // Note that even for unlimited sizes, there will be an upper bound that can actually be run and visualised.
 func (d sizes) IsUnlimited() bool {
-	return len(d) == 0 && d[0].Width == 0
+	return len(d) == 1 && d[0].Width == 0
 }
 
 // UnlimitedSizes creates sizes for a map that has no fixed sizes (supports unlimited sizes).
@@ -79,7 +79,7 @@ type Metadata struct {
 	//   1. one fixed size (i.e. [11x11])
 	//   2. several, fixed sizes (i.e. [11x11, 19x19, 25x25])
 	//   3. "unlimited" sizes (the map is not fixed and can scale to any reasonable size)
-	Sizes []dimensions
+	Sizes sizes
 }
 
 // Editor is used by GameMap implementations to modify the board state.
