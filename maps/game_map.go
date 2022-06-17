@@ -44,7 +44,7 @@ func AnySize() boardSizes {
 
 // FixedSizes creates dimensions for a board that has 1 or more fixed sizes.
 // Examples:
-// - FixedSizes(Dimension{9,11}) creates a board that supports only a width of 9 and a height of 11.
+// - FixedSizes(Dimension{9,11}) supports only a width of 9 and a height of 11.
 // - FixedSizes(Dimensions{11,11},Dimensions{19,19}) supports sizes 11x11 and 19x19
 func FixedSizes(a Dimensions, b ...Dimensions) boardSizes {
 	s := make(boardSizes, 0, 1+len(b))
