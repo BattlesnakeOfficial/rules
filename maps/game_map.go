@@ -64,10 +64,10 @@ type Metadata struct {
 	MinPlayers uint
 	// MaxPlayers is the maximum number of players that the map supports.
 	MaxPlayers uint
-	// BoardSizes is a list of supported map sizes. Map sizes can fall into one of 3 categories:
+	// BoardSizes is a list of supported board sizes. Board sizes can fall into one of 3 categories:
 	//   1. one fixed size (i.e. [11x11])
-	//   2. several, fixed sizes (i.e. [11x11, 19x19, 25x25])
-	//   3. "unlimited" sizes (the map is not fixed and can scale to any reasonable size)
+	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
+	//   3. "unlimited" sizes (the board is not fixed and can scale to any reasonable size)
 	BoardSizes sizes
 }
 
