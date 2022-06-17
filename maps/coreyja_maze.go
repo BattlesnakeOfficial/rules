@@ -252,7 +252,7 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 			log.Print(fmt.Sprintf("Vertical Cuts are at %v", verticalHoles))
 		}
 
-		newNewHorizontalWall, horizontalHoles := cutHoles(newHorizontalWall, intersectionPoint, rand)
+		newNewHorizontalWall, horizontalHoles := cutHoleSingle(newHorizontalWall, intersectionPoint, rand)
 		newHorizontalWall = newNewHorizontalWall
 		for _, hole := range horizontalHoles {
 			disAllowedVertical = append(disAllowedVertical, hole.X)
@@ -374,6 +374,29 @@ func cutHoles(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rul
 	}
 
 	index = pos(s, intersection)
+	if index != len(s)-1 {
+		secondSegmentToRemove := rand.Intn(len(s)-index-1) + index + 1
+
+		holes = append(holes, s[secondSegmentToRemove])
+		s = remove(s, secondSegmentToRemove)
+	}
+
+	return s, holes
+}
+
+func cutHoleSingle(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rules.Point, []rules.Point) {
+	holes := make([]rules.Point, 0)
+
+	index := pos(s, intersection)
+
+	if index != 0 {
+		firstSegmentToRemove := rand.Intn(index)
+		holes = append(holes, s[firstSegmentToRemove])
+		s = remove(s, firstSegmentToRemove)
+
+    return s, holes
+	}
+
 	if index != len(s)-1 {
 		secondSegmentToRemove := rand.Intn(len(s)-index-1) + index + 1
 
