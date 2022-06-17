@@ -129,9 +129,7 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	if len(lastBoardState.Food) == 0 {
 		currentLevel += 1
 		m.WriteBitState(lastBoardState, currentLevel, editor)
-	}
 
-	if len(lastBoardState.Food) == 0 {
 		// This will create a new maze
 		m.CreateMaze(lastBoardState, settings, editor, currentLevel)
 
