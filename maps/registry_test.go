@@ -101,10 +101,10 @@ func TestRegisteredMaps(t *testing.T) {
 	}
 }
 
-func pickSize(meta Metadata) dimensions {
+func pickSize(meta Metadata) Dimensions {
 	// For unlimited, we can pick any size
 	if meta.Sizes.IsUnlimited() {
-		return dimensions{Width: 11, Height: 11}
+		return Dimensions{Width: 11, Height: 11}
 	}
 
 	// For fixed, just pick the first supported size

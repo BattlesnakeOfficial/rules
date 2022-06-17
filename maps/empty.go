@@ -22,7 +22,7 @@ func (m EmptyMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       UnlimitedSizes(),
+		Sizes:       AnySize(),
 	}
 }
 

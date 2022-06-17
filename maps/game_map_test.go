@@ -64,24 +64,16 @@ func TestBoardStateEditor(t *testing.T) {
 }
 
 func TestMapSizes(t *testing.T) {
-	// ensure invalid sizes are prevented
-	require.Panics(t, func() {
-		// should panic because it is an odd number of sizes
-		//nolint:staticcheck
-		FixedSizes(11, 11, 19)
-		//nolint:staticcheck
-		FixedSizes(11, 11, 19, 19, 25)
-	})
-
-	s := FixedSizes(11, 12)
+	s := FixedSizes(Dimensions{11, 12})
 	require.Equal(t, s[0].Width, uint(11))
 	require.Equal(t, s[0].Height, uint(12))
 
-	s = FixedSizes(11, 11, 19, 25)
+	s = FixedSizes(Dimensions{11, 11}, Dimensions{19, 25})
+	require.Len(t, s, 2)
 	require.Equal(t, s[1].Width, uint(19))
 	require.Equal(t, s[1].Height, uint(25))
 
-	s = UnlimitedSizes()
+	s = AnySize()
 	require.Len(t, s, 1, "unlimited maps should have just one dimensions")
 	require.True(t, s.IsUnlimited())
 }
