@@ -21,6 +21,7 @@ func (m RoyaleHazardsMap) Meta() Metadata {
 		Name:        "Royale",
 		Description: "A map where hazards are generated every N turns",
 		Author:      "Battlesnake",
+		Version:     1,
 	}
 }
 

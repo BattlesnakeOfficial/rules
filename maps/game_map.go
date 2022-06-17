@@ -22,6 +22,9 @@ type Metadata struct {
 	Name        string
 	Author      string
 	Description string
+	// Version is the current version of the game map.
+	// Each time a map is changed, the version number should be incremented by 1.
+	Version uint
 }
 
 // Editor is used by GameMap implementations to modify the board state.
