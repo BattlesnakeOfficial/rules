@@ -38,6 +38,7 @@ func (m CoreyjaMazeMap) Meta() Metadata {
 		Name:        "Coreyja Maze",
 		Description: "Solo Maze where you need to find the food",
 		Author:      "coreyja",
+		Version:     0,
 	}
 }
 
@@ -394,7 +395,7 @@ func cutHoleSingle(s []rules.Point, intersection rules.Point, rand rules.Rand) (
 		holes = append(holes, s[firstSegmentToRemove])
 		s = remove(s, firstSegmentToRemove)
 
-    return s, holes
+		return s, holes
 	}
 
 	if index != len(s)-1 {
