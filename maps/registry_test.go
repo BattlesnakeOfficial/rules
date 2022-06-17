@@ -33,7 +33,7 @@ func TestRegisteredMaps(t *testing.T) {
 
 			// "fuzz test" supported players
 			mapSize := pickSize(meta)
-			for i := meta.MaxPlayers; i < meta.MaxPlayers; i++ {
+			for i := meta.MinPlayers; i < meta.MaxPlayers; i++ {
 				t.Run(fmt.Sprintf("%d players", i), func(t *testing.T) {
 					initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
 					for j := uint(0); j < i; j++ {
