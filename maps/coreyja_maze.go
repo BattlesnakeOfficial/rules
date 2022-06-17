@@ -103,8 +103,17 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	}
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
-	adjustedFood := m.AdjustPosition(topRightCorner, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-	editor.AddFood(adjustedFood)
+	/// Pick random food spawn point
+	foodPlaced := false
+	for !foodPlaced {
+		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+
+		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) {
+			editor.AddFood(adjustedFood)
+			foodPlaced = true
+		}
+	}
 
 	// Fill outside of the board with walls
 	xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2)
@@ -349,8 +358,6 @@ func (m CoreyjaMazeMap) WriteBitState(boardState *rules.BoardState, state int64,
 
 	for i, c := range paddingBits {
 		point := rules.Point{X: i, Y: 0}
-
-		fmt.Println("i: ", i, "width: ", width)
 
 		if c == '1' {
 			editor.AddHazard(point)
