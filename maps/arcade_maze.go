@@ -22,7 +22,7 @@ func (m ArcadeMazeMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  6,
-		Sizes:       FixedSizes(Dimensions{19, 21}),
+		BoardSizes:  FixedSizes(Dimensions{19, 21}),
 	}
 }
 

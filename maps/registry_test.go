@@ -28,7 +28,7 @@ func TestRegisteredMaps(t *testing.T) {
 			require.NotZero(t, meta.MinPlayers, "registered maps must have minimum players declared")
 			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
 			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
-			require.NotEmpty(t, meta.Sizes, "registered maps must have at least one supported size declared")
+			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
 			var setupBoardState *rules.BoardState
 
 			// "fuzz test" supported players
@@ -45,8 +45,8 @@ func TestRegisteredMaps(t *testing.T) {
 			}
 
 			// "fuzz test" supported map sizes
-			if !meta.Sizes.IsUnlimited() {
-				for _, mapSize := range meta.Sizes {
+			if !meta.BoardSizes.IsUnlimited() {
+				for _, mapSize := range meta.BoardSizes {
 					t.Run(fmt.Sprintf("%dx%d map size", mapSize.Width, mapSize.Height), func(t *testing.T) {
 						initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
 						for i := uint(0); i < meta.MaxPlayers; i++ {
@@ -103,10 +103,10 @@ func TestRegisteredMaps(t *testing.T) {
 
 func pickSize(meta Metadata) Dimensions {
 	// For unlimited, we can pick any size
-	if meta.Sizes.IsUnlimited() {
+	if meta.BoardSizes.IsUnlimited() {
 		return Dimensions{Width: 11, Height: 11}
 	}
 
 	// For fixed, just pick the first supported size
-	return meta.Sizes[0]
+	return meta.BoardSizes[0]
 }

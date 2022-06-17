@@ -24,7 +24,7 @@ func (m RoyaleHazardsMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 

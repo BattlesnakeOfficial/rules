@@ -32,7 +32,7 @@ func (m InnerBorderHazardsMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -72,7 +72,7 @@ func (m ConcentricRingsHazardsMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -113,7 +113,7 @@ func (m ColumnsHazardsMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -152,7 +152,7 @@ func (m SpiralHazardsMap) Meta() Metadata {
 		Version:    1,
 		MinPlayers: 1,
 		MaxPlayers: 8,
-		Sizes:      AnySize(),
+		BoardSizes: AnySize(),
 	}
 }
 
@@ -244,7 +244,7 @@ func (m ScatterFillMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -295,7 +295,7 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -409,7 +409,7 @@ func (m ExpandingBoxMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -484,7 +484,7 @@ func (m ExpandingScatterMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		Sizes:       AnySize(),
+		BoardSizes:  AnySize(),
 	}
 }
 
@@ -566,7 +566,7 @@ Each river has one or two 1-square "bridges" over them`,
 		Version:    1,
 		MinPlayers: 1,
 		MaxPlayers: 8,
-		Sizes:      FixedSizes(Dimensions{11, 11}, Dimensions{19, 19}, Dimensions{25, 25}),
+		BoardSizes: FixedSizes(Dimensions{11, 11}, Dimensions{19, 19}, Dimensions{25, 25}),
 	}
 }
 
