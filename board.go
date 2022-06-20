@@ -137,13 +137,22 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 		startPoints = append(startPoints, cornerPoints...)
 	}
 
+	return PlaceSnakesAtPositions(b, startPoints)
+}
+
+// PlaceSnakesAtPositions places board snakes at a given list of start positions
+func PlaceSnakesAtPositions(b *BoardState, startPoints []Point) error {
+	if len(b.Snakes) > len(startPoints) {
+		return ErrorTooManySnakes
+	}
+
 	// Assign to snakes in order given
 	for i := 0; i < len(b.Snakes); i++ {
 		for j := 0; j < SnakeStartSize; j++ {
 			b.Snakes[i].Body = append(b.Snakes[i].Body, startPoints[i])
 		}
-
 	}
+
 	return nil
 }
 

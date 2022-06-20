@@ -544,14 +544,64 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if err := (StandardMap{}).SetupBoard(lastBoardState, settings, editor); err != nil {
+	width := lastBoardState.Width
+	height := lastBoardState.Height
+	startPositions, ok := riversAndBridgesStartPositions[rules.Point{X: width, Y: height}]
+	if !ok {
+		return rules.RulesetError("board size is not supported by this map")
+	}
+
+	numSnakes := len(lastBoardState.Snakes)
+	if numSnakes == 0 {
+		return rules.RulesetError("too few snakes - at least one snake must be present")
+	}
+
+	maxSnakes := len(startPositions)
+	if maxSnakes < numSnakes {
+		return rules.ErrorTooManySnakes
+	}
+
+	rand := settings.GetRand(0)
+
+	snakeIDs := make([]string, 0, len(lastBoardState.Snakes))
+	for _, snake := range lastBoardState.Snakes {
+		snakeIDs = append(snakeIDs, snake.ID)
+	}
+
+	tempBoardState := rules.NewBoardState(width, height)
+	tempBoardState.Snakes = make([]rules.Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		tempBoardState.Snakes[i] = rules.Snake{
+			ID:     snakeIDs[i],
+			Health: rules.SnakeMaxHealth,
+		}
+	}
+	err := rules.PlaceSnakesAtPositions(tempBoardState, startPositions)
+	if err != nil {
 		return err
 	}
 
-	hazards, ok := riversAndBridgesMaps[rules.Point{X: lastBoardState.Width, Y: lastBoardState.Height}]
+	err = rules.PlaceFoodAutomatically(rand, tempBoardState)
+	if err != nil {
+		return err
+	}
+
+	// Copy food from temp board state
+	for _, food := range tempBoardState.Food {
+		editor.AddFood(food)
+	}
+
+	// Copy snakes from temp board state
+	for _, snake := range tempBoardState.Snakes {
+		editor.PlaceSnake(snake.ID, snake.Body, snake.Health)
+	}
+
+	hazards, ok := riversAndBridgesMaps[rules.Point{X: width, Y: height}]
 	if !ok {
 		return rules.RulesetError("Board size is not supported by this map")
 	}
+
 	for _, p := range hazards {
 		editor.AddHazard(p)
 	}
@@ -561,6 +611,59 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 
 func (m RiverAndBridgesHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+}
+
+var riversAndBridgesStartPositions = map[rules.Point][]rules.Point{
+	{X: 11, Y: 11}: {
+		{X: 1, Y: 1},
+		{X: 9, Y: 9},
+		{X: 1, Y: 9},
+		{X: 9, Y: 1},
+		{X: 3, Y: 3},
+		{X: 7, Y: 7},
+		{X: 3, Y: 7},
+		{X: 7, Y: 3},
+		{X: 1, Y: 3},
+		{X: 9, Y: 7},
+		{X: 9, Y: 3},
+		{X: 3, Y: 9},
+	},
+	{X: 19, Y: 19}: {
+		{X: 1, Y: 1},
+		{X: 17, Y: 17},
+		{X: 13, Y: 1},
+		{X: 1, Y: 17},
+		{X: 5, Y: 1},
+		{X: 17, Y: 1},
+		{X: 5, Y: 17},
+		{X: 17, Y: 13},
+		{X: 1, Y: 5},
+		{X: 17, Y: 5},
+		{X: 1, Y: 13},
+		{X: 13, Y: 17},
+		{X: 5, Y: 5},
+		{X: 13, Y: 5},
+		{X: 3, Y: 13},
+		{X: 13, Y: 13},
+	},
+	{X: 25, Y: 25}: {
+		{X: 1, Y: 1},
+		{X: 23, Y: 23},
+		{X: 1, Y: 23},
+		{X: 23, Y: 1},
+		{X: 9, Y: 9},
+		{X: 15, Y: 15},
+		{X: 15, Y: 9},
+		{X: 9, Y: 15},
+		{X: 9, Y: 1},
+		{X: 23, Y: 15},
+		{X: 23, Y: 9},
+		{X: 1, Y: 15},
+		{X: 1, Y: 9},
+		{X: 15, Y: 1},
+		{X: 9, Y: 23},
+		{X: 15, Y: 23},
+	},
 }
 
 var riversAndBridgesMaps = map[rules.Point][]rules.Point{
