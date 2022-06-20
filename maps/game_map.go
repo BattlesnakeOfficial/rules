@@ -18,6 +18,41 @@ type GameMap interface {
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
+// Dimensions describes the size of a Battlesnake board.
+type Dimensions struct {
+	// Width is the width, in number of board squares, of the board.
+	// The value 0 has a special meaning to mean unlimited.
+	Width uint
+	// Height is the height, in number of board squares, of the board.
+	// The value 0 has a special meaning to mean unlimited.
+	Height uint
+}
+
+// sizes is a list of board sizes that a map supports.
+type sizes []Dimensions
+
+// IsUnlimited reports whether the supported sizes are unlimited.
+// Note that even for unlimited sizes, there will be an upper bound that can actually be run and visualised.
+func (d sizes) IsUnlimited() bool {
+	return len(d) == 1 && d[0].Width == 0
+}
+
+// AnySize creates sizes for a board that has no fixed sizes (supports unlimited sizes).
+func AnySize() sizes {
+	return sizes{Dimensions{Width: 0, Height: 0}}
+}
+
+// FixedSizes creates dimensions for a board that has 1 or more fixed sizes.
+// Examples:
+// - FixedSizes(Dimension{9,11}) supports only a width of 9 and a height of 11.
+// - FixedSizes(Dimensions{11,11},Dimensions{19,19}) supports sizes 11x11 and 19x19
+func FixedSizes(a Dimensions, b ...Dimensions) sizes {
+	s := make(sizes, 0, 1+len(b))
+	s = append(s, a)
+	s = append(s, b...)
+	return s
+}
+
 type Metadata struct {
 	Name        string
 	Author      string
@@ -25,6 +60,15 @@ type Metadata struct {
 	// Version is the current version of the game map.
 	// Each time a map is changed, the version number should be incremented by 1.
 	Version uint
+	// MinPlayers is the minimum number of players that the map supports.
+	MinPlayers uint
+	// MaxPlayers is the maximum number of players that the map supports.
+	MaxPlayers uint
+	// BoardSizes is a list of supported board sizes. Board sizes can fall into one of 3 categories:
+	//   1. one fixed size (i.e. [11x11])
+	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
+	//   3. "unlimited" sizes (the board is not fixed and can scale to any reasonable size)
+	BoardSizes sizes
 }
 
 // Editor is used by GameMap implementations to modify the board state.

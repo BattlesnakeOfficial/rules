@@ -20,6 +20,9 @@ func (m ArcadeMazeMap) Meta() Metadata {
 		Description: "Generic arcade maze map with deadly hazard walls.",
 		Author:      "Battlesnake",
 		Version:     1,
+		MinPlayers:  1,
+		MaxPlayers:  6,
+		BoardSizes:  FixedSizes(Dimensions{19, 21}),
 	}
 }
 
