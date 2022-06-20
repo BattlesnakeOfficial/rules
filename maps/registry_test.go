@@ -23,9 +23,42 @@ func TestRegisteredMaps(t *testing.T) {
 	for mapName, gameMap := range globalRegistry {
 		t.Run(mapName, func(t *testing.T) {
 			require.Equalf(t, mapName, gameMap.ID(), "%#v game map doesn't return its own ID", mapName)
-			require.True(t, gameMap.Meta().Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", gameMap.Meta().Version))
+			meta := gameMap.Meta()
+			require.True(t, meta.Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", meta.Version))
+			require.NotZero(t, meta.MinPlayers, "registered maps must have minimum players declared")
+			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
+			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
+			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
 			var setupBoardState *rules.BoardState
 
+			// "fuzz test" supported players
+			mapSize := pickSize(meta)
+			for i := meta.MinPlayers; i < meta.MaxPlayers; i++ {
+				t.Run(fmt.Sprintf("%d players", i), func(t *testing.T) {
+					initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
+					for j := uint(0); j < i; j++ {
+						initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: fmt.Sprint(j), Body: []rules.Point{}})
+					}
+					err := gameMap.SetupBoard(initialBoardState, testSettings, NewBoardStateEditor(initialBoardState))
+					require.NoError(t, err, fmt.Sprintf("%d players should be supported by this map", i))
+				})
+			}
+
+			// "fuzz test" supported map sizes
+			if !meta.BoardSizes.IsUnlimited() {
+				for _, mapSize := range meta.BoardSizes {
+					t.Run(fmt.Sprintf("%dx%d map size", mapSize.Width, mapSize.Height), func(t *testing.T) {
+						initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
+						for i := uint(0); i < meta.MaxPlayers; i++ {
+							initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: fmt.Sprint(i), Body: []rules.Point{}})
+						}
+						err := gameMap.SetupBoard(initialBoardState, testSettings, NewBoardStateEditor(initialBoardState))
+						require.NoError(t, err, "error setting up map")
+					})
+				}
+			}
+
+			// Check that at least one map size can be setup without error
 			for width := 0; width < maxBoardWidth; width++ {
 				for height := 0; height < maxBoardHeight; height++ {
 					initialBoardState := rules.NewBoardState(width, height)
@@ -66,4 +99,14 @@ func TestRegisteredMaps(t *testing.T) {
 			require.Equal(t, previousBoardState, passedBoardState, "BoardState should not be modified directly by GameMap.UpdateBoard")
 		})
 	}
+}
+
+func pickSize(meta Metadata) Dimensions {
+	// For unlimited, we can pick any size
+	if meta.BoardSizes.IsUnlimited() {
+		return Dimensions{Width: 11, Height: 11}
+	}
+
+	// For fixed, just pick the first supported size
+	return meta.BoardSizes[0]
 }
