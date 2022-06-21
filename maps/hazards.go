@@ -565,7 +565,7 @@ Each river has one or two 1-square "bridges" over them`,
 		Author:     "Battlesnake",
 		Version:    1,
 		MinPlayers: 1,
-		MaxPlayers: 16,
+		MaxPlayers: 12,
 		BoardSizes: FixedSizes(Dimensions{11, 11}, Dimensions{19, 19}, Dimensions{25, 25}),
 	}
 }
