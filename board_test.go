@@ -8,6 +8,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPlaceSnakesAtPositions(t *testing.T) {
+	state := NewBoardState(9, 9)
+	for i := 0; i < 3; i++ {
+		state.Snakes = append(state.Snakes, Snake{ID: fmt.Sprint(i)})
+	}
+	startPoints := []Point{
+		{X: 0, Y: 0},
+		{X: 2, Y: 0},
+		{X: 8, Y: 5},
+	}
+	err := PlaceSnakesAtPositions(state, startPoints)
+	require.NoError(t, err)
+	for i := 0; i < 3; i++ {
+		require.Equal(t, startPoints[i], state.Snakes[i].Body[0], fmt.Sprintf("snake %d should be get start point %d", i, i))
+	}
+
+	state.Snakes = append(state.Snakes, Snake{ID: "extra snake"})
+	err = PlaceSnakesAtPositions(state, startPoints)
+	require.Equal(t, ErrorTooManySnakes, err)
+
+}
+
 func sortPoints(p []Point) {
 	sort.Slice(p, func(i, j int) bool {
 		if p[i].X != p[j].X {

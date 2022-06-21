@@ -565,7 +565,7 @@ Each river has one or two 1-square "bridges" over them`,
 		Author:     "Battlesnake",
 		Version:    1,
 		MinPlayers: 1,
-		MaxPlayers: 8,
+		MaxPlayers: 16,
 		BoardSizes: FixedSizes(Dimensions{11, 11}, Dimensions{19, 19}, Dimensions{25, 25}),
 	}
 }
@@ -626,7 +626,7 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 
 	hazards, ok := riversAndBridgesMaps[rules.Point{X: width, Y: height}]
 	if !ok {
-		return rules.RulesetError("Board size is not supported by this map")
+		return rules.RulesetError("board size is not supported by this map")
 	}
 
 	for _, p := range hazards {
