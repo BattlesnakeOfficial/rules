@@ -216,7 +216,7 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	isSmallBoard := b.Width*b.Height <= 49
 	// Up to 7 snakes can be placed such that food is nearby on small boards.
 	// Otherwise, we skip this and only try to place food in the center.
-	if len(b.Snakes) <= 7 && isSmallBoard {
+	if len(b.Snakes) <= 7 || !isSmallBoard {
 		// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
 		for i := 0; i < len(b.Snakes); i++ {
 			snakeHead := b.Snakes[i].Body[0]
