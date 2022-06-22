@@ -213,62 +213,66 @@ func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 
-	// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
-	for i := 0; i < len(b.Snakes); i++ {
-		snakeHead := b.Snakes[i].Body[0]
-		possibleFoodLocations := []Point{
-			{snakeHead.X - 1, snakeHead.Y - 1},
-			{snakeHead.X - 1, snakeHead.Y + 1},
-			{snakeHead.X + 1, snakeHead.Y - 1},
-			{snakeHead.X + 1, snakeHead.Y + 1},
-		}
+	// Up to 7 snakes can be placed such that food is nearby.
+	// Otherwise, we skip this and only try to place food in the center.
+	if len(b.Snakes) <= 7 {
+		// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
+		for i := 0; i < len(b.Snakes); i++ {
+			snakeHead := b.Snakes[i].Body[0]
+			possibleFoodLocations := []Point{
+				{snakeHead.X - 1, snakeHead.Y - 1},
+				{snakeHead.X - 1, snakeHead.Y + 1},
+				{snakeHead.X + 1, snakeHead.Y - 1},
+				{snakeHead.X + 1, snakeHead.Y + 1},
+			}
 
-		// Remove any invalid/unwanted positions
-		availableFoodLocations := []Point{}
-		for _, p := range possibleFoodLocations {
+			// Remove any invalid/unwanted positions
+			availableFoodLocations := []Point{}
+			for _, p := range possibleFoodLocations {
 
-			// Ignore points already occupied by food
-			isOccupiedAlready := false
-			for _, food := range b.Food {
-				if food.X == p.X && food.Y == p.Y {
-					isOccupiedAlready = true
-					break
+				// Ignore points already occupied by food
+				isOccupiedAlready := false
+				for _, food := range b.Food {
+					if food.X == p.X && food.Y == p.Y {
+						isOccupiedAlready = true
+						break
+					}
 				}
-			}
-			if isOccupiedAlready {
-				continue
+				if isOccupiedAlready {
+					continue
+				}
+
+				// Food must be further than snake from center on at least one axis
+				isAwayFromCenter := false
+				if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
+					isAwayFromCenter = true
+				} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
+					isAwayFromCenter = true
+				} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
+					isAwayFromCenter = true
+				} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
+					isAwayFromCenter = true
+				}
+				if !isAwayFromCenter {
+					continue
+				}
+
+				// Don't spawn food in corners
+				if (p.X == 0 || p.X == (b.Width-1)) && (p.Y == 0 || p.Y == (b.Height-1)) {
+					continue
+				}
+
+				availableFoodLocations = append(availableFoodLocations, p)
 			}
 
-			// Food must be further than snake from center on at least one axis
-			isAwayFromCenter := false
-			if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
-				isAwayFromCenter = true
-			} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
-				isAwayFromCenter = true
-			} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
-				isAwayFromCenter = true
-			} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
-				isAwayFromCenter = true
-			}
-			if !isAwayFromCenter {
-				continue
+			if len(availableFoodLocations) <= 0 {
+				return ErrorNoRoomForFood
 			}
 
-			// Don't spawn food in corners
-			if (p.X == 0 || p.X == (b.Width-1)) && (p.Y == 0 || p.Y == (b.Height-1)) {
-				continue
-			}
-
-			availableFoodLocations = append(availableFoodLocations, p)
+			// Select randomly from available locations
+			placedFood := availableFoodLocations[rand.Intn(len(availableFoodLocations))]
+			b.Food = append(b.Food, placedFood)
 		}
-
-		if len(availableFoodLocations) <= 0 {
-			return ErrorNoRoomForFood
-		}
-
-		// Select randomly from available locations
-		placedFood := availableFoodLocations[rand.Intn(len(availableFoodLocations))]
-		b.Food = append(b.Food, placedFood)
 	}
 
 	// Finally, always place 1 food in center of board for dramatic purposes

@@ -8,6 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDev1235(t *testing.T) {
+	_, err := CreateDefaultBoardState(MaxRand, 7, 7, []string{
+		"1", "2", "3", "4", "5", "6", "7", "8",
+	})
+	require.NoError(t, err)
+}
+
 func sortPoints(p []Point) {
 	sort.Slice(p, func(i, j int) bool {
 		if p[i].X != p[j].X {
