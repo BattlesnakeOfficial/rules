@@ -9,10 +9,31 @@ import (
 )
 
 func TestDev1235(t *testing.T) {
-	_, err := CreateDefaultBoardState(MaxRand, 7, 7, []string{
+	// Small boards should no longer error and only get 1 food when num snakes > 4
+	state, err := CreateDefaultBoardState(MaxRand, BoardSizeSmall, BoardSizeSmall, []string{
 		"1", "2", "3", "4", "5", "6", "7", "8",
 	})
 	require.NoError(t, err)
+	require.Len(t, state.Food, 1)
+	state, err = CreateDefaultBoardState(MaxRand, BoardSizeSmall, BoardSizeSmall, []string{
+		"1", "2", "3", "4", "5",
+	})
+	require.NoError(t, err)
+	require.Len(t, state.Food, 1)
+
+	// Small boards with <= 4 snakes should still get more than just center food
+	state, err = CreateDefaultBoardState(MaxRand, BoardSizeSmall, BoardSizeSmall, []string{
+		"1", "2", "3", "4",
+	})
+	require.NoError(t, err)
+	require.Len(t, state.Food, 5)
+
+	// Medium boards should still get 9 food
+	state, err = CreateDefaultBoardState(MaxRand, BoardSizeMedium, BoardSizeMedium, []string{
+		"1", "2", "3", "4", "5", "6", "7", "8",
+	})
+	require.NoError(t, err)
+	require.Len(t, state.Food, 9)
 }
 
 func sortPoints(p []Point) {
