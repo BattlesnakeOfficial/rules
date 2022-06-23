@@ -18,14 +18,21 @@ func TestPlaceSnakesAtPositions(t *testing.T) {
 		{X: 2, Y: 0},
 		{X: 8, Y: 5},
 	}
-	err := PlaceSnakesAtPositions(state, startPoints)
+	err := PlaceSnakesAtPositions(GlobalRand, state, startPoints)
 	require.NoError(t, err)
 	for i := 0; i < 3; i++ {
-		require.Equal(t, startPoints[i], state.Snakes[i].Body[0], fmt.Sprintf("snake %d should be get start point %d", i, i))
+		found := false
+		for j := 0; j < 3; j++ {
+			if state.Snakes[i].Body[0] == startPoints[j] {
+				found = true
+				break
+			}
+		}
+		require.True(t, found, "snake should be placed at one of the 3 start points")
 	}
 
 	state.Snakes = append(state.Snakes, Snake{ID: "extra snake"})
-	err = PlaceSnakesAtPositions(state, startPoints)
+	err = PlaceSnakesAtPositions(GlobalRand, state, startPoints)
 	require.Equal(t, ErrorTooManySnakes, err)
 }
 

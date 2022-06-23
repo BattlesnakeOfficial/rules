@@ -604,7 +604,7 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 			Health: rules.SnakeMaxHealth,
 		}
 	}
-	err := rules.PlaceSnakesAtPositions(tempBoardState, startPositions)
+	err := rules.PlaceSnakesAtPositions(rand, tempBoardState, startPositions)
 	if err != nil {
 		return err
 	}

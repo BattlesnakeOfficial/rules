@@ -137,19 +137,39 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 		startPoints = append(startPoints, cornerPoints...)
 	}
 
-	return PlaceSnakesAtPositions(b, startPoints)
-}
-
-// PlaceSnakesAtPositions places board snakes at a given list of start positions
-func PlaceSnakesAtPositions(b *BoardState, startPoints []Point) error {
-	if len(b.Snakes) > len(startPoints) {
-		return ErrorTooManySnakes
-	}
-
 	// Assign to snakes in order given
 	for i := 0; i < len(b.Snakes); i++ {
 		for j := 0; j < SnakeStartSize; j++ {
 			b.Snakes[i].Body = append(b.Snakes[i].Body, startPoints[i])
+		}
+
+	}
+
+	return nil
+}
+
+// PlaceSnakesAtPositions places snakes at a given list of start positions
+func PlaceSnakesAtPositions(rand Rand, b *BoardState, startPoints []Point) error {
+	if len(b.Snakes) == 0 {
+		return nil
+	}
+	if len(b.Snakes) > len(startPoints) {
+		return ErrorTooManySnakes
+	}
+
+	snakeIndexes := make([]int, len(b.Snakes))
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeIndexes[i] = i
+	}
+	rand.Shuffle(len(snakeIndexes), func(i, j int) {
+		snakeIndexes[i], snakeIndexes[j] = snakeIndexes[j], snakeIndexes[i]
+	})
+
+	// Assign to snakes in order given
+	for i := 0; i < len(b.Snakes); i++ {
+		snakeIdx := snakeIndexes[i]
+		for j := 0; j < SnakeStartSize; j++ {
+			b.Snakes[snakeIdx].Body = append(b.Snakes[snakeIdx].Body, startPoints[i])
 		}
 	}
 
