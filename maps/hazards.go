@@ -670,7 +670,7 @@ var riversAndBridgesStartPositions = map[rules.Point][]rules.Point{
 		{X: 13, Y: 17},
 		{X: 5, Y: 5},
 		{X: 13, Y: 5},
-		{X: 3, Y: 13},
+		{X: 5, Y: 13},
 		{X: 13, Y: 13},
 	},
 	{X: 25, Y: 25}: {
