@@ -16,7 +16,7 @@ Download precompiled binaries here: <br>
 
 Install as a Go package. Requires Go 1.18 or higher. [[Download](https://golang.org/dl/)]
 ```
-go get github.com/BattlesnakeOfficial/rules/cli/battlesnake
+go install github.com/BattlesnakeOfficial/rules/cli/battlesnake@latest
 ```
 
 Compile from source. Also requires Go 1.18 or higher.
