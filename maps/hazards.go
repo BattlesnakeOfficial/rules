@@ -578,6 +578,9 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 		return rules.RulesetError("board size is not supported by this map")
 	}
 	startPositions, ok := riversAndBridgesStartPositions[rules.Point{X: width, Y: height}]
+	if !ok {
+		return rules.RulesetError("board size is not supported by this map")
+	}
 
 	numSnakes := len(lastBoardState.Snakes)
 	if numSnakes == 0 {
