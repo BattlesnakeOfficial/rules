@@ -32,10 +32,12 @@ func TestRiversAndBridgesSnakePlacement(t *testing.T) {
 
 			// Check that the snake is placed at one of the specified start positions
 			validStart := false
-			for _, p := range startPositions {
-				if p.X == s.Body[0].X && p.Y == s.Body[0].Y {
-					validStart = true
-					break
+			for _, q := range startPositions {
+				for i := 0; i < len(q); i++ {
+					if q[i].X == s.Body[0].X && q[i].Y == s.Body[0].Y {
+						validStart = true
+						break
+					}
 				}
 			}
 			require.True(t, validStart, "Snake must be placed in one of the specified start positions")
