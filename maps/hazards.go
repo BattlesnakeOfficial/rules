@@ -573,7 +573,7 @@ Each river has one or two 1-square "bridges" over them`,
 func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	width := lastBoardState.Width
 	height := lastBoardState.Height
-	hazards, ok := riversAndBridgesMaps[rules.Point{X: width, Y: height}]
+	hazards, ok := riversAndBridgesHazards[rules.Point{X: width, Y: height}]
 	if !ok {
 		return rules.RulesetError("board size is not supported by this map")
 	}
@@ -608,14 +608,18 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 		return err
 	}
 
-	err = rules.PlaceFoodAutomatically(rand, tempBoardState)
+	err = rules.PlaceFoodFixed(rand, tempBoardState)
 	if err != nil {
 		return err
 	}
 
 	// Copy food from temp board state
-	for _, food := range tempBoardState.Food {
-		editor.AddFood(food)
+	for _, f := range tempBoardState.Food {
+		// skip the center food
+		if f.X == lastBoardState.Width/2 && f.Y == lastBoardState.Height/2 {
+			continue
+		}
+		editor.AddFood(f)
 	}
 
 	// Copy snakes from temp board state
@@ -631,7 +635,37 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 }
 
 func (m RiverAndBridgesHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	rand := settings.GetRand(lastBoardState.Turn)
+
+	foodNeeded := checkFoodNeedingPlacement(rand, settings, lastBoardState)
+	if foodNeeded > 0 {
+		pts := m.getUnoccupiedPoints(lastBoardState)
+		placeFoodRandomlyAtPositions(rand, lastBoardState, editor, foodNeeded, pts)
+	}
+
+	return nil
+}
+
+func (m RiverAndBridgesHazardsMap) getUnoccupiedPoints(lastBoardState *rules.BoardState) []rules.Point {
+	unoccupiedPoints := rules.GetUnoccupiedPoints(lastBoardState, false)
+
+	var totallyUnoccupiedPoints []rules.Point
+	// we want to avoid placing food on hazards in this map
+	for _, p := range unoccupiedPoints {
+		isHazard := false
+		for _, h := range lastBoardState.Hazards {
+			if p == h {
+				isHazard = true
+				break
+			}
+		}
+
+		if !isHazard {
+			totallyUnoccupiedPoints = append(totallyUnoccupiedPoints, p)
+		}
+	}
+
+	return totallyUnoccupiedPoints
 }
 
 var riversAndBridgesStartPositions = map[rules.Point][][]rules.Point{
@@ -711,7 +745,7 @@ var riversAndBridgesStartPositions = map[rules.Point][][]rules.Point{
 	},
 }
 
-var riversAndBridgesMaps = map[rules.Point][]rules.Point{
+var riversAndBridgesHazards = map[rules.Point][]rules.Point{
 	{X: 11, Y: 11}: {
 		{X: 5, Y: 10},
 		{X: 5, Y: 9},
