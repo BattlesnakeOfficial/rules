@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/board"
 	"github.com/BattlesnakeOfficial/rules/client"
 	"github.com/BattlesnakeOfficial/rules/maps"
 	"github.com/google/uuid"
@@ -94,7 +95,7 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().IntVarP(&gameState.TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
 	playCmd.Flags().BoolVar(&gameState.DebugRequests, "debug-requests", false, "Log body of all requests sent")
 	playCmd.Flags().StringVarP(&gameState.Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
-	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the real Battlesnake game board")
+	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 
 	playCmd.Flags().IntVar(&gameState.FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().IntVar(&gameState.MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
@@ -170,7 +171,7 @@ func (gameState *GameState) Run() {
 		gameState.printMap(boardState)
 	}
 
-	websocketServer := NewCLIWebsocketServer(Game{
+	boardGame := board.Game{
 		ID:     gameState.gameID,
 		Status: "running",
 		Width:  gameState.Width,
@@ -181,13 +182,17 @@ func (gameState *GameState) Run() {
 		RulesetName: gameState.GameType,
 		RulesStages: []string{},
 		Map:         gameState.MapName,
-	})
+	}
+	boardServer := board.NewBoardServer(boardGame)
 
 	if gameState.ViewInBrowser {
-		server := websocketServer.listen()
-		log.Printf("Listening on %s", server.URL)
+		serverURL, err := boardServer.Listen()
+		if err != nil {
+			log.Fatalf("Error starting HTTP server: %v", err)
+		}
+		log.Printf("Board server listening on %s", serverURL)
 
-		boardURL := fmt.Sprintf("https://board.battlesnake.com/?engine=%s&game=%s&autoplay=true", server.URL, gameState.gameID)
+		boardURL := fmt.Sprintf("https://board.battlesnake.com/?engine=%s&game=%s&autoplay=true", serverURL, gameState.gameID)
 		if err := browser.OpenURL(boardURL); err != nil {
 			log.Printf("Failed to open browser: %v", err)
 		}
@@ -195,7 +200,7 @@ func (gameState *GameState) Run() {
 
 	if gameState.ViewInBrowser {
 		// send turn zero to websocket server
-		websocketServer.events <- gameState.createGameEvent(EVENT_TYPE_FRAME, boardState)
+		boardServer.SendEvent(gameState.createGameEvent(board.EVENT_TYPE_FRAME, boardState))
 	}
 
 	var endTime time.Time
@@ -237,7 +242,7 @@ func (gameState *GameState) Run() {
 		}
 
 		if gameState.ViewInBrowser {
-			websocketServer.events <- gameState.createGameEvent(EVENT_TYPE_FRAME, boardState)
+			boardServer.SendEvent(gameState.createGameEvent(board.EVENT_TYPE_FRAME, boardState))
 		}
 	}
 
@@ -273,6 +278,13 @@ func (gameState *GameState) Run() {
 		}
 	}
 
+	if gameState.ViewInBrowser {
+		boardServer.SendEvent(board.GameEvent{
+			EventType: board.EVENT_TYPE_GAME_END,
+			Data:      boardGame,
+		})
+	}
+
 	if exportGame {
 		err := gameExporter.FlushToFile(gameState.Output, "JSONL")
 		if err != nil {
@@ -282,63 +294,7 @@ func (gameState *GameState) Run() {
 	}
 
 	if gameState.ViewInBrowser {
-		close(websocketServer.events)
-
-		log.Printf("Waiting for server clients to finish")
-		<-websocketServer.done
-		log.Printf("Server is done, exiting")
-	}
-}
-
-func (gameState *GameState) createGameEvent(eventType GameEventType, boardState *rules.BoardState) GameEvent {
-	snakes := []Snake{}
-	foods := []Point{}
-	hazards := []Point{}
-
-	for _, snake := range boardState.Snakes {
-		snakeState := gameState.snakeStates[snake.ID]
-
-		var snakeBody []Point
-		for _, point := range snake.Body {
-			snakeBody = append(snakeBody, Point{X: point.X, Y: point.Y})
-		}
-		convertedSnake := Snake{
-			ID:       snake.ID,
-			Name:     snakeState.Name,
-			Body:     snakeBody,
-			Health:   snake.Health,
-			Color:    snakeState.Color,
-			HeadType: snakeState.Head,
-			TailType: snakeState.Tail,
-		}
-		if snake.EliminatedCause != rules.NotEliminated {
-			convertedSnake.Death = &Death{
-				Cause:        snake.EliminatedCause,
-				Turn:         snake.EliminatedOnTurn,
-				EliminatedBy: snake.EliminatedBy,
-			}
-		}
-		snakes = append(snakes, convertedSnake)
-	}
-
-	for _, food := range boardState.Food {
-		foods = append(foods, Point{X: food.X, Y: food.Y})
-	}
-
-	for _, hazard := range boardState.Hazards {
-		hazards = append(hazards, Point{X: hazard.X, Y: hazard.Y})
-	}
-
-	gameFrame := GameFrame{
-		Turn:    boardState.Turn,
-		Snakes:  snakes,
-		Food:    foods,
-		Hazards: hazards,
-	}
-
-	return GameEvent{
-		EventType: eventType,
-		Data:      gameFrame,
+		boardServer.Shutdown()
 	}
 }
 
@@ -683,6 +639,58 @@ func convertStateToBoard(boardState *rules.BoardState, snakeStates map[string]Sn
 		Food:    client.CoordFromPointArray(boardState.Food),
 		Hazards: client.CoordFromPointArray(boardState.Hazards),
 		Snakes:  convertRulesSnakes(boardState.Snakes, snakeStates),
+	}
+}
+
+func (gameState *GameState) createGameEvent(eventType board.GameEventType, boardState *rules.BoardState) board.GameEvent {
+	snakes := []board.Snake{}
+	foods := []board.Point{}
+	hazards := []board.Point{}
+
+	for _, snake := range boardState.Snakes {
+		snakeState := gameState.snakeStates[snake.ID]
+
+		var snakeBody []board.Point
+		for _, point := range snake.Body {
+			snakeBody = append(snakeBody, board.Point{X: point.X, Y: point.Y})
+		}
+		convertedSnake := board.Snake{
+			ID:       snake.ID,
+			Name:     snakeState.Name,
+			Body:     snakeBody,
+			Health:   snake.Health,
+			Color:    snakeState.Color,
+			HeadType: snakeState.Head,
+			TailType: snakeState.Tail,
+		}
+		if snake.EliminatedCause != rules.NotEliminated {
+			convertedSnake.Death = &board.Death{
+				Cause:        snake.EliminatedCause,
+				Turn:         snake.EliminatedOnTurn,
+				EliminatedBy: snake.EliminatedBy,
+			}
+		}
+		snakes = append(snakes, convertedSnake)
+	}
+
+	for _, food := range boardState.Food {
+		foods = append(foods, board.Point{X: food.X, Y: food.Y})
+	}
+
+	for _, hazard := range boardState.Hazards {
+		hazards = append(hazards, board.Point{X: hazard.X, Y: hazard.Y})
+	}
+
+	gameFrame := board.GameFrame{
+		Turn:    boardState.Turn,
+		Snakes:  snakes,
+		Food:    foods,
+		Hazards: hazards,
+	}
+
+	return board.GameEvent{
+		EventType: eventType,
+		Data:      gameFrame,
 	}
 }
 

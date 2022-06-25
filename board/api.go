@@ -1,19 +1,8 @@
-package commands
+package board
 
-// TODO: These types should be moved to a separate package.
+// Types used to implement the JSON API expected by the board client.
 
-type GameEventType string
-
-const (
-	EVENT_TYPE_FRAME    GameEventType = "frame"
-	EVENT_TYPE_GAME_END GameEventType = "game_end"
-)
-
-type GameEvent struct {
-	EventType GameEventType `json:"Type"`
-	Data      interface{}   `json:"Data"`
-}
-
+// JSON structure returned by the game status endpoint.
 type Game struct {
 	ID           string            `json:"ID"`
 	Status       string            `json:"Status"`
@@ -27,11 +16,30 @@ type Game struct {
 	Map          string            `json:"Map"`
 }
 
+// The websocket stream has support for returning different types of events, along with a "type" attribute.
+type GameEventType string
+
+const (
+	EVENT_TYPE_FRAME    GameEventType = "frame"
+	EVENT_TYPE_GAME_END GameEventType = "game_end"
+)
+
+// Top-level JSON structure sent in each websocket frame.
+type GameEvent struct {
+	EventType GameEventType `json:"Type"`
+	Data      interface{}   `json:"Data"`
+}
+
+// Represents a single turn in the game.
 type GameFrame struct {
 	Turn    int     `json:"Turn"`
 	Snakes  []Snake `json:"Snakes"`
 	Food    []Point `json:"Food"`
 	Hazards []Point `json:"Hazards"`
+}
+
+type GameEnd struct {
+	Game Game `json:"game"`
 }
 
 type Snake struct {
