@@ -52,9 +52,7 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 			fmt.Sprintf("This map requires a board size of at least %dx%d", INITIAL_MAZE_SIZE, INITIAL_MAZE_SIZE))
 	}
 
-	m.CreateMaze(initialBoardState, settings, editor, 0)
-
-	return nil
+  return m.CreateMaze(initialBoardState, settings, editor, 0)
 }
 
 func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
@@ -83,7 +81,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 
 	m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
 
-	for _, point := range tempBoardState.Hazards {
+	for _, point := range removeDuplicateValues(tempBoardState.Hazards) {
 		adjusted := m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 		editor.AddHazard(adjusted)
 	}
@@ -109,7 +107,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
 		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 
-		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) {
+		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
 			editor.AddFood(adjustedFood)
 			foodPlaced = true
 		}
@@ -140,9 +138,7 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 		m.WriteBitState(lastBoardState, currentLevel, editor)
 
 		// This will create a new maze
-		m.CreateMaze(lastBoardState, settings, editor, currentLevel)
-
-		return nil
+		return m.CreateMaze(lastBoardState, settings, editor, currentLevel)
 	}
 
 	// NOTE: The following code tries to place a food on the existing maze so we can keep
@@ -192,7 +188,10 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 		log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
 		printMap(tempBoardState)
 		fmt.Print("Press 'Enter' to continue...")
-		bufio.NewReader(os.Stdin).ReadBytes('\n')
+    _, e := bufio.NewReader(os.Stdin).ReadBytes('\n')
+    if e != nil {
+      log.Fatal(e)
+    }
 	}
 
 	verticalWallPosition := -1
@@ -445,6 +444,19 @@ func pos(s []rules.Point, e rules.Point) int {
 		}
 	}
 	return -1
+}
+
+func removeDuplicateValues(hazards []rules.Point) []rules.Point {
+    keys := make(map[rules.Point]bool)
+    uniqueList := []rules.Point{}
+
+    for _, entry := range hazards {
+        if _, value := keys[entry]; !value {
+            keys[entry] = true
+            uniqueList = append(uniqueList, entry)
+        }
+    }
+    return uniqueList
 }
 
 //// DEBUGING HELPERS ////
