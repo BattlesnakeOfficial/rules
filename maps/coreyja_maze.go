@@ -43,6 +43,9 @@ func (m CoreyjaMazeMap) Meta() Metadata {
 		Description: "Solo Maze where you need to find the food",
 		Author:      "coreyja",
 		Version:     0,
+		MinPlayers:  1,
+		MaxPlayers:  1,
+		BoardSizes:  AnySize(),
 	}
 }
 
