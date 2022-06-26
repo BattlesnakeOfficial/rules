@@ -63,7 +63,9 @@ func TestRegisteredMaps(t *testing.T) {
 				for height := 0; height < maxBoardHeight; height++ {
 					initialBoardState := rules.NewBoardState(width, height)
 					initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
-					initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: "2", Body: []rules.Point{}})
+					if meta.MaxPlayers > 1 {
+						initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: "2", Body: []rules.Point{}})
+					}
 					passedBoardState := initialBoardState.Clone()
 					tempBoardState := initialBoardState.Clone()
 					err := gameMap.SetupBoard(passedBoardState, testSettings, NewBoardStateEditor(tempBoardState))

@@ -28,30 +28,30 @@ const EVIL_MODE_DISTANCE_TO_FOOD = 5
 
 const MAX_TRIES = 100
 
-type CoreyjaMazeMap struct{}
+type SoloMazeMap struct{}
 
 func init() {
-	mazeMap := CoreyjaMazeMap{}
+	mazeMap := SoloMazeMap{}
 	globalRegistry.RegisterMap(mazeMap.ID(), mazeMap)
 }
 
-func (m CoreyjaMazeMap) ID() string {
+func (m SoloMazeMap) ID() string {
 	return "solo_maze"
 }
 
-func (m CoreyjaMazeMap) Meta() Metadata {
+func (m SoloMazeMap) Meta() Metadata {
 	return Metadata{
 		Name:        "Solo Maze",
 		Description: "Solo Maze where you need to find the food",
 		Author:      "coreyja",
-		Version:     0,
+		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  1,
 		BoardSizes:  AnySize(),
 	}
 }
 
-func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m SoloMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	if len(initialBoardState.Snakes) != 1 {
 		return rules.RulesetError("This map requires exactly one snake")
 	}
@@ -72,7 +72,7 @@ func gameNeedsToEndSoon(maxBoardSize int, currentLevel int64) bool {
 	return currentLevel-TURNS_AT_MAX_SIZE > int64(maxBoardSize-INITIAL_MAZE_SIZE)
 }
 
-func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
+func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
 	rand := settings.GetRand(initialBoardState.Turn)
 
 	// Make sure the actual maze size can always fit in the CreateBoard
@@ -147,7 +147,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	return nil
 }
 
-func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m SoloMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	currentLevel, e := m.ReadBitState(lastBoardState)
 	if e != nil {
 		return e
@@ -231,7 +231,7 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 }
 
 // Mostly based off this algorithm from Wikipedia: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method
-func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
+func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.Rand, lowPoint rules.Point, highPoint rules.Point, disAllowedHorizontal []int, disAllowedVertical []int, depth int) bool {
 	didSubdivide := false
 
 	if DEBUG_MAZE_GENERATION {
@@ -373,7 +373,7 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 
 //////// Maze Helpers ////////
 
-func (m CoreyjaMazeMap) AdjustPosition(mazePosition rules.Point, actualBoardSize int, boardHeight int, boardWidth int) rules.Point {
+func (m SoloMazeMap) AdjustPosition(mazePosition rules.Point, actualBoardSize int, boardHeight int, boardWidth int) rules.Point {
 
 	xAdjust := int((boardWidth - actualBoardSize) / 2)
 	yAdjust := int((boardHeight - actualBoardSize) / 2)
@@ -385,7 +385,7 @@ func (m CoreyjaMazeMap) AdjustPosition(mazePosition rules.Point, actualBoardSize
 	return rules.Point{X: mazePosition.X + xAdjust, Y: mazePosition.Y + yAdjust}
 }
 
-func (m CoreyjaMazeMap) ReadBitState(boardState *rules.BoardState) (int64, error) {
+func (m SoloMazeMap) ReadBitState(boardState *rules.BoardState) (int64, error) {
 	row := 0
 	width := boardState.Width
 
@@ -402,7 +402,7 @@ func (m CoreyjaMazeMap) ReadBitState(boardState *rules.BoardState) (int64, error
 	return strconv.ParseInt(stringBits, 2, 64)
 }
 
-func (m CoreyjaMazeMap) WriteBitState(boardState *rules.BoardState, state int64, editor Editor) {
+func (m SoloMazeMap) WriteBitState(boardState *rules.BoardState, state int64, editor Editor) {
 	width := boardState.Width
 
 	stringBits := strconv.FormatInt(state, 2)
