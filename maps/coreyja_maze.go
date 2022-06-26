@@ -57,6 +57,14 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
   return m.CreateMaze(initialBoardState, settings, editor, 0)
 }
 
+func maxBoardSize(boardState *rules.BoardState) int {
+  return min(boardState.Width, boardState.Height - 2)
+}
+
+func gameNeedsToEndSoon(maxBoardSize int, currentLevel int64) bool {
+  return currentLevel - TURNS_AT_MAX_SIZE > int64(maxBoardSize - INITIAL_MAZE_SIZE)
+}
+
 func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
 	rand := settings.GetRand(initialBoardState.Turn)
 
@@ -64,7 +72,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	// This means that when you get to 'max' size each level stops making
 	// the maze bigger
 	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
-  maxBoardSize := min(initialBoardState.Width, initialBoardState.Height - 2)
+  maxBoardSize := maxBoardSize(initialBoardState)
 
 	if actualBoardSize > int64(maxBoardSize) {
 		actualBoardSize = int64(maxBoardSize)
@@ -103,7 +111,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
   /// Place a food as long as we aren't TURNS_AT_MAX_SIZE levels over the max size
-  if currentLevel - TURNS_AT_MAX_SIZE <= int64(maxBoardSize - INITIAL_MAZE_SIZE) {
+  if !gameNeedsToEndSoon(maxBoardSize, currentLevel) {
 
     /// Pick random food spawn point
     foodPlaced := false
@@ -137,6 +145,8 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	if e != nil {
 		return e
 	}
+
+  // maxBoardSize := maxBoardSize(lastBoardState)
 
 	if len(lastBoardState.Food) == 0 {
 		currentLevel += 1
