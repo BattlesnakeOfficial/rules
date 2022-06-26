@@ -20,11 +20,13 @@ import (
 //    while debugging issues in the maze generation
 const DEBUG_MAZE_GENERATION = false
 
-const INITIAL_MAZE_SIZE = 10
+const INITIAL_MAZE_SIZE = 7
 
 const TURNS_AT_MAX_SIZE = 5
 
 const EVIL_MODE_DISTANCE_TO_FOOD = 5
+
+const MAX_TRIES = 100
 
 type CoreyjaMazeMap struct{}
 
@@ -34,12 +36,12 @@ func init() {
 }
 
 func (m CoreyjaMazeMap) ID() string {
-	return "coreyja_maze"
+	return "solo_maze"
 }
 
 func (m CoreyjaMazeMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Coreyja Maze",
+		Name:        "Solo Maze",
 		Description: "Solo Maze where you need to find the food",
 		Author:      "coreyja",
 		Version:     0,
@@ -173,13 +175,19 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	if gameNeedsToEndSoon(maxBoardSize, currentLevel) && manhattanDistance(myHead, food) < EVIL_MODE_DISTANCE_TO_FOOD {
 		editor.RemoveFood(food)
 
-		rand := settings.GetRand(lastBoardState.Turn)
 		foodPlaced := false
-		for !foodPlaced {
+		tries := 0
+		// We want to place a random food, but we also want an escape hatch for if the algo gets stuck in a loop
+		// trying to place a food.
+		for !foodPlaced && tries < MAX_TRIES {
+			tries++
+			rand := settings.GetRand(lastBoardState.Turn + tries)
+
 			foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
 			adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
 
-			if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) > EVIL_MODE_DISTANCE_TO_FOOD {
+			minDistanceFromFood := min(EVIL_MODE_DISTANCE_TO_FOOD, int(actualBoardSize/2))
+			if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) >= minDistanceFromFood {
 				editor.AddFood(adjustedFood)
 				foodPlaced = true
 			}
