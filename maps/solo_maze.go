@@ -183,11 +183,7 @@ func (m SoloMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rule
 		return m.CreateMaze(lastBoardState, settings, editor, currentLevel)
 	}
 
-	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
 	maxBoardSize := maxBoardSize(lastBoardState)
-	if actualBoardSize > int64(maxBoardSize) {
-		actualBoardSize = int64(maxBoardSize)
-	}
 
 	food := lastBoardState.Food[0]
 
