@@ -22,6 +22,8 @@ const DEBUG_MAZE_GENERATION = false
 
 const INITIAL_MAZE_SIZE = 10
 
+const TURNS_AT_MAX_SIZE = 5
+
 type CoreyjaMazeMap struct{}
 
 func init() {
@@ -62,11 +64,10 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	// This means that when you get to 'max' size each level stops making
 	// the maze bigger
 	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
-	if actualBoardSize > int64(initialBoardState.Width) {
-		actualBoardSize = int64(initialBoardState.Width)
-	}
-	if actualBoardSize > int64(initialBoardState.Height-2) {
-		actualBoardSize = int64(initialBoardState.Height - 2)
+  maxBoardSize := min(initialBoardState.Width, initialBoardState.Height - 2)
+
+	if actualBoardSize > int64(maxBoardSize) {
+		actualBoardSize = int64(maxBoardSize)
 	}
 
 	me := initialBoardState.Snakes[0]
@@ -101,17 +102,21 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	}
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
-	/// Pick random food spawn point
-	foodPlaced := false
-	for !foodPlaced {
-		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+  /// Place a food as long as we aren't TURNS_AT_MAX_SIZE levels over the max size
+  if currentLevel - TURNS_AT_MAX_SIZE <= int64(maxBoardSize - INITIAL_MAZE_SIZE) {
 
-		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
-			editor.AddFood(adjustedFood)
-			foodPlaced = true
-		}
-	}
+    /// Pick random food spawn point
+    foodPlaced := false
+    for !foodPlaced {
+      foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+      adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+
+      if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
+        editor.AddFood(adjustedFood)
+        foodPlaced = true
+      }
+    }
+  }
 
 	// Fill outside of the board with walls
 	xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2)
@@ -457,6 +462,13 @@ func removeDuplicateValues(hazards []rules.Point) []rules.Point {
         }
     }
     return uniqueList
+}
+
+func min(a, b int) int {
+    if a < b {
+        return a
+    }
+    return b
 }
 
 //// DEBUGING HELPERS ////
