@@ -24,6 +24,8 @@ const INITIAL_MAZE_SIZE = 10
 
 const TURNS_AT_MAX_SIZE = 5
 
+const EVIL_MODE_DISTANCE_TO_FOOD = 5
+
 type CoreyjaMazeMap struct{}
 
 func init() {
@@ -110,19 +112,15 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	}
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
-  /// Place a food as long as we aren't TURNS_AT_MAX_SIZE levels over the max size
-  if !gameNeedsToEndSoon(maxBoardSize, currentLevel) {
+  /// Pick random food spawn point
+  foodPlaced := false
+  for !foodPlaced {
+    foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+    adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 
-    /// Pick random food spawn point
-    foodPlaced := false
-    for !foodPlaced {
-      foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-      adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-
-      if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
-        editor.AddFood(adjustedFood)
-        foodPlaced = true
-      }
+    if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
+      editor.AddFood(adjustedFood)
+      foodPlaced = true
     }
   }
 
@@ -146,8 +144,6 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 		return e
 	}
 
-  // maxBoardSize := maxBoardSize(lastBoardState)
-
 	if len(lastBoardState.Food) == 0 {
 		currentLevel += 1
 		m.WriteBitState(lastBoardState, currentLevel, editor)
@@ -155,6 +151,30 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 		// This will create a new maze
 		return m.CreateMaze(lastBoardState, settings, editor, currentLevel)
 	}
+
+	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
+  maxBoardSize := maxBoardSize(lastBoardState)
+  food := lastBoardState.Food[0]
+
+  meBody := lastBoardState.Snakes[0].Body
+  myHead := meBody[0]
+
+  if gameNeedsToEndSoon(maxBoardSize, currentLevel) && manhattanDistance(myHead, food) < EVIL_MODE_DISTANCE_TO_FOOD {
+    editor.RemoveFood(food)
+
+    rand := settings.GetRand(lastBoardState.Turn)
+    foodPlaced := false
+    for !foodPlaced {
+      foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+      adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
+
+      if !containsPoint(lastBoardState.Hazards, foodSpawnPoint) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, food) > EVIL_MODE_DISTANCE_TO_FOOD {
+        editor.AddFood(adjustedFood)
+        foodPlaced = true
+      }
+    }
+  }
+
 
 	// NOTE: The following code tries to place a food on the existing maze so we can keep
 	// going without having to create a new maze.
@@ -480,6 +500,18 @@ func min(a, b int) int {
     }
     return b
 }
+
+func manhattanDistance(a, b rules.Point) int {
+  return abs(a.X-b.X) + abs(a.Y-b.Y)
+}
+
+func abs(a int) int {
+  if a < 0 {
+    return -a
+  }
+  return a
+}
+
 
 //// DEBUGING HELPERS ////
 
