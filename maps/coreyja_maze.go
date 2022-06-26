@@ -168,7 +168,7 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
       foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
       adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
 
-      if !containsPoint(lastBoardState.Hazards, foodSpawnPoint) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, food) > EVIL_MODE_DISTANCE_TO_FOOD {
+      if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) > EVIL_MODE_DISTANCE_TO_FOOD {
         editor.AddFood(adjustedFood)
         foodPlaced = true
       }
