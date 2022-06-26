@@ -97,14 +97,19 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 		editor.AddHazard(adjusted)
 	}
 
+
+  // Since we reserve the bottom row of the board for state,
+  // AND we center the maze within the board we know there will
+  // always be a `y: -1` that we can put the tail into
+  snake_head_position := rules.Point{X: 0, Y: 0}
+  snake_tail_position := rules.Point{X: 0, Y: -1}
+
 	snakeBody := []rules.Point{
-		{X: 0, Y: 0},
-		// Since we reserve the bottom row of the board for state,
-		// AND we center the maze within the board we know there will
-		// always be a `y: -1` that we can put the tail into
-		{X: 0, Y: -1},
-		{X: 0, Y: -1},
+		snake_head_position,
 	}
+  for i := 0; i <= int(currentLevel); i++ {
+    snakeBody = append(snakeBody, snake_tail_position)
+  }
 
 	adjustedSnakeBody := make([]rules.Point, len(snakeBody))
 	for i, point := range snakeBody {
@@ -154,6 +159,10 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 
 	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
   maxBoardSize := maxBoardSize(lastBoardState)
+	if actualBoardSize > int64(maxBoardSize) {
+		actualBoardSize = int64(maxBoardSize)
+	}
+
   food := lastBoardState.Food[0]
 
   meBody := lastBoardState.Snakes[0].Body
