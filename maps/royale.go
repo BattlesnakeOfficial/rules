@@ -22,6 +22,9 @@ func (m RoyaleHazardsMap) Meta() Metadata {
 		Description: "A map where hazards are generated every N turns",
 		Author:      "Battlesnake",
 		Version:     1,
+		MinPlayers:  1,
+		MaxPlayers:  8,
+		BoardSizes:  AnySize(),
 	}
 }
 
