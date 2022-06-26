@@ -87,7 +87,8 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 
 	me := initialBoardState.Snakes[0]
 
-	tempBoardState := rules.NewBoardState(int(actualBoardSize), int(actualBoardSize))
+	mazeBoardState := rules.NewBoardState(int(actualBoardSize), int(actualBoardSize))
+	tempBoardState := initialBoardState.Clone()
 
 	topRightCorner := rules.Point{X: int(actualBoardSize) - 1, Y: int(actualBoardSize) - 1}
 
@@ -95,11 +96,12 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 
 	m.WriteBitState(initialBoardState, currentLevel, editor)
 
-	m.SubdivideRoom(tempBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
+	m.SubdivideRoom(mazeBoardState, rand, rules.Point{X: 0, Y: 0}, topRightCorner, make([]int, 0), make([]int, 0), 0)
 
-	for _, point := range removeDuplicateValues(tempBoardState.Hazards) {
+	for _, point := range removeDuplicateValues(mazeBoardState.Hazards) {
 		adjusted := m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 		editor.AddHazard(adjusted)
+		tempBoardState.Hazards = append(tempBoardState.Hazards, adjusted)
 	}
 
 	// Since we reserve the bottom row of the board for state,
@@ -120,18 +122,10 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 		adjustedSnakeBody[i] = m.AdjustPosition(point, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 	}
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
+	tempBoardState.Snakes[0].Body = adjustedSnakeBody
 
 	/// Pick random food spawn point
-	foodPlaced := false
-	for !foodPlaced {
-		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
-
-		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
-			editor.AddFood(adjustedFood)
-			foodPlaced = true
-		}
-	}
+	m.PlaceFood(tempBoardState, settings, editor, currentLevel)
 
 	// Fill outside of the board with walls
 	xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2)
@@ -145,6 +139,34 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 	}
 
 	return nil
+}
+
+func (m SoloMazeMap) PlaceFood(boardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) {
+	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
+	maxBoardSize := maxBoardSize(boardState)
+	if actualBoardSize > int64(maxBoardSize) {
+		actualBoardSize = int64(maxBoardSize)
+	}
+	meBody := boardState.Snakes[0].Body
+	myHead := meBody[0]
+
+	foodPlaced := false
+	tries := 0
+	// We want to place a random food, but we also want an escape hatch for if the algo gets stuck in a loop
+	// trying to place a food.
+	for !foodPlaced && tries < MAX_TRIES {
+		tries++
+		rand := settings.GetRand(boardState.Turn + tries)
+
+		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), boardState.Height, boardState.Width)
+
+		minDistanceFromFood := min(EVIL_MODE_DISTANCE_TO_FOOD, int(actualBoardSize/2))
+		if !containsPoint(boardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) >= minDistanceFromFood {
+			editor.AddFood(adjustedFood)
+			foodPlaced = true
+		}
+	}
 }
 
 func (m SoloMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -175,57 +197,8 @@ func (m SoloMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rule
 	if gameNeedsToEndSoon(maxBoardSize, currentLevel) && manhattanDistance(myHead, food) < EVIL_MODE_DISTANCE_TO_FOOD {
 		editor.RemoveFood(food)
 
-		foodPlaced := false
-		tries := 0
-		// We want to place a random food, but we also want an escape hatch for if the algo gets stuck in a loop
-		// trying to place a food.
-		for !foodPlaced && tries < MAX_TRIES {
-			tries++
-			rand := settings.GetRand(lastBoardState.Turn + tries)
-
-			foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-			adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
-
-			minDistanceFromFood := min(EVIL_MODE_DISTANCE_TO_FOOD, int(actualBoardSize/2))
-			if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) >= minDistanceFromFood {
-				editor.AddFood(adjustedFood)
-				foodPlaced = true
-			}
-		}
+		m.PlaceFood(lastBoardState, settings, editor, currentLevel)
 	}
-
-	// NOTE: The following code tries to place a food on the existing maze so we can keep
-	// going without having to create a new maze.
-	// HOWEVER, the placement of the food doesn't guarantee we can grab it and keep going, it likes
-	// to be places in little nooks that we can't get out of
-	// Leaving this commented out for now, but might be a cool addition to add later if we can pick the
-	// food spawn a bit smarter
-
-	// if len(lastBoardState.Food) == 0 {
-	//   foodPlaced := false
-	//   tries := 0
-	//
-	//   for (!foodPlaced) {
-	//     rand := settings.GetRand(lastBoardState.Turn + tries)
-	//
-	//     x := rand.Intn(lastBoardState.Width)
-	//     y := rand.Intn(lastBoardState.Height)
-	//
-	//     if DEBUG_MAZE_GENERATION {
-	//       log.Print(fmt.Sprintf("Trying to place food at (%v, %v)", x, y))
-	//     }
-	//
-	//
-	//     if !containsPoint(lastBoardState.Hazards, rules.Point{X: x, Y: y}) {
-	//       editor.AddFood(rules.Point{X: x, Y: y})
-	//       foodPlaced = true
-	//     }
-	//
-	//     tries++
-	//   }
-	// } else {
-	//   editor.PlaceSnake(me.ID, me.Body, 100)
-	// }
 
 	return nil
 }
@@ -550,7 +523,6 @@ func printMap(boardState *rules.BoardState) {
 	for _, oob := range boardState.Hazards {
 		board[oob.X][oob.Y] = "░"
 	}
-	// o.WriteString(fmt.Sprintf("Hazards ░: %v\n", boardState.Hazards))
 	for _, f := range boardState.Food {
 		board[f.X][f.Y] = "⚕"
 	}
@@ -561,7 +533,6 @@ func printMap(boardState *rules.BoardState) {
 				board[b.X][b.Y] = string("*")
 			}
 		}
-		// o.WriteString(fmt.Sprintf("%v %c: %v\n", s))
 	}
 	for y := boardState.Height - 1; y >= 0; y-- {
 		for x := int(0); x < boardState.Width; x++ {
