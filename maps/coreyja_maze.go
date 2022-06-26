@@ -56,15 +56,15 @@ func (m CoreyjaMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings
 			fmt.Sprintf("This map requires a board size of at least %dx%d", INITIAL_MAZE_SIZE, INITIAL_MAZE_SIZE))
 	}
 
-  return m.CreateMaze(initialBoardState, settings, editor, 0)
+	return m.CreateMaze(initialBoardState, settings, editor, 0)
 }
 
 func maxBoardSize(boardState *rules.BoardState) int {
-  return min(boardState.Width, boardState.Height - 2)
+	return min(boardState.Width, boardState.Height-2)
 }
 
 func gameNeedsToEndSoon(maxBoardSize int, currentLevel int64) bool {
-  return currentLevel - TURNS_AT_MAX_SIZE > int64(maxBoardSize - INITIAL_MAZE_SIZE)
+	return currentLevel-TURNS_AT_MAX_SIZE > int64(maxBoardSize-INITIAL_MAZE_SIZE)
 }
 
 func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor, currentLevel int64) error {
@@ -74,7 +74,7 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	// This means that when you get to 'max' size each level stops making
 	// the maze bigger
 	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
-  maxBoardSize := maxBoardSize(initialBoardState)
+	maxBoardSize := maxBoardSize(initialBoardState)
 
 	if actualBoardSize > int64(maxBoardSize) {
 		actualBoardSize = int64(maxBoardSize)
@@ -97,19 +97,18 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 		editor.AddHazard(adjusted)
 	}
 
-
-  // Since we reserve the bottom row of the board for state,
-  // AND we center the maze within the board we know there will
-  // always be a `y: -1` that we can put the tail into
-  snake_head_position := rules.Point{X: 0, Y: 0}
-  snake_tail_position := rules.Point{X: 0, Y: -1}
+	// Since we reserve the bottom row of the board for state,
+	// AND we center the maze within the board we know there will
+	// always be a `y: -1` that we can put the tail into
+	snake_head_position := rules.Point{X: 0, Y: 0}
+	snake_tail_position := rules.Point{X: 0, Y: -1}
 
 	snakeBody := []rules.Point{
 		snake_head_position,
 	}
-  for i := 0; i <= int(currentLevel); i++ {
-    snakeBody = append(snakeBody, snake_tail_position)
-  }
+	for i := 0; i <= int(currentLevel); i++ {
+		snakeBody = append(snakeBody, snake_tail_position)
+	}
 
 	adjustedSnakeBody := make([]rules.Point, len(snakeBody))
 	for i, point := range snakeBody {
@@ -117,17 +116,17 @@ func (m CoreyjaMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings
 	}
 	editor.PlaceSnake(me.ID, adjustedSnakeBody, 100)
 
-  /// Pick random food spawn point
-  foodPlaced := false
-  for !foodPlaced {
-    foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-    adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
+	/// Pick random food spawn point
+	foodPlaced := false
+	for !foodPlaced {
+		foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+		adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), initialBoardState.Height, initialBoardState.Width)
 
-    if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
-      editor.AddFood(adjustedFood)
-      foodPlaced = true
-    }
-  }
+		if !containsPoint(tempBoardState.Hazards, foodSpawnPoint) && !containsPoint(adjustedSnakeBody, adjustedFood) {
+			editor.AddFood(adjustedFood)
+			foodPlaced = true
+		}
+	}
 
 	// Fill outside of the board with walls
 	xAdjust := int((initialBoardState.Width - int(actualBoardSize)) / 2)
@@ -158,32 +157,31 @@ func (m CoreyjaMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings r
 	}
 
 	actualBoardSize := INITIAL_MAZE_SIZE + currentLevel
-  maxBoardSize := maxBoardSize(lastBoardState)
+	maxBoardSize := maxBoardSize(lastBoardState)
 	if actualBoardSize > int64(maxBoardSize) {
 		actualBoardSize = int64(maxBoardSize)
 	}
 
-  food := lastBoardState.Food[0]
+	food := lastBoardState.Food[0]
 
-  meBody := lastBoardState.Snakes[0].Body
-  myHead := meBody[0]
+	meBody := lastBoardState.Snakes[0].Body
+	myHead := meBody[0]
 
-  if gameNeedsToEndSoon(maxBoardSize, currentLevel) && manhattanDistance(myHead, food) < EVIL_MODE_DISTANCE_TO_FOOD {
-    editor.RemoveFood(food)
+	if gameNeedsToEndSoon(maxBoardSize, currentLevel) && manhattanDistance(myHead, food) < EVIL_MODE_DISTANCE_TO_FOOD {
+		editor.RemoveFood(food)
 
-    rand := settings.GetRand(lastBoardState.Turn)
-    foodPlaced := false
-    for !foodPlaced {
-      foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
-      adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
+		rand := settings.GetRand(lastBoardState.Turn)
+		foodPlaced := false
+		for !foodPlaced {
+			foodSpawnPoint := rules.Point{X: rand.Intn(int(actualBoardSize)), Y: rand.Intn(int(actualBoardSize))}
+			adjustedFood := m.AdjustPosition(foodSpawnPoint, int(actualBoardSize), lastBoardState.Height, lastBoardState.Width)
 
-      if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) > EVIL_MODE_DISTANCE_TO_FOOD {
-        editor.AddFood(adjustedFood)
-        foodPlaced = true
-      }
-    }
-  }
-
+			if !containsPoint(lastBoardState.Hazards, adjustedFood) && !containsPoint(meBody, adjustedFood) && manhattanDistance(adjustedFood, myHead) > EVIL_MODE_DISTANCE_TO_FOOD {
+				editor.AddFood(adjustedFood)
+				foodPlaced = true
+			}
+		}
+	}
 
 	// NOTE: The following code tries to place a food on the existing maze so we can keep
 	// going without having to create a new maze.
@@ -232,10 +230,10 @@ func (m CoreyjaMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rul
 		log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
 		printMap(tempBoardState)
 		fmt.Print("Press 'Enter' to continue...")
-    _, e := bufio.NewReader(os.Stdin).ReadBytes('\n')
-    if e != nil {
-      log.Fatal(e)
-    }
+		_, e := bufio.NewReader(os.Stdin).ReadBytes('\n')
+		if e != nil {
+			log.Fatal(e)
+		}
 	}
 
 	verticalWallPosition := -1
@@ -491,36 +489,35 @@ func pos(s []rules.Point, e rules.Point) int {
 }
 
 func removeDuplicateValues(hazards []rules.Point) []rules.Point {
-    keys := make(map[rules.Point]bool)
-    uniqueList := []rules.Point{}
+	keys := make(map[rules.Point]bool)
+	uniqueList := []rules.Point{}
 
-    for _, entry := range hazards {
-        if _, value := keys[entry]; !value {
-            keys[entry] = true
-            uniqueList = append(uniqueList, entry)
-        }
-    }
-    return uniqueList
+	for _, entry := range hazards {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			uniqueList = append(uniqueList, entry)
+		}
+	}
+	return uniqueList
 }
 
 func min(a, b int) int {
-    if a < b {
-        return a
-    }
-    return b
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func manhattanDistance(a, b rules.Point) int {
-  return abs(a.X-b.X) + abs(a.Y-b.Y)
+	return abs(a.X-b.X) + abs(a.Y-b.Y)
 }
 
 func abs(a int) int {
-  if a < 0 {
-    return -a
-  }
-  return a
+	if a < 0 {
+		return -a
+	}
+	return a
 }
-
 
 //// DEBUGING HELPERS ////
 
