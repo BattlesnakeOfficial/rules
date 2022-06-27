@@ -58,6 +58,7 @@ type GameState struct {
 	DebugRequests       bool
 	Output              string
 	ViewInBrowser       bool
+	BoardURL            string
 	FoodSpawnChance     int
 	MinimumFood         int
 	HazardDamagePerTurn int
@@ -100,6 +101,7 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().BoolVar(&gameState.DebugRequests, "debug-requests", false, "Log body of all requests sent")
 	playCmd.Flags().StringVarP(&gameState.Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
+	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
 
 	playCmd.Flags().IntVar(&gameState.FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().IntVar(&gameState.MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
@@ -196,7 +198,9 @@ func (gameState *GameState) Run() {
 		}
 		log.Printf("Board server listening on %s", serverURL)
 
-		boardURL := fmt.Sprintf("https://board.battlesnake.com/?engine=%s&game=%s&autoplay=true", serverURL, gameState.gameID)
+		boardURL := fmt.Sprintf(gameState.BoardURL+"?engine=%s&game=%s&autoplay=true", serverURL, gameState.gameID)
+
+		log.Printf("Opening board URL: %s", boardURL)
 		if err := browser.OpenURL(boardURL); err != nil {
 			log.Printf("Failed to open browser: %v", err)
 		}
