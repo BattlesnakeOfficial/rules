@@ -26,14 +26,18 @@ import (
 
 // Used to store state for each SnakeState while running a local game
 type SnakeState struct {
-	URL       string
-	Name      string
-	ID        string
-	LastMove  string
-	Character rune
-	Color     string
-	Head      string
-	Tail      string
+	URL        string
+	Name       string
+	ID         string
+	LastMove   string
+	Character  rune
+	Color      string
+	Head       string
+	Tail       string
+	Author     string
+	Version    string
+	Error      error
+	StatusCode int
 }
 
 type GameState struct {
@@ -499,26 +503,39 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		snakeState := SnakeState{
 			Name: snakeName, URL: snakeURL, ID: id, LastMove: "up", Character: bodyChars[i%8],
 		}
+		var snakeErr error
 		res, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
 			log.Printf("[WARN]: Request to %v failed: %v", snakeURL, err)
-		} else if res.Body != nil {
-			defer res.Body.Close()
-			body, readErr := ioutil.ReadAll(res.Body)
-			if readErr != nil {
-				log.Fatal(readErr)
-			}
+			snakeErr = err
+		} else {
+			snakeState.StatusCode = res.StatusCode
 
-			pingResponse := client.SnakeMetadataResponse{}
-			jsonErr := json.Unmarshal(body, &pingResponse)
-			if jsonErr != nil {
-				log.Printf("Error reading response from %v: %v", snakeURL, jsonErr)
-			} else {
-				snakeState.Head = pingResponse.Head
-				snakeState.Tail = pingResponse.Tail
-				snakeState.Color = pingResponse.Color
+			if res.Body != nil {
+				defer res.Body.Close()
+				body, readErr := ioutil.ReadAll(res.Body)
+				if readErr != nil {
+					log.Fatal(readErr)
+				}
+
+				pingResponse := client.SnakeMetadataResponse{}
+				jsonErr := json.Unmarshal(body, &pingResponse)
+				if jsonErr != nil {
+					snakeErr = jsonErr
+					log.Printf("Error reading response from %v: %v", snakeURL, jsonErr)
+				} else {
+					snakeState.Head = pingResponse.Head
+					snakeState.Tail = pingResponse.Tail
+					snakeState.Color = pingResponse.Color
+					snakeState.Author = pingResponse.Author
+					snakeState.Version = pingResponse.Version
+				}
 			}
 		}
+		if snakeErr != nil {
+			snakeState.Error = snakeErr
+		}
+
 		snakes[snakeState.ID] = snakeState
 	}
 	return snakes
@@ -596,6 +613,73 @@ func (gameState *GameState) printMap(boardState *rules.BoardState) {
 	log.Print(o.String())
 }
 
+func (gameState *GameState) createGameEvent(eventType board.GameEventType, boardState *rules.BoardState) board.GameEvent {
+	snakes := []board.Snake{}
+	foods := []board.Point{}
+	hazards := []board.Point{}
+
+	for _, snake := range boardState.Snakes {
+		snakeState := gameState.snakeStates[snake.ID]
+
+		var snakeBody []board.Point
+		for _, point := range snake.Body {
+			snakeBody = append(snakeBody, board.Point{X: point.X, Y: point.Y})
+		}
+		convertedSnake := board.Snake{
+			ID:            snake.ID,
+			Name:          snakeState.Name,
+			Body:          snakeBody,
+			Health:        snake.Health,
+			Color:         snakeState.Color,
+			HeadType:      snakeState.Head,
+			TailType:      snakeState.Tail,
+			Author:        snakeState.Author,
+			StatusCode:    snakeState.StatusCode,
+			IsBot:         false,
+			IsEnvironment: false,
+
+			// Not supporting local latency for now - there are better ways to test performance locally
+			Latency: "1",
+		}
+		if snakeState.Error != nil {
+			// Instead of trying to keep in sync with the production engine's
+			// error detection and messages, just show a generic error and rely
+			// on the CLI logs to show what really happened.
+			convertedSnake.Error = "999:Error communicating with server"
+		} else if snakeState.StatusCode != http.StatusOK {
+			convertedSnake.Error = fmt.Sprintf("7:Bad HTTP status code %d", snakeState.StatusCode)
+		}
+		if snake.EliminatedCause != rules.NotEliminated {
+			convertedSnake.Death = &board.Death{
+				Cause:        snake.EliminatedCause,
+				Turn:         snake.EliminatedOnTurn,
+				EliminatedBy: snake.EliminatedBy,
+			}
+		}
+		snakes = append(snakes, convertedSnake)
+	}
+
+	for _, food := range boardState.Food {
+		foods = append(foods, board.Point{X: food.X, Y: food.Y})
+	}
+
+	for _, hazard := range boardState.Hazards {
+		hazards = append(hazards, board.Point{X: hazard.X, Y: hazard.Y})
+	}
+
+	gameFrame := board.GameFrame{
+		Turn:    boardState.Turn,
+		Snakes:  snakes,
+		Food:    foods,
+		Hazards: hazards,
+	}
+
+	return board.GameEvent{
+		EventType: eventType,
+		Data:      gameFrame,
+	}
+}
+
 func serialiseSnakeRequest(snakeRequest client.SnakeRequest) []byte {
 	requestJSON, err := json.Marshal(snakeRequest)
 	if err != nil {
@@ -639,58 +723,6 @@ func convertStateToBoard(boardState *rules.BoardState, snakeStates map[string]Sn
 		Food:    client.CoordFromPointArray(boardState.Food),
 		Hazards: client.CoordFromPointArray(boardState.Hazards),
 		Snakes:  convertRulesSnakes(boardState.Snakes, snakeStates),
-	}
-}
-
-func (gameState *GameState) createGameEvent(eventType board.GameEventType, boardState *rules.BoardState) board.GameEvent {
-	snakes := []board.Snake{}
-	foods := []board.Point{}
-	hazards := []board.Point{}
-
-	for _, snake := range boardState.Snakes {
-		snakeState := gameState.snakeStates[snake.ID]
-
-		var snakeBody []board.Point
-		for _, point := range snake.Body {
-			snakeBody = append(snakeBody, board.Point{X: point.X, Y: point.Y})
-		}
-		convertedSnake := board.Snake{
-			ID:       snake.ID,
-			Name:     snakeState.Name,
-			Body:     snakeBody,
-			Health:   snake.Health,
-			Color:    snakeState.Color,
-			HeadType: snakeState.Head,
-			TailType: snakeState.Tail,
-		}
-		if snake.EliminatedCause != rules.NotEliminated {
-			convertedSnake.Death = &board.Death{
-				Cause:        snake.EliminatedCause,
-				Turn:         snake.EliminatedOnTurn,
-				EliminatedBy: snake.EliminatedBy,
-			}
-		}
-		snakes = append(snakes, convertedSnake)
-	}
-
-	for _, food := range boardState.Food {
-		foods = append(foods, board.Point{X: food.X, Y: food.Y})
-	}
-
-	for _, hazard := range boardState.Hazards {
-		hazards = append(hazards, board.Point{X: hazard.X, Y: hazard.Y})
-	}
-
-	gameFrame := board.GameFrame{
-		Turn:    boardState.Turn,
-		Snakes:  snakes,
-		Food:    foods,
-		Hazards: hazards,
-	}
-
-	return board.GameEvent{
-		EventType: eventType,
-		Data:      gameFrame,
 	}
 }
 
