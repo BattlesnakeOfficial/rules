@@ -144,7 +144,68 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 		}
 
 	}
+
 	return nil
+}
+
+func PlaceSnakesInQuadrants(rand Rand, b *BoardState, quadrants [][]Point) error {
+
+	if len(quadrants) != 4 {
+		return RulesetError("invalid start point configuration - not divided into quadrants")
+	}
+
+	// make sure all quadrants have the same number of positions
+	for i := 1; i < 4; i++ {
+		if len(quadrants[i]) != len(quadrants[0]) {
+			return RulesetError("invalid start point configuration - quadrants aren't even")
+		}
+	}
+
+	quads := make([]randomPositionBucket, 4)
+	for i := 0; i < 4; i++ {
+		quads[i].fill(quadrants[i]...)
+	}
+
+	currentQuad := rand.Intn(4) // randomly pick a quadrant to start from
+
+	// evenly distribute snakes across quadrants, randomly, by rotating through the quadrants
+	for i := 0; i < len(b.Snakes); i++ {
+		p, err := quads[currentQuad].take(rand)
+		if err != nil {
+			return err
+		}
+		for j := 0; j < SnakeStartSize; j++ {
+			b.Snakes[i].Body = append(b.Snakes[i].Body, p)
+		}
+
+		currentQuad = (currentQuad + 1) % 4
+	}
+
+	return nil
+}
+
+type randomPositionBucket struct {
+	positions []Point
+}
+
+func (rpb *randomPositionBucket) fill(p ...Point) {
+	rpb.positions = append(rpb.positions, p...)
+}
+
+func (rpb *randomPositionBucket) take(rand Rand) (Point, error) {
+	if len(rpb.positions) == 0 {
+		return Point{}, RulesetError("no more positions available")
+	}
+
+	// randomly pick the next position
+	idx := rand.Intn(len(rpb.positions))
+	p := rpb.positions[idx]
+
+	// remove that position from the list using the fast slice removal method
+	rpb.positions[idx] = rpb.positions[len(rpb.positions)-1]
+	rpb.positions = rpb.positions[:len(rpb.positions)-1]
+
+	return p, nil
 }
 
 func PlaceSnakesRandomly(rand Rand, b *BoardState, snakeIDs []string) error {
