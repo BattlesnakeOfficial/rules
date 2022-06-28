@@ -619,20 +619,14 @@ func (gameState *GameState) printMap(boardState *rules.BoardState) {
 
 func (gameState *GameState) createGameEvent(eventType board.GameEventType, boardState *rules.BoardState) board.GameEvent {
 	snakes := []board.Snake{}
-	foods := []board.Point{}
-	hazards := []board.Point{}
 
 	for _, snake := range boardState.Snakes {
 		snakeState := gameState.snakeStates[snake.ID]
 
-		var snakeBody []board.Point
-		for _, point := range snake.Body {
-			snakeBody = append(snakeBody, board.Point{X: point.X, Y: point.Y})
-		}
 		convertedSnake := board.Snake{
 			ID:            snake.ID,
 			Name:          snakeState.Name,
-			Body:          snakeBody,
+			Body:          snake.Body,
 			Health:        snake.Health,
 			Color:         snakeState.Color,
 			HeadType:      snakeState.Head,
@@ -663,19 +657,11 @@ func (gameState *GameState) createGameEvent(eventType board.GameEventType, board
 		snakes = append(snakes, convertedSnake)
 	}
 
-	for _, food := range boardState.Food {
-		foods = append(foods, board.Point{X: food.X, Y: food.Y})
-	}
-
-	for _, hazard := range boardState.Hazards {
-		hazards = append(hazards, board.Point{X: hazard.X, Y: hazard.Y})
-	}
-
 	gameFrame := board.GameFrame{
 		Turn:    boardState.Turn,
 		Snakes:  snakes,
-		Food:    foods,
-		Hazards: hazards,
+		Food:    boardState.Food,
+		Hazards: boardState.Hazards,
 	}
 
 	return board.GameEvent{

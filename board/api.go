@@ -1,5 +1,9 @@
 package board
 
+import (
+	"github.com/BattlesnakeOfficial/rules"
+)
+
 // Types used to implement the JSON API expected by the board client.
 
 // JSON structure returned by the game status endpoint.
@@ -32,10 +36,10 @@ type GameEvent struct {
 
 // Represents a single turn in the game.
 type GameFrame struct {
-	Turn    int     `json:"Turn"`
-	Snakes  []Snake `json:"Snakes"`
-	Food    []Point `json:"Food"`
-	Hazards []Point `json:"Hazards"`
+	Turn    int           `json:"Turn"`
+	Snakes  []Snake       `json:"Snakes"`
+	Food    []rules.Point `json:"Food"`
+	Hazards []rules.Point `json:"Hazards"`
 }
 
 type GameEnd struct {
@@ -43,27 +47,22 @@ type GameEnd struct {
 }
 
 type Snake struct {
-	ID            string  `json:"ID"`
-	Name          string  `json:"Name"`
-	Body          []Point `json:"Body"`
-	Health        int     `json:"Health"`
-	Death         *Death  `json:"Death"`
-	Color         string  `json:"Color"`
-	HeadType      string  `json:"HeadType"`
-	TailType      string  `json:"TailType"`
-	Latency       string  `json:"Latency"`
-	Shout         string  `json:"Shout"`
-	Squad         string  `json:"Squad"`
-	Author        string  `json:"Author"`
-	StatusCode    int     `json:"StatusCode"`
-	Error         string  `json:"Error"`
-	IsBot         bool    `json:"IsBot"`
-	IsEnvironment bool    `json:"IsEnvironment"`
-}
-
-type Point struct {
-	X int `json:"X"`
-	Y int `json:"Y"`
+	ID            string        `json:"ID"`
+	Name          string        `json:"Name"`
+	Body          []rules.Point `json:"Body"`
+	Health        int           `json:"Health"`
+	Death         *Death        `json:"Death"`
+	Color         string        `json:"Color"`
+	HeadType      string        `json:"HeadType"`
+	TailType      string        `json:"TailType"`
+	Latency       string        `json:"Latency"`
+	Shout         string        `json:"Shout"`
+	Squad         string        `json:"Squad"`
+	Author        string        `json:"Author"`
+	StatusCode    int           `json:"StatusCode"`
+	Error         string        `json:"Error"`
+	IsBot         bool          `json:"IsBot"`
+	IsEnvironment bool          `json:"IsEnvironment"`
 }
 
 type Death struct {
