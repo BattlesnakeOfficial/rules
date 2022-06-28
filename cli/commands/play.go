@@ -208,7 +208,7 @@ func (gameState *GameState) Run() {
 
 	if gameState.ViewInBrowser {
 		// send turn zero to websocket server
-		boardServer.SendEvent(gameState.createGameEvent(board.EVENT_TYPE_FRAME, boardState))
+		boardServer.SendEvent(gameState.buildFrameEvent(boardState))
 	}
 
 	var endTime time.Time
@@ -250,7 +250,7 @@ func (gameState *GameState) Run() {
 		}
 
 		if gameState.ViewInBrowser {
-			boardServer.SendEvent(gameState.createGameEvent(board.EVENT_TYPE_FRAME, boardState))
+			boardServer.SendEvent(gameState.buildFrameEvent(boardState))
 		}
 	}
 
@@ -617,7 +617,7 @@ func (gameState *GameState) printMap(boardState *rules.BoardState) {
 	log.Print(o.String())
 }
 
-func (gameState *GameState) createGameEvent(eventType board.GameEventType, boardState *rules.BoardState) board.GameEvent {
+func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.GameEvent {
 	snakes := []board.Snake{}
 
 	for _, snake := range boardState.Snakes {
@@ -665,7 +665,7 @@ func (gameState *GameState) createGameEvent(eventType board.GameEventType, board
 	}
 
 	return board.GameEvent{
-		EventType: eventType,
+		EventType: board.EVENT_TYPE_FRAME,
 		Data:      gameFrame,
 	}
 }
