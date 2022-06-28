@@ -311,7 +311,7 @@ func (m DirectionalExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState
 
 	currentTurn := lastBoardState.Turn + 1
 	startTurn := 1
-	spawnEveryNTurns := 15
+	spawnEveryNTurns := 12
 
 	// no-op if we're not on a turn that spawns hazards
 	if (currentTurn-startTurn)%spawnEveryNTurns != 0 {
