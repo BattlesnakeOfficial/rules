@@ -643,7 +643,7 @@ func (gameState *GameState) createGameEvent(eventType board.GameEventType, board
 			// Instead of trying to keep in sync with the production engine's
 			// error detection and messages, just show a generic error and rely
 			// on the CLI logs to show what really happened.
-			convertedSnake.Error = "999:Error communicating with server"
+			convertedSnake.Error = "0:Error communicating with server"
 		} else if snakeState.StatusCode != http.StatusOK {
 			convertedSnake.Error = fmt.Sprintf("7:Bad HTTP status code %d", snakeState.StatusCode)
 		}
