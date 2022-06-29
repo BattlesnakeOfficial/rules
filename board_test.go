@@ -656,7 +656,7 @@ func TestIsKnownBoardSize(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := isKnownBoardSize(&BoardState{Width: test.Width, Height: test.Height})
+		result := isFixedBoardSize(&BoardState{Width: test.Width, Height: test.Height})
 		require.Equal(t, test.Expected, result)
 	}
 }

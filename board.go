@@ -84,9 +84,14 @@ func CreateDefaultBoardState(rand Rand, width int, height int, snakeIDs []string
 
 // PlaceSnakesAutomatically initializes the array of snakes based on the provided snake IDs and the size of the board.
 func PlaceSnakesAutomatically(rand Rand, b *BoardState, snakeIDs []string) error {
-	if isKnownBoardSize(b) {
+	if isFixedBoardSize(b) {
 		return PlaceSnakesFixed(rand, b, snakeIDs)
 	}
+
+	if isExtraLargeBoardSize(b) {
+		return PlaceManySnakesDistributed(rand, b, snakeIDs)
+	}
+
 	return PlaceSnakesRandomly(rand, b, snakeIDs)
 }
 
@@ -143,6 +148,76 @@ func PlaceSnakesFixed(rand Rand, b *BoardState, snakeIDs []string) error {
 			b.Snakes[i].Body = append(b.Snakes[i].Body, startPoints[i])
 		}
 
+	}
+
+	return nil
+}
+
+// PlaceManySnakesDistributed is a placement algorithm that works for up to 16 snakes
+// It is intended for use on large boards and distributes snakes relatively evenly,
+// and randomly, across quadrants.
+func PlaceManySnakesDistributed(rand Rand, b *BoardState, snakeIDs []string) error {
+	// this placement algorithm supports up to 16 snakes
+	if len(snakeIDs) > 16 {
+		return ErrorTooManySnakes
+	}
+
+	b.Snakes = make([]Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		b.Snakes[i] = Snake{
+			ID:     snakeIDs[i],
+			Health: SnakeMaxHealth,
+		}
+	}
+
+	quadHSpace := b.Width / 2
+	quadVSpace := b.Height / 2
+
+	hOffset := quadHSpace / 3
+	vOffset := quadVSpace / 3
+
+	quads := make([]randomPositionBucket, 4)
+
+	// quad 1
+	quads[0] = randomPositionBucket{}
+	quads[0].fill(
+		Point{X: hOffset, Y: vOffset},
+		Point{X: quadHSpace - hOffset, Y: vOffset},
+		Point{X: hOffset, Y: quadVSpace - vOffset},
+		Point{X: quadHSpace - hOffset, Y: quadVSpace - vOffset},
+	)
+
+	// quad 2
+	quads[1] = randomPositionBucket{}
+	for _, p := range quads[0].positions {
+		quads[1].fill(Point{X: b.Width - p.X - 1, Y: p.Y})
+	}
+
+	// quad 3
+	quads[2] = randomPositionBucket{}
+	for _, p := range quads[0].positions {
+		quads[2].fill(Point{X: p.X, Y: b.Height - p.Y - 1})
+	}
+
+	// quad 4
+	quads[3] = randomPositionBucket{}
+	for _, p := range quads[0].positions {
+		quads[3].fill(Point{X: b.Width - p.X - 1, Y: b.Height - p.Y - 1})
+	}
+
+	currentQuad := rand.Intn(4) // randomly pick a quadrant to start from
+	// evenly distribute snakes across quadrants, randomly, by rotating through the quadrants
+	for i := 0; i < len(b.Snakes); i++ {
+		p, err := quads[currentQuad].take(rand)
+		if err != nil {
+			return err
+		}
+		for j := 0; j < SnakeStartSize; j++ {
+			b.Snakes[i].Body = append(b.Snakes[i].Body, p)
+		}
+
+		currentQuad = (currentQuad + 1) % 4
 	}
 
 	return nil
@@ -265,9 +340,10 @@ func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
 
 // PlaceFoodAutomatically initializes the array of food based on the size of the board and the number of snakes.
 func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
-	if isKnownBoardSize(b) {
+	if isFixedBoardSize(b) || isExtraLargeBoardSize(b) {
 		return PlaceFoodFixed(rand, b)
 	}
+
 	return PlaceFoodRandomly(rand, b, len(b.Snakes))
 }
 
@@ -443,7 +519,12 @@ func getDistanceBetweenPoints(a, b Point) int {
 	return absInt(a.X-b.X) + absInt(a.Y-b.Y)
 }
 
-func isKnownBoardSize(b *BoardState) bool {
+func isExtraLargeBoardSize(b *BoardState) bool {
+	// We can do placement for any square, large board using the distributed placement algorithm
+	return b.Width == b.Height && b.Width >= 21
+}
+
+func isFixedBoardSize(b *BoardState) bool {
 	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
 		return true
 	}
