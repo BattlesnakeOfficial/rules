@@ -180,6 +180,9 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 				if snake.Health < 0 {
 					snake.Health = 0
 				}
+				if snake.Health > SnakeMaxHealth {
+					snake.Health = SnakeMaxHealth
+				}
 				if snakeIsOutOfHealth(snake) {
 					snake.EliminatedCause = EliminatedByOutOfHealth
 				}
