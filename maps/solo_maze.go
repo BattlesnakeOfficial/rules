@@ -47,7 +47,13 @@ func (m SoloMazeMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  1,
-		BoardSizes:  AnySize(),
+		BoardSizes: FixedSizes(
+			Dimensions{7, 7},
+			Dimensions{11, 11},
+			Dimensions{19, 19},
+			Dimensions{19, 21},
+			Dimensions{25, 25},
+		),
 	}
 }
 
@@ -113,7 +119,7 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 	snakeBody := []rules.Point{
 		snake_head_position,
 	}
-	for i := 0; i <= int(currentLevel) + 1; i++ {
+	for i := 0; i <= int(currentLevel)+1; i++ {
 		snakeBody = append(snakeBody, snake_tail_position)
 	}
 
