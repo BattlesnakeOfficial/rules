@@ -1350,6 +1350,8 @@ func TestHazardDamagePerTurn(t *testing.T) {
 		{100, 1, true, 100, NotEliminated, nil},
 		{100, 99, false, 1, NotEliminated, nil},
 		{100, 99, true, 100, NotEliminated, nil},
+		{100, -1, false, 100, NotEliminated, nil},
+		{99, -2, false, 100, NotEliminated, nil},
 		{100, 100, false, 0, EliminatedByOutOfHealth, nil},
 		{100, 101, false, 0, EliminatedByOutOfHealth, nil},
 		{100, 999, false, 0, EliminatedByOutOfHealth, nil},

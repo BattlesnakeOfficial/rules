@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+	"github.com/BattlesnakeOfficial/rules/board"
 	"github.com/BattlesnakeOfficial/rules/client"
 	"github.com/BattlesnakeOfficial/rules/test"
 	"github.com/stretchr/testify/require"
@@ -218,6 +219,152 @@ func TestConvertRulesSnakes(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			actual := convertRulesSnakes(test.snakes, test.state)
 			require.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestBuildFrameEvent(t *testing.T) {
+	tests := []struct {
+		name        string
+		boardState  *rules.BoardState
+		snakeStates map[string]SnakeState
+		expected    board.GameEvent
+	}{
+		{
+			name:        "empty",
+			boardState:  rules.NewBoardState(11, 11),
+			snakeStates: map[string]SnakeState{},
+			expected: board.GameEvent{
+				EventType: board.EVENT_TYPE_FRAME,
+				Data: board.GameFrame{
+					Turn:    0,
+					Snakes:  []board.Snake{},
+					Food:    []rules.Point{},
+					Hazards: []rules.Point{},
+				},
+			},
+		},
+		{
+			name: "snake fields",
+			boardState: &rules.BoardState{
+				Turn:   99,
+				Height: 19,
+				Width:  25,
+				Food:   []rules.Point{{X: 9, Y: 4}},
+				Snakes: []rules.Snake{
+					{
+						ID: "1",
+						Body: []rules.Point{
+							{X: 9, Y: 4},
+							{X: 8, Y: 4},
+							{X: 7, Y: 4},
+						},
+						Health:           97,
+						EliminatedCause:  rules.EliminatedBySelfCollision,
+						EliminatedOnTurn: 45,
+						EliminatedBy:     "1",
+					},
+				},
+				Hazards: []rules.Point{{X: 8, Y: 6}},
+			},
+			snakeStates: map[string]SnakeState{
+				"1": {
+					URL:        "http://example.com",
+					Name:       "One",
+					ID:         "1",
+					LastMove:   "left",
+					Color:      "#ff00ff",
+					Head:       "silly",
+					Tail:       "default",
+					Author:     "AUTHOR",
+					Version:    "1.5",
+					Error:      nil,
+					StatusCode: 200,
+				},
+			},
+			expected: board.GameEvent{
+				EventType: board.EVENT_TYPE_FRAME,
+
+				Data: board.GameFrame{
+					Turn: 99,
+					Snakes: []board.Snake{
+						{
+							ID:     "1",
+							Name:   "One",
+							Body:   []rules.Point{{X: 9, Y: 4}, {X: 8, Y: 4}, {X: 7, Y: 4}},
+							Health: 97,
+							Death: &board.Death{
+								Cause:        rules.EliminatedBySelfCollision,
+								Turn:         45,
+								EliminatedBy: "1",
+							},
+							Color:         "#ff00ff",
+							HeadType:      "silly",
+							TailType:      "default",
+							Latency:       "1",
+							Author:        "AUTHOR",
+							StatusCode:    200,
+							Error:         "",
+							IsBot:         false,
+							IsEnvironment: false,
+						},
+					},
+					Food:    []rules.Point{{X: 9, Y: 4}},
+					Hazards: []rules.Point{{X: 8, Y: 6}},
+				},
+			},
+		},
+		{
+			name: "snake errors",
+			boardState: &rules.BoardState{
+				Height: 19,
+				Width:  25,
+				Snakes: []rules.Snake{
+					{
+						ID: "bad_status",
+					},
+					{
+						ID: "connection_error",
+					},
+				},
+			},
+			snakeStates: map[string]SnakeState{
+				"bad_status": {
+					StatusCode: 504,
+				},
+				"connection_error": {
+					Error: fmt.Errorf("error connecting to host"),
+				},
+			},
+			expected: board.GameEvent{
+				EventType: board.EVENT_TYPE_FRAME,
+
+				Data: board.GameFrame{
+					Snakes: []board.Snake{
+						{
+							ID:         "bad_status",
+							Latency:    "1",
+							StatusCode: 504,
+							Error:      "7:Bad HTTP status code 504",
+						},
+						{
+							ID:         "connection_error",
+							Latency:    "1",
+							StatusCode: 0,
+							Error:      "0:Error communicating with server",
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameState := GameState{
+				snakeStates: test.snakeStates,
+			}
+			actual := gameState.buildFrameEvent(test.boardState)
+			require.Equalf(t, test.expected, actual, "%#v", actual)
 		})
 	}
 }

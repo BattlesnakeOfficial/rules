@@ -54,34 +54,45 @@ func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings ru
 
 func (m StandardMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
-	minFood := int(settings.MinimumFood)
-	foodSpawnChance := int(settings.FoodSpawnChance)
-	numCurrentFood := len(lastBoardState.Food)
 
-	if numCurrentFood < minFood {
-		placeFoodRandomly(rand, lastBoardState, editor, minFood-numCurrentFood)
-		return nil
-	}
-	if foodSpawnChance > 0 && (100-rand.Intn(100)) < foodSpawnChance {
-		placeFoodRandomly(rand, lastBoardState, editor, 1)
-		return nil
+	foodNeeded := checkFoodNeedingPlacement(rand, settings, lastBoardState)
+	if foodNeeded > 0 {
+		placeFoodRandomly(rand, lastBoardState, editor, foodNeeded)
 	}
 
 	return nil
 }
 
-func placeFoodRandomly(rand rules.Rand, b *rules.BoardState, editor Editor, n int) {
-	unoccupiedPoints := rules.GetUnoccupiedPoints(b, false)
+func checkFoodNeedingPlacement(rand rules.Rand, settings rules.Settings, state *rules.BoardState) int {
+	minFood := int(settings.MinimumFood)
+	foodSpawnChance := int(settings.FoodSpawnChance)
+	numCurrentFood := len(state.Food)
 
-	if len(unoccupiedPoints) < n {
-		n = len(unoccupiedPoints)
+	if numCurrentFood < minFood {
+		return minFood - numCurrentFood
+	}
+	if foodSpawnChance > 0 && (100-rand.Intn(100)) < foodSpawnChance {
+		return 1
 	}
 
-	rand.Shuffle(len(unoccupiedPoints), func(i int, j int) {
-		unoccupiedPoints[i], unoccupiedPoints[j] = unoccupiedPoints[j], unoccupiedPoints[i]
+	return 0
+}
+
+func placeFoodRandomly(rand rules.Rand, b *rules.BoardState, editor Editor, n int) {
+	unoccupiedPoints := rules.GetUnoccupiedPoints(b, false)
+	placeFoodRandomlyAtPositions(rand, b, editor, n, unoccupiedPoints)
+}
+
+func placeFoodRandomlyAtPositions(rand rules.Rand, b *rules.BoardState, editor Editor, n int, positions []rules.Point) {
+	if len(positions) < n {
+		n = len(positions)
+	}
+
+	rand.Shuffle(len(positions), func(i int, j int) {
+		positions[i], positions[j] = positions[j], positions[i]
 	})
 
 	for i := 0; i < n; i++ {
-		editor.AddFood(unoccupiedPoints[i])
+		editor.AddFood(positions[i])
 	}
 }

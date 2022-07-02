@@ -32,26 +32,28 @@ Usage:
   battlesnake play [flags]
 
 Flags:
-  -W, --width int                   Width of Board (default 11)
-  -H, --height int                  Height of Board (default 11)
-  -n, --name stringArray            Name of Snake
-  -u, --url stringArray             URL of Snake
+  -W, --width int                 Width of Board (default 11)
+  -H, --height int                Height of Board (default 11)
+  -n, --name stringArray          Name of Snake
+  -u, --url stringArray           URL of Snake
   -t, --timeout int               Request Timeout (default 500)
-  -s, --sequential                  Use Sequential Processing
-  -g, --gametype string             Type of Game Rules (default "standard")
-  -m, --map string                  Game map to use to populate the board (default "standard")
-  -v, --viewmap                     View the Map Each Turn
-  -c, --color                       Use color to draw the map
-  -r, --seed int                    Random Seed (default 1649588785026867900)
+  -s, --sequential                Use Sequential Processing
+  -g, --gametype string           Type of Game Rules (default "standard")
+  -m, --map string                Game map to use to populate the board (default "standard")
+  -v, --viewmap                   View the Map Each Turn
+  -c, --color                     Use color to draw the map
+  -r, --seed int                  Random Seed (default 1656460409268690000)
   -d, --delay int                 Turn Delay in Milliseconds
   -D, --duration int              Minimum Turn Duration in Milliseconds
-      --debug-requests              Log body of all requests sent
-  -o, --output string               File path to output game state to. Existing files will be overwritten
+      --debug-requests            Log body of all requests sent
+  -o, --output string             File path to output game state to. Existing files will be overwritten
+      --browser                   View the game in the browser using the Battlesnake game board
+      --board-url string          Base URL for the game board when using --browser (default "https://board.battlesnake.com")
       --foodSpawnChance int       Percentage chance of spawning a new food every round (default 15)
       --minimumFood int           Minimum food to keep on the board every turn (default 1)
       --hazardDamagePerTurn int   Health damage a snake will take when ending its turn in a hazard (default 14)
       --shrinkEveryNTurns int     In Royale mode, the number of turns between generating new hazards (default 25)
-  -h, --help                        help for play
+  -h, --help                      help for play
 
 Global Flags:
       --config string   config file (default is $HOME/.battlesnake.yaml)
