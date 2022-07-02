@@ -113,7 +113,7 @@ func (m SoloMazeMap) CreateMaze(initialBoardState *rules.BoardState, settings ru
 	snakeBody := []rules.Point{
 		snake_head_position,
 	}
-	for i := 0; i <= int(currentLevel); i++ {
+	for i := 0; i <= int(currentLevel) + 1; i++ {
 		snakeBody = append(snakeBody, snake_tail_position)
 	}
 
