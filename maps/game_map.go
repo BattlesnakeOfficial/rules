@@ -42,8 +42,8 @@ func AnySize() sizes {
 	return sizes{Dimensions{Width: 0, Height: 0}}
 }
 
-// OddSquareSizes generates square (width = height) board sizes with an odd number of positions in the
-// vertical and horizontal directions.
+// OddSquareSizes generates square (width = height) board sizes with an odd number of positions
+// in thevertical and horizontal directions.
 // Examples:
 //  - OddSquareSizes(11,21) produces [(11,11), (13,13), (15,15), (17,17), (19,19), (21,21)]
 func OddSquareSizes(min, max uint) sizes {
