@@ -637,29 +637,29 @@ func TestGetDistanceBetweenPoints(t *testing.T) {
 	}
 }
 
-// func TestIsKnownBoardSize(t *testing.T) {
-// 	tests := []struct {
-// 		Width    int
-// 		Height   int
-// 		Expected bool
-// 	}{
-// 		{1, 1, false},
-// 		{0, 0, false},
-// 		{0, 45, false},
-// 		{45, 1, false},
-// 		{7, 7, true},
-// 		{11, 11, true},
-// 		{19, 19, true},
-// 		{7, 11, false},
-// 		{11, 19, false},
-// 		{19, 7, false},
-// 	}
+func TestIsSquareBoard(t *testing.T) {
+	tests := []struct {
+		Width    int
+		Height   int
+		Expected bool
+	}{
+		{1, 1, true},
+		{0, 0, true},
+		{0, 45, false},
+		{45, 1, false},
+		{7, 7, true},
+		{11, 11, true},
+		{19, 19, true},
+		{7, 11, false},
+		{11, 19, false},
+		{19, 7, false},
+	}
 
-// 	for _, test := range tests {
-// 		result := isFixedBoardSize(&BoardState{Width: test.Width, Height: test.Height})
-// 		require.Equal(t, test.Expected, result)
-// 	}
-// }
+	for _, test := range tests {
+		result := isSquareBoard(&BoardState{Width: test.Width, Height: test.Height})
+		require.Equal(t, test.Expected, result)
+	}
+}
 
 func TestGetUnoccupiedPoints(t *testing.T) {
 	tests := []struct {
