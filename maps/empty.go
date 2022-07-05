@@ -19,10 +19,10 @@ func (m EmptyMap) Meta() Metadata {
 		Name:        "Empty",
 		Description: "Default snake placement with no food",
 		Author:      "Battlesnake",
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSquareSizes(11, 25),
 	}
 }
 

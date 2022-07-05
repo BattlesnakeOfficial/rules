@@ -61,7 +61,7 @@ func TestEmptyMapSetupBoard(t *testing.T) {
 			},
 			rules.MinRand,
 			nil,
-			rules.ErrorNoRoomForSnake,
+			rules.ErrorTooManySnakes,
 		},
 		{
 			"full 11x11 min",

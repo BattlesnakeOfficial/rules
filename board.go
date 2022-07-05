@@ -84,14 +84,25 @@ func CreateDefaultBoardState(rand Rand, width int, height int, snakeIDs []string
 
 // PlaceSnakesAutomatically initializes the array of snakes based on the provided snake IDs and the size of the board.
 func PlaceSnakesAutomatically(rand Rand, b *BoardState, snakeIDs []string) error {
-	if isFixedBoardSize(b) {
-		return PlaceSnakesFixed(rand, b, snakeIDs)
+
+	if isSquareBoard(b) {
+		// we don't allow > 8 snakes on very small boards
+		if len(snakeIDs) > 8 && b.Width <= BoardSizeSmall {
+			return ErrorTooManySnakes
+		}
+
+		// we can do fixed placement for up to 8 snakes on minimum sized boards
+		if len(snakeIDs) <= 8 && b.Width >= BoardSizeSmall {
+			return PlaceSnakesFixed(rand, b, snakeIDs)
+		}
+
+		// for > 8 snakes, we can do distributed placement
+		if b.Width >= BoardSizeMedium {
+			return PlaceManySnakesDistributed(rand, b, snakeIDs)
+		}
 	}
 
-	if isExtraLargeBoardSize(b) {
-		return PlaceManySnakesDistributed(rand, b, snakeIDs)
-	}
-
+	// last resort for unexpected board sizes we'll just randomly place snakes
 	return PlaceSnakesRandomly(rand, b, snakeIDs)
 }
 
@@ -340,7 +351,7 @@ func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
 
 // PlaceFoodAutomatically initializes the array of food based on the size of the board and the number of snakes.
 func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
-	if isFixedBoardSize(b) || isExtraLargeBoardSize(b) {
+	if isSquareBoard(b) && b.Width >= BoardSizeSmall {
 		return PlaceFoodFixed(rand, b)
 	}
 
@@ -519,20 +530,6 @@ func getDistanceBetweenPoints(a, b Point) int {
 	return absInt(a.X-b.X) + absInt(a.Y-b.Y)
 }
 
-func isExtraLargeBoardSize(b *BoardState) bool {
-	// We can do placement for any square, large board using the distributed placement algorithm
-	return b.Width == b.Height && b.Width >= 21
-}
-
-func isFixedBoardSize(b *BoardState) bool {
-	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
-		return true
-	}
-	if b.Height == BoardSizeMedium && b.Width == BoardSizeMedium {
-		return true
-	}
-	if b.Height == BoardSizeLarge && b.Width == BoardSizeLarge {
-		return true
-	}
-	return false
+func isSquareBoard(b *BoardState) bool {
+	return b.Width == b.Height
 }
