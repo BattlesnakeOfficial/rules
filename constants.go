@@ -10,10 +10,11 @@ const (
 	MoveRight = "right"
 	MoveLeft  = "left"
 
-	BoardSizeSmall  = 7
-	BoardSizeMedium = 11
-	BoardSizeLarge  = 19
-	BoardSizeXLarge = 25
+	BoardSizeSmall   = 7
+	BoardSizeMedium  = 11
+	BoardSizeLarge   = 19
+	BoardSizeXLarge  = 21
+	BoardSizeXXLarge = 25
 
 	SnakeMaxHealth = 100
 	SnakeStartSize = 3

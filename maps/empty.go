@@ -22,7 +22,7 @@ func (m EmptyMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
