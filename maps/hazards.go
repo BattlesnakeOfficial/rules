@@ -32,7 +32,7 @@ func (m InnerBorderHazardsMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -72,7 +72,7 @@ func (m ConcentricRingsHazardsMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -113,7 +113,7 @@ func (m ColumnsHazardsMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -152,7 +152,7 @@ func (m SpiralHazardsMap) Meta() Metadata {
 		Version:    2,
 		MinPlayers: 1,
 		MaxPlayers: 16,
-		BoardSizes: OddSquareSizes(11, 25),
+		BoardSizes: OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -244,7 +244,7 @@ func (m ScatterFillMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -295,7 +295,7 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -409,7 +409,7 @@ func (m ExpandingBoxMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
@@ -484,7 +484,7 @@ func (m ExpandingScatterMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 

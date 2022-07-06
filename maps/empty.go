@@ -22,12 +22,16 @@ func (m EmptyMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 
 func (m EmptyMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
+
+	if len(initialBoardState.Snakes) > int(m.Meta().MaxPlayers) {
+		return rules.ErrorTooManySnakes
+	}
 
 	snakeIDs := make([]string, 0, len(initialBoardState.Snakes))
 	for _, snake := range initialBoardState.Snakes {

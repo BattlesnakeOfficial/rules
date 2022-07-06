@@ -24,7 +24,7 @@ func (m RoyaleHazardsMap) Meta() Metadata {
 		Version:     2,
 		MinPlayers:  1,
 		MaxPlayers:  16,
-		BoardSizes:  OddSquareSizes(11, 25),
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXLarge),
 	}
 }
 

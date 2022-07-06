@@ -13,6 +13,7 @@ const (
 	BoardSizeSmall  = 7
 	BoardSizeMedium = 11
 	BoardSizeLarge  = 19
+	BoardSizeXLarge = 25
 
 	SnakeMaxHealth = 100
 	SnakeStartSize = 3

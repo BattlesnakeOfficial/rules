@@ -87,7 +87,7 @@ func PlaceSnakesAutomatically(rand Rand, b *BoardState, snakeIDs []string) error
 
 	if isSquareBoard(b) {
 		// we don't allow > 8 snakes on very small boards
-		if len(snakeIDs) > 8 && b.Width <= BoardSizeSmall {
+		if len(snakeIDs) > 8 && b.Width < BoardSizeSmall {
 			return ErrorTooManySnakes
 		}
 
@@ -305,7 +305,7 @@ func PlaceSnakesRandomly(rand Rand, b *BoardState, snakeIDs []string) error {
 	}
 
 	for i := 0; i < len(b.Snakes); i++ {
-		unoccupiedPoints := GetEvenUnoccupiedPoints(b)
+		unoccupiedPoints := removeCenterCoord(b, GetEvenUnoccupiedPoints(b))
 		if len(unoccupiedPoints) <= 0 {
 			return ErrorNoRoomForSnake
 		}
@@ -361,7 +361,7 @@ func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 
-	isSmallBoard := b.Width*b.Height <= BoardSizeSmall*BoardSizeSmall
+	isSmallBoard := b.Width*b.Height < BoardSizeMedium*BoardSizeMedium
 	// Up to 4 snakes can be placed such that food is nearby on small boards.
 	// Otherwise, we skip this and only try to place food in the center.
 	if len(b.Snakes) <= 4 || !isSmallBoard {
@@ -378,6 +378,11 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 			// Remove any invalid/unwanted positions
 			availableFoodLocations := []Point{}
 			for _, p := range possibleFoodLocations {
+
+				// Don't place in the center
+				if centerCoord == p {
+					continue
+				}
 
 				// Ignore points already occupied by food
 				isOccupiedAlready := false
@@ -473,6 +478,19 @@ func GetEvenUnoccupiedPoints(b *BoardState) []Point {
 		}
 	}
 	return evenUnoccupiedPoints
+}
+
+// removeCenterCoord filters out the board's center point from a list of points.
+func removeCenterCoord(b *BoardState, points []Point) []Point {
+	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
+	var noCenterPoints []Point
+	for _, p := range points {
+		if p != centerCoord {
+			noCenterPoints = append(noCenterPoints, p)
+		}
+	}
+
+	return noCenterPoints
 }
 
 func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {

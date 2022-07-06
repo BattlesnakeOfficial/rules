@@ -43,7 +43,7 @@ func TestStandardMapSetupBoard(t *testing.T) {
 			&rules.BoardState{
 				Width:   7,
 				Height:  7,
-				Snakes:  generateSnakes(9),
+				Snakes:  generateSnakes(17),
 				Food:    []rules.Point{},
 				Hazards: []rules.Point{},
 			},
