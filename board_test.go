@@ -53,18 +53,47 @@ func TestCreateDefaultBoardState(t *testing.T) {
 		ExpectedNumFood int
 		Err             error
 	}{
-		{1, 1, []string{"one"}, 0, nil},
-		{1, 2, []string{"one"}, 0, nil},
+		{1, 1, []string{"one"}, 0, ErrorNoRoomForSnake},
+		{1, 2, []string{"one"}, 0, ErrorNoRoomForSnake},
 		{1, 4, []string{"one"}, 1, nil},
 		{2, 2, []string{"one"}, 1, nil},
 		{9, 8, []string{"one"}, 1, nil},
-		{2, 2, []string{"one", "two"}, 0, nil},
+		{2, 2, []string{"one", "two"}, 0, ErrorNoRoomForSnake},
 		{1, 1, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
 		{1, 2, []string{"one", "two"}, 2, ErrorNoRoomForSnake},
 		{BoardSizeSmall, BoardSizeSmall, []string{"one", "two"}, 3, nil},
+		{
+			BoardSizeSmall,
+			BoardSizeSmall,
+			[]string{"1", "2", "3", "4"},
+			5, // <= 4 snakes on a small board we get more than just center food
+			nil,
+		},
+		{
+			BoardSizeSmall,
+			BoardSizeSmall,
+			[]string{"1", "2", "3", "4", "5"},
+			1, // for this size and this many snakes, food is only placed in the center
+			nil,
+		},
+		{
+			BoardSizeSmall,
+			BoardSizeSmall,
+			[]string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"},
+			1, // for this size and this many snakes, food is only placed in the center
+			nil,
+		},
+		{
+			BoardSizeMedium,
+			BoardSizeMedium,
+			[]string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"},
+			17, // > small boards and we get non-center food
+			nil,
+		},
 	}
 
 	for testNum, test := range tests {
+		t.Logf("test case %d", testNum)
 		state, err := CreateDefaultBoardState(MaxRand, test.Width, test.Height, test.IDs)
 		require.Equal(t, test.Err, err)
 		if err != nil {
@@ -87,6 +116,7 @@ func TestPlaceSnakesDefault(t *testing.T) {
 	// Because placement is random, we only test to ensure
 	// that snake bodies are populated correctly
 	// Note: because snakes are randomly spawned on even diagonal points, the board can accomodate number of snakes equal to: width*height/2
+	// Update: because we exclude the center point now, we can accommodate 1 less snake now (width*height/2 - 1)
 	tests := []struct {
 		BoardState *BoardState
 		SnakeIDs   []string
@@ -98,7 +128,7 @@ func TestPlaceSnakesDefault(t *testing.T) {
 				Height: 1,
 			},
 			make([]string, 1),
-			nil,
+			ErrorNoRoomForSnake, // we avoid placing snakes in the center, so a board size of 1 will error
 		},
 		{
 			&BoardState{
@@ -137,8 +167,16 @@ func TestPlaceSnakesDefault(t *testing.T) {
 				Width:  5,
 				Height: 10,
 			},
-			make([]string, 25),
+			make([]string, 24),
 			nil,
+		},
+		{
+			&BoardState{
+				Width:  5,
+				Height: 10,
+			},
+			make([]string, 25),
+			ErrorNoRoomForSnake,
 		},
 		{
 			&BoardState{
@@ -182,14 +220,6 @@ func TestPlaceSnakesDefault(t *testing.T) {
 		},
 		{
 			&BoardState{
-				Width:  BoardSizeSmall,
-				Height: BoardSizeSmall,
-			},
-			make([]string, 9),
-			ErrorTooManySnakes,
-		},
-		{
-			&BoardState{
 				Width:  BoardSizeMedium,
 				Height: BoardSizeMedium,
 			},
@@ -201,7 +231,7 @@ func TestPlaceSnakesDefault(t *testing.T) {
 				Width:  BoardSizeMedium,
 				Height: BoardSizeMedium,
 			},
-			make([]string, 9),
+			make([]string, 17),
 			ErrorTooManySnakes,
 		},
 		{
@@ -217,7 +247,7 @@ func TestPlaceSnakesDefault(t *testing.T) {
 				Width:  BoardSizeLarge,
 				Height: BoardSizeLarge,
 			},
-			make([]string, 9),
+			make([]string, 17),
 			ErrorTooManySnakes,
 		},
 	}
@@ -422,17 +452,20 @@ func TestPlaceFood(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		require.Len(t, test.BoardState.Food, 0)
-		err := PlaceFoodAutomatically(MaxRand, test.BoardState)
-		require.NoError(t, err)
-		require.Equal(t, test.ExpectedFood, len(test.BoardState.Food))
-		for _, point := range test.BoardState.Food {
-			require.GreaterOrEqual(t, point.X, 0)
-			require.GreaterOrEqual(t, point.Y, 0)
-			require.Less(t, point.X, test.BoardState.Width)
-			require.Less(t, point.Y, test.BoardState.Height)
-		}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+
+			require.Len(t, test.BoardState.Food, 0)
+			err := PlaceFoodAutomatically(MaxRand, test.BoardState)
+			require.NoError(t, err)
+			require.Equal(t, test.ExpectedFood, len(test.BoardState.Food))
+			for _, point := range test.BoardState.Food {
+				require.GreaterOrEqual(t, point.X, 0)
+				require.GreaterOrEqual(t, point.Y, 0)
+				require.Less(t, point.X, test.BoardState.Width)
+				require.Less(t, point.Y, test.BoardState.Height)
+			}
+		})
 	}
 }
 
@@ -637,14 +670,14 @@ func TestGetDistanceBetweenPoints(t *testing.T) {
 	}
 }
 
-func TestIsKnownBoardSize(t *testing.T) {
+func TestIsSquareBoard(t *testing.T) {
 	tests := []struct {
 		Width    int
 		Height   int
 		Expected bool
 	}{
-		{1, 1, false},
-		{0, 0, false},
+		{1, 1, true},
+		{0, 0, true},
 		{0, 45, false},
 		{45, 1, false},
 		{7, 7, true},
@@ -656,7 +689,7 @@ func TestIsKnownBoardSize(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := isFixedBoardSize(&BoardState{Width: test.Width, Height: test.Height})
+		result := isSquareBoard(&BoardState{Width: test.Width, Height: test.Height})
 		require.Equal(t, test.Expected, result)
 	}
 }
@@ -824,12 +857,14 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		evenUnoccupiedPoints := GetEvenUnoccupiedPoints(test.Board)
-		require.Equal(t, len(test.Expected), len(evenUnoccupiedPoints))
-		for i, e := range test.Expected {
-			require.Equal(t, e, evenUnoccupiedPoints[i])
-		}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			evenUnoccupiedPoints := GetEvenUnoccupiedPoints(test.Board)
+			require.Equal(t, len(test.Expected), len(evenUnoccupiedPoints))
+			for i, e := range test.Expected {
+				require.Equal(t, e, evenUnoccupiedPoints[i])
+			}
+		})
 	}
 }
 

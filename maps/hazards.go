@@ -29,10 +29,10 @@ func (m InnerBorderHazardsMap) Meta() Metadata {
 		Name:        "hz_inner_wall",
 		Description: "Creates a static map on turn 0 that is a 1-square wall of hazard that is inset 2 squares from the edge of the board",
 		Author:      "Battlesnake",
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -69,10 +69,10 @@ func (m ConcentricRingsHazardsMap) Meta() Metadata {
 		Name:        "hz_rings",
 		Description: "Creates a static map where there are rings of hazard sauce starting from the center with a 1 square space between the rings that has no sauce",
 		Author:      "Battlesnake",
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -110,10 +110,10 @@ func (m ColumnsHazardsMap) Meta() Metadata {
 		Name:        "hz_columns",
 		Description: "Creates a static map on turn 0 that fills in odd squares, i.e. (1,1), (1,3), (3,3) ... with hazard sauce",
 		Author:      "Battlesnake",
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -149,10 +149,10 @@ func (m SpiralHazardsMap) Meta() Metadata {
 		Description: `Generates a dynamic hazard map that grows in a spiral pattern clockwise from a random point on
  the map. Each 2 turns a new hazard square is added to the map`,
 		Author:     "altersaddle",
-		Version:    1,
+		Version:    2,
 		MinPlayers: 1,
-		MaxPlayers: 8,
-		BoardSizes: AnySize(),
+		MaxPlayers: 16,
+		BoardSizes: OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -241,10 +241,10 @@ func (m ScatterFillMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_scatter",
 		Description: `Fills the entire board with hazard squares that are set to appear on regular turn schedule. Each square is picked at random.`,
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -292,10 +292,10 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_grow_box",
 		Description: `Creates an area of hazard that expands from a point with one random side growing on a turn schedule.`,
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -406,10 +406,10 @@ func (m ExpandingBoxMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_expand_box",
 		Description: `Generates an area of hazard that expands from a random point on the board outward in concentric rings on a periodic turn schedule.`,
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
@@ -481,10 +481,10 @@ func (m ExpandingScatterMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_expand_scatter",
 		Description: `Builds an expanding hazard area that grows from a central point in rings that are randomly filled in on a regular turn schedule.`,
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 

@@ -19,15 +19,19 @@ func (m StandardMap) Meta() Metadata {
 		Name:        "Standard",
 		Description: "Standard snake placement and food spawning",
 		Author:      "Battlesnake",
-		Version:     1,
+		Version:     2,
 		MinPlayers:  1,
-		MaxPlayers:  8,
-		BoardSizes:  AnySize(),
+		MaxPlayers:  16,
+		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
 	}
 }
 
 func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
+
+	if len(initialBoardState.Snakes) > int(m.Meta().MaxPlayers) {
+		return rules.ErrorTooManySnakes
+	}
 
 	snakeIDs := make([]string, 0, len(initialBoardState.Snakes))
 	for _, snake := range initialBoardState.Snakes {

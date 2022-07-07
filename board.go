@@ -84,14 +84,25 @@ func CreateDefaultBoardState(rand Rand, width int, height int, snakeIDs []string
 
 // PlaceSnakesAutomatically initializes the array of snakes based on the provided snake IDs and the size of the board.
 func PlaceSnakesAutomatically(rand Rand, b *BoardState, snakeIDs []string) error {
-	if isFixedBoardSize(b) {
-		return PlaceSnakesFixed(rand, b, snakeIDs)
+
+	if isSquareBoard(b) {
+		// we don't allow > 8 snakes on very small boards
+		if len(snakeIDs) > 8 && b.Width < BoardSizeSmall {
+			return ErrorTooManySnakes
+		}
+
+		// we can do fixed placement for up to 8 snakes on minimum sized boards
+		if len(snakeIDs) <= 8 && b.Width >= BoardSizeSmall {
+			return PlaceSnakesFixed(rand, b, snakeIDs)
+		}
+
+		// for > 8 snakes, we can do distributed placement
+		if b.Width >= BoardSizeMedium {
+			return PlaceManySnakesDistributed(rand, b, snakeIDs)
+		}
 	}
 
-	if isExtraLargeBoardSize(b) {
-		return PlaceManySnakesDistributed(rand, b, snakeIDs)
-	}
-
+	// last resort for unexpected board sizes we'll just randomly place snakes
 	return PlaceSnakesRandomly(rand, b, snakeIDs)
 }
 
@@ -294,7 +305,7 @@ func PlaceSnakesRandomly(rand Rand, b *BoardState, snakeIDs []string) error {
 	}
 
 	for i := 0; i < len(b.Snakes); i++ {
-		unoccupiedPoints := GetEvenUnoccupiedPoints(b)
+		unoccupiedPoints := removeCenterCoord(b, GetEvenUnoccupiedPoints(b))
 		if len(unoccupiedPoints) <= 0 {
 			return ErrorNoRoomForSnake
 		}
@@ -340,7 +351,7 @@ func PlaceSnake(b *BoardState, snakeID string, body []Point) error {
 
 // PlaceFoodAutomatically initializes the array of food based on the size of the board and the number of snakes.
 func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
-	if isFixedBoardSize(b) || isExtraLargeBoardSize(b) {
+	if isSquareBoard(b) && b.Width >= BoardSizeSmall {
 		return PlaceFoodFixed(rand, b)
 	}
 
@@ -350,7 +361,7 @@ func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 
-	isSmallBoard := b.Width*b.Height <= BoardSizeSmall*BoardSizeSmall
+	isSmallBoard := b.Width*b.Height < BoardSizeMedium*BoardSizeMedium
 	// Up to 4 snakes can be placed such that food is nearby on small boards.
 	// Otherwise, we skip this and only try to place food in the center.
 	if len(b.Snakes) <= 4 || !isSmallBoard {
@@ -367,6 +378,11 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 			// Remove any invalid/unwanted positions
 			availableFoodLocations := []Point{}
 			for _, p := range possibleFoodLocations {
+
+				// Don't place in the center
+				if centerCoord == p {
+					continue
+				}
 
 				// Ignore points already occupied by food
 				isOccupiedAlready := false
@@ -464,6 +480,19 @@ func GetEvenUnoccupiedPoints(b *BoardState) []Point {
 	return evenUnoccupiedPoints
 }
 
+// removeCenterCoord filters out the board's center point from a list of points.
+func removeCenterCoord(b *BoardState, points []Point) []Point {
+	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
+	var noCenterPoints []Point
+	for _, p := range points {
+		if p != centerCoord {
+			noCenterPoints = append(noCenterPoints, p)
+		}
+	}
+
+	return noCenterPoints
+}
+
 func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 	pointIsOccupied := map[int]map[int]bool{}
 	for _, p := range b.Food {
@@ -519,20 +548,6 @@ func getDistanceBetweenPoints(a, b Point) int {
 	return absInt(a.X-b.X) + absInt(a.Y-b.Y)
 }
 
-func isExtraLargeBoardSize(b *BoardState) bool {
-	// We can do placement for any square, large board using the distributed placement algorithm
-	return b.Width == b.Height && b.Width >= 21
-}
-
-func isFixedBoardSize(b *BoardState) bool {
-	if b.Height == BoardSizeSmall && b.Width == BoardSizeSmall {
-		return true
-	}
-	if b.Height == BoardSizeMedium && b.Width == BoardSizeMedium {
-		return true
-	}
-	if b.Height == BoardSizeLarge && b.Width == BoardSizeLarge {
-		return true
-	}
-	return false
+func isSquareBoard(b *BoardState) bool {
+	return b.Width == b.Height
 }

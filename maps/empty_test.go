@@ -42,7 +42,7 @@ func TestEmptyMapSetupBoard(t *testing.T) {
 			&rules.BoardState{
 				Width:   7,
 				Height:  7,
-				Snakes:  generateSnakes(9),
+				Snakes:  generateSnakes(17),
 				Food:    []rules.Point{},
 				Hazards: []rules.Point{},
 			},
@@ -61,7 +61,7 @@ func TestEmptyMapSetupBoard(t *testing.T) {
 			},
 			rules.MinRand,
 			nil,
-			rules.ErrorNoRoomForSnake,
+			rules.ErrorTooManySnakes,
 		},
 		{
 			"full 11x11 min",
