@@ -164,6 +164,7 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 var standardMoveAndCollideMAD = gameTestCase{
 	"Standard Case Move and Collide",
 	&BoardState{
+		Turn:   0,
 		Width:  10,
 		Height: 10,
 		Snakes: []Snake{
@@ -191,18 +192,20 @@ var standardMoveAndCollideMAD = gameTestCase{
 		Height: 10,
 		Snakes: []Snake{
 			{
-				ID:              "one",
-				Body:            []Point{{1, 2}, {1, 1}},
-				Health:          98,
-				EliminatedCause: EliminatedByCollision,
-				EliminatedBy:    "two",
+				ID:               "one",
+				Body:             []Point{{1, 2}, {1, 1}},
+				Health:           98,
+				EliminatedCause:  EliminatedByCollision,
+				EliminatedBy:     "two",
+				EliminatedOnTurn: 1,
 			},
 			{
-				ID:              "two",
-				Body:            []Point{{1, 1}, {1, 2}},
-				Health:          98,
-				EliminatedCause: EliminatedByCollision,
-				EliminatedBy:    "one",
+				ID:               "two",
+				Body:             []Point{{1, 1}, {1, 2}},
+				Health:           98,
+				EliminatedCause:  EliminatedByCollision,
+				EliminatedBy:     "one",
+				EliminatedOnTurn: 1,
 			},
 		},
 		Food:    []Point{},
@@ -275,10 +278,11 @@ func TestEatingOnLastMove(t *testing.T) {
 						Health: 100,
 					},
 					{
-						ID:              "two",
-						Body:            []Point{{3, 1}, {3, 2}, {3, 3}},
-						Health:          0,
-						EliminatedCause: EliminatedByOutOfHealth,
+						ID:               "two",
+						Body:             []Point{{3, 1}, {3, 2}, {3, 3}},
+						Health:           0,
+						EliminatedCause:  EliminatedByOutOfHealth,
+						EliminatedOnTurn: 1,
 					},
 				},
 				Food: []Point{{9, 9}},
@@ -315,6 +319,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 	}{
 		{
 			&BoardState{
+				Turn:   41,
 				Width:  10,
 				Height: 10,
 				Snakes: []Snake{
@@ -341,18 +346,20 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Height: 10,
 				Snakes: []Snake{
 					{
-						ID:              "one",
-						Body:            []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
-						Health:          100,
-						EliminatedCause: EliminatedByHeadToHeadCollision,
-						EliminatedBy:    "two",
+						ID:               "one",
+						Body:             []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Health:           100,
+						EliminatedCause:  EliminatedByHeadToHeadCollision,
+						EliminatedBy:     "two",
+						EliminatedOnTurn: 42,
 					},
 					{
-						ID:              "two",
-						Body:            []Point{{0, 3}, {0, 4}, {0, 5}, {0, 5}},
-						Health:          100,
-						EliminatedCause: EliminatedByHeadToHeadCollision,
-						EliminatedBy:    "one",
+						ID:               "two",
+						Body:             []Point{{0, 3}, {0, 4}, {0, 5}, {0, 5}},
+						Health:           100,
+						EliminatedCause:  EliminatedByHeadToHeadCollision,
+						EliminatedBy:     "one",
+						EliminatedOnTurn: 42,
 					},
 				},
 				Food: []Point{{9, 9}},
@@ -360,6 +367,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 		},
 		{
 			&BoardState{
+				Turn:   41,
 				Width:  10,
 				Height: 10,
 				Snakes: []Snake{
@@ -386,11 +394,12 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Height: 10,
 				Snakes: []Snake{
 					{
-						ID:              "one",
-						Body:            []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
-						Health:          100,
-						EliminatedCause: EliminatedByHeadToHeadCollision,
-						EliminatedBy:    "two",
+						ID:               "one",
+						Body:             []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Health:           100,
+						EliminatedCause:  EliminatedByHeadToHeadCollision,
+						EliminatedBy:     "two",
+						EliminatedOnTurn: 42,
 					},
 					{
 						ID:     "two",
@@ -1272,66 +1281,75 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 
 func TestMaybeDamageHazards(t *testing.T) {
 	tests := []struct {
-		Snakes                   []Snake
-		Hazards                  []Point
-		Food                     []Point
-		ExpectedEliminatedCauses []string
-		ExpectedEliminatedByIDs  []string
+		Snakes                    []Snake
+		Hazards                   []Point
+		Food                      []Point
+		ExpectedEliminatedCauses  []string
+		ExpectedEliminatedByIDs   []string
+		ExpectedEliminatedOnTurns []int
 	}{
 		{},
 		{
-			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
-			Hazards:                  []Point{},
-			ExpectedEliminatedCauses: []string{NotEliminated},
-			ExpectedEliminatedByIDs:  []string{""},
+			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                   []Point{},
+			ExpectedEliminatedCauses:  []string{NotEliminated},
+			ExpectedEliminatedByIDs:   []string{""},
+			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
-			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
-			Hazards:                  []Point{{0, 0}},
-			ExpectedEliminatedCauses: []string{EliminatedByOutOfHealth},
-			ExpectedEliminatedByIDs:  []string{""},
+			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                   []Point{{0, 0}},
+			ExpectedEliminatedCauses:  []string{EliminatedByOutOfHealth},
+			ExpectedEliminatedByIDs:   []string{""},
+			ExpectedEliminatedOnTurns: []int{42},
 		},
 		{
-			Snakes:                   []Snake{{Body: []Point{{0, 0}}}},
-			Hazards:                  []Point{{0, 0}},
-			Food:                     []Point{{0, 0}},
-			ExpectedEliminatedCauses: []string{NotEliminated},
-			ExpectedEliminatedByIDs:  []string{""},
+			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
+			Hazards:                   []Point{{0, 0}},
+			Food:                      []Point{{0, 0}},
+			ExpectedEliminatedCauses:  []string{NotEliminated},
+			ExpectedEliminatedByIDs:   []string{""},
+			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
-			Snakes:                   []Snake{{Body: []Point{{0, 0}, {1, 0}, {2, 0}}}},
-			Hazards:                  []Point{{1, 0}, {2, 0}},
-			ExpectedEliminatedCauses: []string{NotEliminated},
-			ExpectedEliminatedByIDs:  []string{""},
-		},
-		{
-			Snakes: []Snake{
-				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
-				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
-			},
-			Hazards:                  []Point{{1, 0}, {2, 0}, {3, 4}, {3, 5}, {3, 6}},
-			ExpectedEliminatedCauses: []string{NotEliminated, NotEliminated},
-			ExpectedEliminatedByIDs:  []string{"", ""},
+			Snakes:                    []Snake{{Body: []Point{{0, 0}, {1, 0}, {2, 0}}}},
+			Hazards:                   []Point{{1, 0}, {2, 0}},
+			ExpectedEliminatedCauses:  []string{NotEliminated},
+			ExpectedEliminatedByIDs:   []string{""},
+			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
 			Snakes: []Snake{
 				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
 				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
 			},
-			Hazards:                  []Point{{3, 3}},
-			ExpectedEliminatedCauses: []string{NotEliminated, EliminatedByOutOfHealth},
-			ExpectedEliminatedByIDs:  []string{"", ""},
+			Hazards:                   []Point{{1, 0}, {2, 0}, {3, 4}, {3, 5}, {3, 6}},
+			ExpectedEliminatedCauses:  []string{NotEliminated, NotEliminated},
+			ExpectedEliminatedByIDs:   []string{"", ""},
+			ExpectedEliminatedOnTurns: []int{0, 0},
+		},
+		{
+			Snakes: []Snake{
+				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
+				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
+			},
+			Hazards:                   []Point{{3, 3}},
+			ExpectedEliminatedCauses:  []string{NotEliminated, EliminatedByOutOfHealth},
+			ExpectedEliminatedByIDs:   []string{"", ""},
+			ExpectedEliminatedOnTurns: []int{0, 42},
 		},
 	}
 
 	for _, test := range tests {
-		b := &BoardState{Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
+		b := &BoardState{Turn: 41, Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
 		r := StandardRuleset{HazardDamagePerTurn: 100}
 		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 
 		for i, snake := range b.Snakes {
 			require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
+			require.Equal(t, test.ExpectedEliminatedByIDs[i], snake.EliminatedBy)
+			require.Equal(t, test.ExpectedEliminatedOnTurns[i], snake.EliminatedOnTurn)
 		}
 
 	}
