@@ -553,6 +553,10 @@ func isSquareBoard(b *BoardState) bool {
 	return b.Width == b.Height
 }
 
+// EliminateSnake updates a snake's state to reflect that it was eliminated.
+// - "cause" identifies what type of event caused the snake to be eliminated
+// - "by" identifies which snake (if any, use empty string "" if none) eliminated the snake.
+// - "turn" is the turn number that this snake was eliminated on.
 func EliminateSnake(s *Snake, cause, by string, turn int) {
 	s.EliminatedCause = cause
 	s.EliminatedBy = by
