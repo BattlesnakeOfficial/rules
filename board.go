@@ -57,6 +57,7 @@ func (prevState *BoardState) Clone() *BoardState {
 		nextState.Snakes[i].Health = prevState.Snakes[i].Health
 		nextState.Snakes[i].Body = append([]Point{}, prevState.Snakes[i].Body...)
 		nextState.Snakes[i].EliminatedCause = prevState.Snakes[i].EliminatedCause
+		nextState.Snakes[i].EliminatedOnTurn = prevState.Snakes[i].EliminatedOnTurn
 		nextState.Snakes[i].EliminatedBy = prevState.Snakes[i].EliminatedBy
 	}
 	return nextState
@@ -550,4 +551,14 @@ func getDistanceBetweenPoints(a, b Point) int {
 
 func isSquareBoard(b *BoardState) bool {
 	return b.Width == b.Height
+}
+
+// EliminateSnake updates a snake's state to reflect that it was eliminated.
+// - "cause" identifies what type of event caused the snake to be eliminated
+// - "by" identifies which snake (if any, use empty string "" if none) eliminated the snake.
+// - "turn" is the turn number that this snake was eliminated on.
+func EliminateSnake(s *Snake, cause, by string, turn int) {
+	s.EliminatedCause = cause
+	s.EliminatedBy = by
+	s.EliminatedOnTurn = turn
 }

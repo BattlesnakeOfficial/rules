@@ -184,7 +184,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 					snake.Health = SnakeMaxHealth
 				}
 				if snakeIsOutOfHealth(snake) {
-					snake.EliminatedCause = EliminatedByOutOfHealth
+					EliminateSnake(snake, EliminatedByOutOfHealth, "", b.Turn+1)
 				}
 			}
 		}
@@ -221,12 +221,12 @@ func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove
 		}
 
 		if snakeIsOutOfHealth(snake) {
-			snake.EliminatedCause = EliminatedByOutOfHealth
+			EliminateSnake(snake, EliminatedByOutOfHealth, "", b.Turn+1)
 			continue
 		}
 
 		if snakeIsOutOfBounds(snake, b.Width, b.Height) {
-			snake.EliminatedCause = EliminatedByOutOfBounds
+			EliminateSnake(snake, EliminatedByOutOfBounds, "", b.Turn+1)
 			continue
 		}
 	}
@@ -306,8 +306,7 @@ func EliminateSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove
 		for i := 0; i < len(b.Snakes); i++ {
 			snake := &b.Snakes[i]
 			if snake.ID == elimination.ID {
-				snake.EliminatedCause = elimination.Cause
-				snake.EliminatedBy = elimination.By
+				EliminateSnake(snake, elimination.Cause, elimination.By, b.Turn+1)
 				break
 			}
 		}

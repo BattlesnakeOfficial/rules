@@ -881,3 +881,11 @@ func TestPlaceFoodRandomly(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, len(b.Food), 0)
 }
+
+func TestEliminateSnake(t *testing.T) {
+	s := &Snake{}
+	EliminateSnake(s, "test-cause", "", 2)
+	require.Equal(t, "test-cause", s.EliminatedCause)
+	require.Equal(t, "", s.EliminatedBy)
+	require.Equal(t, 2, s.EliminatedOnTurn)
+}

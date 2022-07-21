@@ -15,6 +15,7 @@ func TestConstrictorRulesetInterface(t *testing.T) {
 var constrictorMoveAndCollideMAD = gameTestCase{
 	"Constrictor Case Move and Collide",
 	&BoardState{
+		Turn:   41,
 		Width:  10,
 		Height: 10,
 		Snakes: []Snake{
@@ -42,18 +43,20 @@ var constrictorMoveAndCollideMAD = gameTestCase{
 		Height: 10,
 		Snakes: []Snake{
 			{
-				ID:              "one",
-				Body:            []Point{{1, 2}, {1, 1}, {1, 1}},
-				Health:          100,
-				EliminatedCause: EliminatedByCollision,
-				EliminatedBy:    "two",
+				ID:               "one",
+				Body:             []Point{{1, 2}, {1, 1}, {1, 1}},
+				Health:           100,
+				EliminatedCause:  EliminatedByCollision,
+				EliminatedBy:     "two",
+				EliminatedOnTurn: 42,
 			},
 			{
-				ID:              "two",
-				Body:            []Point{{1, 1}, {1, 2}, {1, 2}},
-				Health:          100,
-				EliminatedCause: EliminatedByCollision,
-				EliminatedBy:    "one",
+				ID:               "two",
+				Body:             []Point{{1, 1}, {1, 2}, {1, 2}},
+				Health:           100,
+				EliminatedCause:  EliminatedByCollision,
+				EliminatedBy:     "one",
+				EliminatedOnTurn: 42,
 			},
 		},
 		Food:    []Point{},

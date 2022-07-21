@@ -116,3 +116,34 @@ func TestSoloCreateNextBoardState(t *testing.T) {
 		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeSolo, NewPipeline(soloRulesetStages...)))
 	}
 }
+
+// Test a snake running right into the wall is properly eliminated
+func TestSoloEliminationOutOfBounds(t *testing.T) {
+	r := SoloRuleset{}
+
+	// Using MaxRand is important because it ensures that the snakes are consistently placed in a way this test will work.
+	// Actually random placement could result in the assumptions made by this test being incorrect.
+	initialState, err := CreateDefaultBoardState(MaxRand, 2, 2, []string{"one"})
+	require.NoError(t, err)
+
+	_, next, err := r.Execute(
+		initialState,
+		r.Settings(),
+		[]SnakeMove{{ID: "one", Move: "right"}},
+	)
+	require.NoError(t, err)
+	require.NotNil(t, initialState)
+
+	ended, next, err := r.Execute(
+		next,
+		r.Settings(),
+		[]SnakeMove{{ID: "one", Move: "right"}},
+	)
+	require.NoError(t, err)
+	require.NotNil(t, initialState)
+
+	require.True(t, ended)
+	require.Equal(t, EliminatedByOutOfBounds, next.Snakes[0].EliminatedCause)
+	require.Equal(t, "", next.Snakes[0].EliminatedBy)
+	require.Equal(t, 1, next.Snakes[0].EliminatedOnTurn)
+}
