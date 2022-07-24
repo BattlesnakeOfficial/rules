@@ -81,6 +81,10 @@ func doubleTail(snake *rules.Snake) bool {
 	return almostTail.X == tail.X && almostTail.Y == tail.Y
 }
 
+func isEliminated(s *rules.Snake) bool {
+	return s.EliminatedCause != rules.NotEliminated
+}
+
 func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
@@ -119,6 +123,9 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 
 	// ensure stack of 7 for tail segment of each snake
 	for _, snake := range lastBoardState.Snakes {
+		if isEliminated(&snake) {
+			continue
+		}
 
 		// Double tail means that the tail will stay on the same square for more
 		// than one turn, so we don't want to spawn hazards
@@ -133,8 +140,13 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 
 	// read offboard tails and apply 7 hazards
 	for _, p := range tailLocations {
+
+		// Skip position if a snakes head occupies it.
 		isHead := false
 		for _, snake := range lastBoardState.Snakes {
+			if isEliminated(&snake) {
+				continue
+			}
 			head := snake.Body[0]
 			if p.X == head.X && p.Y == head.Y {
 				isHead = true
@@ -144,6 +156,7 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 		if isHead {
 			continue
 		}
+
 		currentCount := hazardCounts[hash(p, lastBoardState.Height)]
 		for i := 0; i < 7-currentCount; i++ {
 			editor.AddHazard(p)
