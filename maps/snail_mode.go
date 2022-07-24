@@ -18,7 +18,7 @@ func (m SnailModeMap) Meta() Metadata {
 	return Metadata{
 		Name:        "snail_mode",
 		Description: "Snakes leave behind a trail of hazards",
-		Author:      "Corey and Josh",
+		Author:      "coreyja and jlafayette",
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  16,
@@ -144,7 +144,8 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 		if isHead {
 			continue
 		}
-		for i := 0; i < 7; i++ {
+		currentCount := hazardCounts[hash(p, lastBoardState.Height)]
+		for i := 0; i < 7-currentCount; i++ {
 			editor.AddHazard(p)
 		}
 	}
