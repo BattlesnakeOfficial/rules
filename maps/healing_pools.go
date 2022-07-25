@@ -22,7 +22,7 @@ func (m HealingPoolsMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeLarge),
+		BoardSizes:  FixedSizes(Dimensions{7, 7}, Dimensions{11, 11}, Dimensions{19, 19}),
 	}
 }
 
