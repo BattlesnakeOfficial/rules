@@ -24,7 +24,7 @@ func (m SinkholesMap) Meta() Metadata {
 		Version:     1,
 		MinPlayers:  1,
 		MaxPlayers:  8,
-		BoardSizes:  FixedSizes(Dimensions{11, 11}),
+		BoardSizes:  FixedSizes(Dimensions{7, 7}, Dimensions{11, 11}, Dimensions{19, 19}),
 	}
 }
 
@@ -45,6 +45,12 @@ func (m SinkholesMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 		spawnEveryNTurns = settings.RoyaleSettings.ShrinkEveryNTurns
 	}
 	maxRings := 5
+	if lastBoardState.Width == 7 {
+		maxRings = 3
+	} else if lastBoardState.Width == 19 {
+		maxRings = 7
+	}
+
 	spawnLocation := rules.Point{X: lastBoardState.Width / 2, Y: lastBoardState.Height / 2}
 
 	if currentTurn == startTurn {
@@ -67,6 +73,7 @@ func (m SinkholesMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 	if offset > 0 && offset <= maxRings {
 		for x := spawnLocation.X - offset; x <= spawnLocation.X+offset; x++ {
 			for y := spawnLocation.Y - offset; y <= spawnLocation.Y+offset; y++ {
+				// don't draw in the corners of the square so we get a rounded effect
 				if !(x == spawnLocation.X-offset && y == spawnLocation.Y-offset) &&
 					!(x == spawnLocation.X+offset && y == spawnLocation.Y-offset) &&
 					!(x == spawnLocation.X-offset && y == spawnLocation.Y+offset) &&
