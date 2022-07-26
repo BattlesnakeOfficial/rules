@@ -398,26 +398,58 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 		log.Printf("POST %s: %v", u, string(requestBody))
 	}
 	res, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
-	move := snakeState.LastMove
+
+	// Use snake's last move as the default in case of an error
+	snakeMove := rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove}
+
 	if err != nil {
-		log.Printf("[WARN]: Request to %v failed\n", u.String())
-		log.Printf("Body --> %v\n", string(requestBody))
-	} else if res.Body != nil {
-		defer res.Body.Close()
-		body, readErr := ioutil.ReadAll(res.Body)
-		if readErr != nil {
-			log.Fatal(readErr)
-		} else {
-			playerResponse := client.MoveResponse{}
-			jsonErr := json.Unmarshal(body, &playerResponse)
-			if jsonErr != nil {
-				log.Fatal(jsonErr)
-			} else {
-				move = playerResponse.Move
-			}
-		}
+		log.Printf(
+			"[WARN]: Request to %v failed\n"+
+				"\tError: %s\n", u.String(), err)
+		return snakeMove
 	}
-	return rules.SnakeMove{ID: snakeState.ID, Move: move}
+	if res.Body == nil {
+		log.Printf(
+			"[WARN]: Failed to parse response from %v\n"+
+				"\tError: body is empty\n", u.String())
+		return snakeMove
+	}
+	defer res.Body.Close()
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		log.Printf(
+			"[WARN]: Failed to read response body from %v\n"+
+				"\tError: %v\n", u.String(), readErr)
+		return snakeMove
+	}
+	if res.StatusCode != http.StatusOK {
+		log.Printf(
+			"[WARN]: Got non-ok status code from %v\n"+
+				"\tStatusCode: %d (expected %d)\n"+
+				"\tBody: %q\n", u.String(), res.StatusCode, http.StatusOK, body)
+		return snakeMove
+	}
+	playerResponse := client.MoveResponse{}
+	jsonErr := json.Unmarshal(body, &playerResponse)
+	if jsonErr != nil {
+		log.Printf(
+			"[WARN]: Failed to decode JSON from %v\n"+
+				"\tError: %v\n"+
+				"\tBody: %q\n"+
+				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), jsonErr, body)
+		return snakeMove
+	}
+	if playerResponse.Move != "up" && playerResponse.Move != "down" && playerResponse.Move != "left" && playerResponse.Move != "right" {
+		log.Printf(
+			"[WARN]: Failed to parse JSON data from %v\n"+
+				"\tError: invalid move %q, valid moves are \"up\", \"down\", \"left\" or \"right\"\n"+
+				"\tBody: %q\n"+
+				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), playerResponse.Move, body)
+		return snakeMove
+	}
+
+	snakeMove.Move = playerResponse.Move
+	return snakeMove
 }
 
 func (gameState *GameState) sendEndRequest(boardState *rules.BoardState, snakeState SnakeState) {
