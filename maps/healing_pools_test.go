@@ -41,8 +41,9 @@ func TestHealingPoolsMap(t *testing.T) {
 			m := maps.HealingPoolsMap{}
 			state := rules.NewBoardState(tc.boardSize, tc.boardSize)
 			settings := rules.Settings{}
+			settings.RoyaleSettings.ShrinkEveryNTurns = 10
 
-			// ensure the ring of hazards is added to the board at setup
+			// ensure the hazards are added to the board at setup
 			editor := maps.NewBoardStateEditor(state)
 			require.Empty(t, state.Hazards)
 			err := m.SetupBoard(state, settings, editor)
@@ -53,6 +54,16 @@ func TestHealingPoolsMap(t *testing.T) {
 			for _, p := range state.Hazards {
 				require.Contains(t, tc.allowableHazards, p)
 			}
+
+			// ensure the hazards are removed
+			totalTurns := settings.RoyaleSettings.ShrinkEveryNTurns*tc.expectedHazards + 1
+			for i := 0; i < totalTurns; i++ {
+				state.Turn = i
+				err = m.UpdateBoard(state, settings, editor)
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, 0, len(state.Hazards))
 		})
 	}
 }
