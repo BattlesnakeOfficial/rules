@@ -53,24 +53,24 @@ func (m TestHealthMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 }
 
 func (m TestHealthMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  if lastBoardState.Turn == 30 {
-    snake := lastBoardState.Snakes[0]
-    editor.PlaceSnake(snake.ID, snake.Body, 0)
-  }
+	if lastBoardState.Turn == 30 {
+		snake := lastBoardState.Snakes[0]
+		editor.PlaceSnake(snake.ID, snake.Body, 0)
+	}
 
 	return nil
 }
 
 func (m TestHealthMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  if lastBoardState.Turn == 20 {
-    snake := lastBoardState.Snakes[0]
-    head := snake.Body[0]
+	if lastBoardState.Turn == 20 {
+		snake := lastBoardState.Snakes[0]
+		head := snake.Body[0]
 
-    editor.AddHazard(rules.Point{X: head.X + 1, Y: head.Y})
-    editor.AddHazard(rules.Point{X: head.X - 1, Y: head.Y})
-    editor.AddHazard(rules.Point{X: head.X, Y: head.Y + 1})
-    editor.AddHazard(rules.Point{X: head.X, Y: head.Y - 1})
-  }
+		editor.AddHazard(rules.Point{X: head.X + 1, Y: head.Y})
+		editor.AddHazard(rules.Point{X: head.X - 1, Y: head.Y})
+		editor.AddHazard(rules.Point{X: head.X, Y: head.Y + 1})
+		editor.AddHazard(rules.Point{X: head.X, Y: head.Y - 1})
+	}
 
 	return nil
 }

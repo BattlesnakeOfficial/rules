@@ -27,7 +27,7 @@ func (m HealingPoolsMap) Meta() Metadata {
 }
 
 func (m HealingPoolsMap) PreUpdateBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m HealingPoolsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

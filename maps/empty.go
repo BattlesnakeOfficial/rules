@@ -57,5 +57,5 @@ func (m EmptyMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.S
 }
 
 func (m EmptyMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }

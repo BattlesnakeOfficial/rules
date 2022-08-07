@@ -176,7 +176,7 @@ func (m SoloMazeMap) PlaceFood(boardState *rules.BoardState, settings rules.Sett
 }
 
 func (m SoloMazeMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m SoloMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

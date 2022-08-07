@@ -27,7 +27,7 @@ func (m StandardMap) Meta() Metadata {
 }
 
 func (m StandardMap) PreUpdateBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

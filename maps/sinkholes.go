@@ -33,7 +33,7 @@ func (m SinkholesMap) SetupBoard(initialBoardState *rules.BoardState, settings r
 }
 
 func (m SinkholesMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m SinkholesMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

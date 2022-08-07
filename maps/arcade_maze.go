@@ -69,7 +69,7 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 }
 
 func (m ArcadeMazeMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

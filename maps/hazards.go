@@ -55,7 +55,7 @@ func (m InnerBorderHazardsMap) SetupBoard(lastBoardState *rules.BoardState, sett
 }
 
 func (m InnerBorderHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m InnerBorderHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -142,7 +142,7 @@ func (m ColumnsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings
 }
 
 func (m ColumnsHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m ColumnsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -521,7 +521,7 @@ func (m ExpandingScatterMap) SetupBoard(lastBoardState *rules.BoardState, settin
 }
 
 func (m ExpandingScatterMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m ExpandingScatterMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -667,7 +667,7 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 }
 
 func (m RiverAndBridgesHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m RiverAndBridgesHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

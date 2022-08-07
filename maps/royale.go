@@ -33,7 +33,7 @@ func (m RoyaleHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings 
 }
 
 func (m RoyaleHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-  return nil
+	return nil
 }
 
 func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
