@@ -17,7 +17,8 @@ type GameMap interface {
 	// Called every turn to optionally update the board.
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 
-	// Called every turn to optionally update the board.
+	// Called every turn BEFORE the new moves are applies to optionally update the board
+	// Things changed in this function will take effect this turn
 	PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
