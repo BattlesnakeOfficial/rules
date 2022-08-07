@@ -68,6 +68,10 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	return nil
 }
 
+func (m ArcadeMazeMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+  return nil
+}
+
 func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
 

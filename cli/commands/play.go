@@ -374,7 +374,12 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 		snakeState.LastMove = move.Move
 		gameState.snakeStates[move.ID] = snakeState
 	}
-	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
+  boardState, err := maps.PreUpdateBoard(gameState.gameMap.ID(), boardState, gameState.ruleset.Settings())
+	if err != nil {
+		log.Fatalf("Error updating board with game map: %v", err)
+	}
+
+	boardState, err = gameState.ruleset.CreateNextBoardState(boardState, moves)
 	if err != nil {
 		log.Fatalf("Error producing next board state: %v", err)
 	}

@@ -16,6 +16,9 @@ type GameMap interface {
 
 	// Called every turn to optionally update the board.
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+
+	// Called every turn to optionally update the board.
+	PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
 // Dimensions describes the size of a Battlesnake board.

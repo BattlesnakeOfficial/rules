@@ -54,6 +54,10 @@ func (m InnerBorderHazardsMap) SetupBoard(lastBoardState *rules.BoardState, sett
 	return nil
 }
 
+func (m InnerBorderHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+  return nil
+}
+
 func (m InnerBorderHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 }
@@ -95,6 +99,10 @@ func (m ConcentricRingsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 	return nil
 }
 
+func (m ConcentricRingsHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
 func (m ConcentricRingsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 }
@@ -133,6 +141,10 @@ func (m ColumnsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings
 	return nil
 }
 
+func (m ColumnsHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+  return nil
+}
+
 func (m ColumnsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 }
@@ -158,6 +170,10 @@ func (m SpiralHazardsMap) Meta() Metadata {
 
 func (m SpiralHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m SpiralHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
 }
 
 func (m SpiralHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -252,6 +268,10 @@ func (m ScatterFillMap) SetupBoard(lastBoardState *rules.BoardState, settings ru
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
+func (m ScatterFillMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
 func (m ScatterFillMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
@@ -301,6 +321,10 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 
 func (m DirectionalExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m DirectionalExpandingBoxMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
 }
 
 func (m DirectionalExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -417,6 +441,10 @@ func (m ExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState, settings r
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
+func (m ExpandingBoxMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
 func (m ExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
@@ -490,6 +518,10 @@ func (m ExpandingScatterMap) Meta() Metadata {
 
 func (m ExpandingScatterMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
+}
+
+func (m ExpandingScatterMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+  return nil
 }
 
 func (m ExpandingScatterMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -632,6 +664,10 @@ func (m RiverAndBridgesHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 	}
 
 	return nil
+}
+
+func (m RiverAndBridgesHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+  return nil
 }
 
 func (m RiverAndBridgesHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

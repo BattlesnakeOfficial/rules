@@ -26,6 +26,24 @@ func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeI
 }
 
 //  UpdateBoard is a shortcut for looking up a map by ID and updating an existing board state with it.
+func PreUpdateBoard(mapID string, previousBoardState *rules.BoardState, settings rules.Settings) (*rules.BoardState, error) {
+	gameMap, err := GetMap(mapID)
+	if err != nil {
+		return nil, err
+	}
+
+	nextBoardState := previousBoardState.Clone()
+	editor := NewBoardStateEditor(nextBoardState)
+
+	err = gameMap.PreUpdateBoard(previousBoardState, settings, editor)
+	if err != nil {
+		return nil, err
+	}
+
+	return nextBoardState, nil
+}
+
+//  UpdateBoard is a shortcut for looking up a map by ID and updating an existing board state with it.
 func UpdateBoard(mapID string, previousBoardState *rules.BoardState, settings rules.Settings) (*rules.BoardState, error) {
 	gameMap, err := GetMap(mapID)
 	if err != nil {
