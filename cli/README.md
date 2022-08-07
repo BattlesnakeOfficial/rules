@@ -78,6 +78,25 @@ Example creating a 7x7 Standard game with two Battlesnakes:
 battlesnake play --width 7 --height 7 --name Snake1 --url http://snake1-url-whatever --name Snake2 --url http://snake2-url-whatever
 ```
 
+### Maps
+The `map` command provides map information for use with the `play` command.
+
+List all available maps using the `--list` flag:
+```
+battlesnake map --list
+```
+Display map information using the `--info` flag:
+```
+battlesnake map --info standard
+Name: Standard
+Author: Battlesnake
+Description: Standard snake placement and food spawning
+Version: 2
+Min Players: 1
+Max Players: 16
+Board Sizes (WxH): 7x7 9x9 11x11 13x13 15x15 17x17 19x19 21x21 23x23 25x25
+```
+
 ### Sample Output
 ```
 $ battlesnake play --width 3 --height 3 --url http://redacted:4567/ --url http://redacted:4568/  --name Bob --name Sue

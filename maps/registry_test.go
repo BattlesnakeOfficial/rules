@@ -112,3 +112,15 @@ func pickSize(meta Metadata) Dimensions {
 	// For fixed, just pick the first supported size
 	return meta.BoardSizes[0]
 }
+
+func TestListRegisteredMaps(t *testing.T) {
+	keys := globalRegistry.List()
+	mapCount := 0
+	for k := range globalRegistry {
+		// every registry key should exist in List results
+		require.Contains(t, keys, k)
+		mapCount++
+	}
+	// List should equal number of maps in the global registry
+	require.Equal(t, len(keys), mapCount)
+}

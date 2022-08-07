@@ -20,6 +20,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	rootCmd.AddCommand(NewPlayCommand())
+	rootCmd.AddCommand(NewMapCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
