@@ -95,6 +95,10 @@ func (m StubMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.
 	return nil
 }
 
+func (m StubMap) PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
 func (m StubMap) UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	if m.Error != nil {
 		return m.Error
