@@ -1,6 +1,8 @@
 package maps
 
 import (
+	"math/rand"
+
 	"github.com/BattlesnakeOfficial/rules"
 )
 
@@ -48,7 +50,17 @@ func (m HealingPoolsMap) SetupBoard(initialBoardState *rules.BoardState, setting
 }
 
 func (m HealingPoolsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+	if err := (StandardMap{}).UpdateBoard(lastBoardState, settings, editor); err != nil {
+		return err
+	}
+
+	if lastBoardState.Turn > 0 && settings.RoyaleSettings.ShrinkEveryNTurns > 0 && len(lastBoardState.Hazards) > 0 && lastBoardState.Turn%settings.RoyaleSettings.ShrinkEveryNTurns == 0 {
+		// Attempt to remove a healing pool every ShrinkEveryNTurns until there are none remaining
+		i := rand.Intn(len(lastBoardState.Hazards))
+		editor.RemoveHazard(lastBoardState.Hazards[i])
+	}
+
+	return nil
 }
 
 var poolLocationOptions = map[rules.Point][][]rules.Point{
