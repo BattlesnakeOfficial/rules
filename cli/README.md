@@ -81,13 +81,13 @@ battlesnake play --width 7 --height 7 --name Snake1 --url http://snake1-url-what
 ### Maps
 The `map` command provides map information for use with the `play` command.
 
-List all available maps using the `--list` flag:
+List all available maps using the `list` subcommand:
 ```
-battlesnake map --list
+battlesnake map list
 ```
-Display map information using the `--info` flag:
+Display map information using the `info` subcommand:
 ```
-battlesnake map --info standard
+battlesnake map info standard
 Name: Standard
 Author: Battlesnake
 Description: Standard snake placement and food spawning
