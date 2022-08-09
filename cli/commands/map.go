@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +13,10 @@ func NewMapCommand() *cobra.Command {
 		Short: "Display map information",
 		Long:  "Display map information",
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			err := cmd.Help()
+			if err != nil {
+				log.Fatal(err)
+			}
 		},
 	}
 

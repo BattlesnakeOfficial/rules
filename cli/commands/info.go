@@ -33,7 +33,10 @@ func NewMapInfoCommand() *cobra.Command {
 
 			// display help when no map(s) provided via args
 			if len(args) < 1 {
-				cmd.Help()
+				err := cmd.Help()
+				if err != nil {
+					log.Fatal(err)
+				}
 				return
 			}
 
