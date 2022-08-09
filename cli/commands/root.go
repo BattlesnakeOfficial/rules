@@ -22,8 +22,8 @@ func Execute() {
 	rootCmd.AddCommand(NewPlayCommand())
 
 	mapCommand := NewMapCommand()
-	mapCommand.AddCommand(NewListCommand())
-	mapCommand.AddCommand(NewInfoCommand())
+	mapCommand.AddCommand(NewMapListCommand())
+	mapCommand.AddCommand(NewMapInfoCommand())
 
 	rootCmd.AddCommand(mapCommand)
 

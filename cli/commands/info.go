@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewInfoCommand() *cobra.Command {
+func NewMapInfoCommand() *cobra.Command {
 	var infoCmd = &cobra.Command{
 		Use:   "info [flags] map_name [...map_name]",
 		Short: "Display metadata for given map(s)",
