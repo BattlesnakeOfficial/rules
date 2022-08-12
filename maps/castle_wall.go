@@ -119,6 +119,7 @@ type CastleWall struct {
 	Hazards map[rules.Point][]rules.Point
 }
 
+// CastleWallPositions contains all starting snake positions, food spawns, and hazard locations
 var CastleWallPositions = CastleWall{
 	Snakes: map[rules.Point][]rules.Point{
 		{X: 7, Y: 7}: {
@@ -145,41 +146,41 @@ var CastleWallPositions = CastleWall{
 			{X: 11, Y: 1},
 			{X: 11, Y: 11},
 		},
-		{X: 15, Y: 15}: { //todo
+		{X: 15, Y: 15}: {
 			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+			{X: 1, Y: 13},
+			{X: 13, Y: 1},
+			{X: 13, Y: 13},
 		},
-		{X: 17, Y: 17}: { //todo
+		{X: 17, Y: 17}: {
 			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+			{X: 1, Y: 15},
+			{X: 15, Y: 1},
+			{X: 15, Y: 15},
 		},
-		{X: 19, Y: 19}: { // todo
+		{X: 19, Y: 19}: {
 			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+			{X: 1, Y: 17},
+			{X: 17, Y: 1},
+			{X: 17, Y: 17},
 		},
-		{X: 21, Y: 21}: { // todo
-			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+		{X: 21, Y: 21}: {
+			{X: 1, Y: 5},
+			{X: 1, Y: 15},
+			{X: 19, Y: 5},
+			{X: 19, Y: 15},
 		},
-		{X: 23, Y: 23}: { // todo
-			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+		{X: 23, Y: 23}: {
+			{X: 1, Y: 3},
+			{X: 1, Y: 16},
+			{X: 21, Y: 3},
+			{X: 21, Y: 16},
 		},
-		{X: 25, Y: 25}: { // todo
-			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+		{X: 25, Y: 25}: {
+			{X: 1, Y: 5},
+			{X: 1, Y: 19},
+			{X: 23, Y: 5},
+			{X: 23, Y: 19},
 		},
 	},
 	Food: map[rules.Point][]rules.Point{
