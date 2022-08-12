@@ -102,6 +102,24 @@ func (m CastleWallMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 				tileIsOccupied = true
 				break
 			}
+
+			// also avoid spawning food in same passage as existing food
+			if existingFood.X+1 == f.X && existingFood.Y == f.Y {
+				tileIsOccupied = true
+				break
+			}
+			if existingFood.X-1 == f.X && existingFood.Y == f.Y {
+				tileIsOccupied = true
+				break
+			}
+			if existingFood.X == f.X && existingFood.Y+1 == f.Y {
+				tileIsOccupied = true
+				break
+			}
+			if existingFood.X == f.X && existingFood.Y-1 == f.Y {
+				tileIsOccupied = true
+				break
+			}
 		}
 
 		if !tileIsOccupied {
