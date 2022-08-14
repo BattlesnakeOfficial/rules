@@ -21,7 +21,7 @@ func (m CastleWallMap) Meta() Metadata {
 		Author:      "bcambl",
 		Version:     1,
 		MinPlayers:  2,
-		MaxPlayers:  4,
+		MaxPlayers:  8,
 		BoardSizes: FixedSizes(
 			Dimensions{7, 7},
 			Dimensions{9, 9},
@@ -41,9 +41,31 @@ func (m CastleWallMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	rand := settings.GetRand(initialBoardState.Turn)
 
 	// Place snakes
-	snakes, ok := CastleWallPositions.Snakes[rules.Point{X: initialBoardState.Width, Y: initialBoardState.Height}]
+	snakePositions, ok := CastleWallPositions.Snakes[rules.Point{X: initialBoardState.Width, Y: initialBoardState.Height}]
 	if !ok {
 		return rules.RulesetError("board size is not supported by this map")
+	}
+
+	var snakes []rules.Point
+	// always support up to 8x snakes on all supported board sizes
+	snakes = append(snakes, snakePositions[0]...)
+	if len(initialBoardState.Snakes) >= 5 {
+		snakes = append(snakes, snakePositions[1]...)
+	}
+
+	// only support 8 or less snakes on boards smaller than XLarge
+	if (len(initialBoardState.Snakes) > 8) && (initialBoardState.Width < rules.BoardSizeXLarge) {
+		return rules.ErrorTooManySnakes
+	}
+
+	// only support 12 or less snakes for XLarge and XXLarge board sizes
+	if (initialBoardState.Width >= rules.BoardSizeXLarge) && (len(initialBoardState.Snakes) > 12) {
+		return rules.ErrorTooManySnakes
+	}
+
+	// add positions 9-12 for XLarge and XXLarge board sizes
+	if (initialBoardState.Width >= rules.BoardSizeXLarge) && (len(initialBoardState.Snakes) > 8) {
+		snakes = append(snakes, snakePositions[2]...)
 	}
 
 	rand.Shuffle(len(snakes), func(i int, j int) {
@@ -132,73 +154,173 @@ func (m CastleWallMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 }
 
 type CastleWall struct {
-	Snakes  map[rules.Point][]rules.Point
+	Snakes  map[rules.Point][][]rules.Point
 	Food    map[rules.Point][]rules.Point
 	Hazards map[rules.Point][]rules.Point
 }
 
 // CastleWallPositions contains all starting snake positions, food spawns, and hazard locations
 var CastleWallPositions = CastleWall{
-	Snakes: map[rules.Point][]rules.Point{
+	Snakes: map[rules.Point][][]rules.Point{
 		{X: 7, Y: 7}: {
-			{X: 0, Y: 0},
-			{X: 0, Y: 6},
-			{X: 6, Y: 0},
-			{X: 6, Y: 6},
+			{
+				{X: 0, Y: 0},
+				{X: 0, Y: 6},
+				{X: 6, Y: 0},
+				{X: 6, Y: 6},
+			},
+			{
+				{X: 0, Y: 3},
+				{X: 3, Y: 0},
+				{X: 3, Y: 6},
+				{X: 6, Y: 3},
+			},
 		},
 		{X: 9, Y: 9}: {
-			{X: 0, Y: 0},
-			{X: 0, Y: 8},
-			{X: 8, Y: 0},
-			{X: 8, Y: 8},
+			{
+				{X: 0, Y: 0},
+				{X: 0, Y: 8},
+				{X: 8, Y: 0},
+				{X: 8, Y: 8},
+			},
+			{
+				{X: 0, Y: 4},
+				{X: 4, Y: 0},
+				{X: 4, Y: 8},
+				{X: 8, Y: 4},
+			},
 		},
 		{X: 11, Y: 11}: {
-			{X: 1, Y: 1},
-			{X: 1, Y: 9},
-			{X: 9, Y: 1},
-			{X: 9, Y: 9},
+			{
+				{X: 1, Y: 1},
+				{X: 1, Y: 9},
+				{X: 9, Y: 1},
+				{X: 9, Y: 9},
+			},
+			{
+				{X: 1, Y: 5},
+				{X: 5, Y: 1},
+				{X: 5, Y: 9},
+				{X: 9, Y: 5},
+			},
 		},
 		{X: 13, Y: 13}: {
-			{X: 1, Y: 1},
-			{X: 1, Y: 11},
-			{X: 11, Y: 1},
-			{X: 11, Y: 11},
+			{
+				{X: 1, Y: 1},
+				{X: 1, Y: 11},
+				{X: 11, Y: 1},
+				{X: 11, Y: 11},
+			},
+			{
+				{X: 1, Y: 6},
+				{X: 6, Y: 1},
+				{X: 6, Y: 11},
+				{X: 11, Y: 6},
+			},
 		},
 		{X: 15, Y: 15}: {
-			{X: 1, Y: 1},
-			{X: 1, Y: 13},
-			{X: 13, Y: 1},
-			{X: 13, Y: 13},
+			{
+				{X: 1, Y: 1},
+				{X: 1, Y: 13},
+				{X: 13, Y: 1},
+				{X: 13, Y: 13},
+			},
+			{
+				{X: 1, Y: 7},
+				{X: 7, Y: 1},
+				{X: 7, Y: 13},
+				{X: 13, Y: 7},
+			},
 		},
+
 		{X: 17, Y: 17}: {
-			{X: 1, Y: 1},
-			{X: 1, Y: 15},
-			{X: 15, Y: 1},
-			{X: 15, Y: 15},
+			{
+				{X: 1, Y: 1},
+				{X: 1, Y: 15},
+				{X: 15, Y: 1},
+				{X: 15, Y: 15},
+			},
+			{
+				{X: 1, Y: 8},
+				{X: 8, Y: 1},
+				{X: 8, Y: 15},
+				{X: 15, Y: 8},
+			},
 		},
 		{X: 19, Y: 19}: {
-			{X: 1, Y: 1},
-			{X: 1, Y: 17},
-			{X: 17, Y: 1},
-			{X: 17, Y: 17},
+			{
+				{X: 1, Y: 1},
+				{X: 1, Y: 17},
+				{X: 17, Y: 1},
+				{X: 17, Y: 17},
+			},
+			{
+				{X: 1, Y: 9},
+				{X: 9, Y: 1},
+				{X: 9, Y: 17},
+				{X: 17, Y: 9},
+			},
 		},
+
 		{X: 21, Y: 21}: {
-			{X: 1, Y: 5},
-			{X: 1, Y: 15},
-			{X: 19, Y: 5},
-			{X: 19, Y: 15},
+			{
+				{X: 1, Y: 5},
+				{X: 1, Y: 15},
+				{X: 19, Y: 5},
+				{X: 19, Y: 15},
+			},
+			{
+				{X: 5, Y: 1},
+				{X: 5, Y: 19},
+				{X: 15, Y: 1},
+				{X: 15, Y: 19},
+			},
+			{
+				{X: 1, Y: 10},
+				{X: 10, Y: 1},
+				{X: 10, Y: 19},
+				{X: 19, Y: 10},
+			},
 		},
 		{X: 23, Y: 23}: {
-			{X: 1, Y: 3},
-			{X: 1, Y: 16},
-			{X: 21, Y: 3},
-			{X: 21, Y: 16},
+			{
+				{X: 1, Y: 5},
+				{X: 1, Y: 17},
+				{X: 21, Y: 5},
+				{X: 21, Y: 17},
+			},
+			{
+				{X: 5, Y: 1},
+				{X: 5, Y: 21},
+				{X: 17, Y: 1},
+				{X: 17, Y: 21},
+			},
+			{
+				{X: 1, Y: 11},
+				{X: 11, Y: 1},
+				{X: 11, Y: 21},
+				{X: 21, Y: 11},
+			},
 		},
 		{X: 25, Y: 25}: {
-			{X: 1, Y: 5},
-			{X: 1, Y: 19},
-			{X: 23, Y: 5},
-			{X: 23, Y: 19},
+			{
+				{X: 1, Y: 5},
+				{X: 1, Y: 19},
+				{X: 23, Y: 5},
+				{X: 23, Y: 19},
+			},
+			{
+				{X: 5, Y: 1},
+				{X: 5, Y: 23},
+				{X: 19, Y: 1},
+				{X: 19, Y: 23},
+			},
+			{
+				{X: 1, Y: 12},
+				{X: 12, Y: 23},
+				{X: 12, Y: 1},
+				{X: 23, Y: 12},
+			},
 		},
 	},
 	Food: map[rules.Point][]rules.Point{
@@ -299,9 +421,9 @@ var CastleWallPositions = CastleWall{
 			{X: 17, Y: 11},
 		},
 		{X: 23, Y: 23}: {
-			{X: 3, Y: 7},
+			{X: 3, Y: 8},
 			{X: 3, Y: 14},
-			{X: 4, Y: 7},
+			{X: 4, Y: 8},
 			{X: 4, Y: 14},
 			{X: 8, Y: 3},
 			{X: 8, Y: 4},
@@ -311,9 +433,9 @@ var CastleWallPositions = CastleWall{
 			{X: 14, Y: 4},
 			{X: 14, Y: 18},
 			{X: 14, Y: 19},
-			{X: 18, Y: 7},
+			{X: 18, Y: 8},
 			{X: 18, Y: 14},
-			{X: 19, Y: 7},
+			{X: 19, Y: 8},
 			{X: 19, Y: 14},
 		},
 		{X: 25, Y: 25}: {
@@ -914,10 +1036,10 @@ var CastleWallPositions = CastleWall{
 			{X: 4, Y: 13},
 			{X: 4, Y: 12},
 			{X: 4, Y: 10},
-			{X: 4, Y: 8},
+			{X: 4, Y: 7},
 			{X: 4, Y: 6},
 			{X: 4, Y: 5},
-			{X: 3, Y: 8},
+			{X: 3, Y: 7},
 			{X: 3, Y: 10},
 			{X: 10, Y: 3},
 			{X: 10, Y: 4},
@@ -968,10 +1090,10 @@ var CastleWallPositions = CastleWall{
 			{X: 18, Y: 10},
 			{X: 18, Y: 9},
 			{X: 19, Y: 9},
-			{X: 19, Y: 8},
-			{X: 18, Y: 8},
 			{X: 19, Y: 6},
 			{X: 18, Y: 6},
+			{X: 19, Y: 7},
+			{X: 18, Y: 7},
 			{X: 18, Y: 5},
 			{X: 19, Y: 5},
 			{X: 11, Y: 4},
@@ -986,12 +1108,12 @@ var CastleWallPositions = CastleWall{
 			{X: 7, Y: 18},
 			{X: 9, Y: 18},
 			// double hazards near passages:
-			{X: 3, Y: 6},
-			{X: 3, Y: 8},
+			{X: 3, Y: 7},
+			{X: 3, Y: 9},
 			{X: 3, Y: 13},
 			{X: 3, Y: 15},
-			{X: 4, Y: 6},
-			{X: 4, Y: 8},
+			{X: 4, Y: 7},
+			{X: 4, Y: 9},
 			{X: 4, Y: 13},
 			{X: 4, Y: 15},
 			{X: 7, Y: 3},
@@ -1010,12 +1132,12 @@ var CastleWallPositions = CastleWall{
 			{X: 15, Y: 4},
 			{X: 15, Y: 18},
 			{X: 15, Y: 19},
-			{X: 18, Y: 6},
-			{X: 18, Y: 8},
+			{X: 18, Y: 7},
+			{X: 18, Y: 9},
 			{X: 18, Y: 13},
 			{X: 18, Y: 15},
-			{X: 19, Y: 6},
-			{X: 19, Y: 8},
+			{X: 19, Y: 7},
+			{X: 19, Y: 9},
 			{X: 19, Y: 13},
 			{X: 19, Y: 15},
 		},
