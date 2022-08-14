@@ -90,8 +90,18 @@ func (m CastleWallMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 
 func (m CastleWallMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 
-	// max of 2 food on board
-	if len(lastBoardState.Food) > 1 {
+	// no food spawning for first 10 turns to reduce favoring snakes spawning closer to bridges
+	if lastBoardState.Turn < 10 {
+		return nil
+	}
+
+	// max of 2 food on small and medium boards
+	if len(lastBoardState.Food) > 1 && lastBoardState.Width < rules.BoardSizeXLarge {
+		return nil
+	}
+
+	// max of 4 food on XLarge and XXLarge boards
+	if len(lastBoardState.Food) > 3 && lastBoardState.Width >= rules.BoardSizeXLarge {
 		return nil
 	}
 
