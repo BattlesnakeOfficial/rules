@@ -29,6 +29,7 @@ func TestRegisteredMaps(t *testing.T) {
 			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
 			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
 			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
+			require.NotNil(t, meta.Tags)
 			var setupBoardState *rules.BoardState
 
 			// "fuzz test" supported players

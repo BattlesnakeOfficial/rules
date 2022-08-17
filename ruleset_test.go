@@ -111,6 +111,7 @@ func TestRulesetBuilder(t *testing.T) {
 		{GameType: rules.GameTypeRoyale},
 		{GameType: rules.GameTypeSolo},
 		{GameType: rules.GameTypeConstrictor},
+		{GameType: rules.GameTypeWrappedConstrictor},
 	}
 
 	for _, expected := range expectedResults {
