@@ -23,6 +23,7 @@ func (m ArcadeMazeMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  6,
 		BoardSizes:  FixedSizes(Dimensions{19, 21}),
+		Tags:        []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 

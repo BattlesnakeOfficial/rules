@@ -32,6 +32,7 @@ func (m InnerBorderHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -72,6 +73,7 @@ func (m ConcentricRingsHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -113,6 +115,7 @@ func (m ColumnsHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -152,6 +155,7 @@ func (m SpiralHazardsMap) Meta() Metadata {
 		MinPlayers: 1,
 		MaxPlayers: 16,
 		BoardSizes: OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:       []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -244,6 +248,7 @@ func (m ScatterFillMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -295,6 +300,7 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -409,6 +415,7 @@ func (m ExpandingBoxMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -484,6 +491,7 @@ func (m ExpandingScatterMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
