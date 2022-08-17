@@ -144,6 +144,8 @@ func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 		stages = append(stages, standardRulesetStages[1:]...)
 	case GameTypeConstrictor:
 		stages = append(stages, constrictorRulesetStages[1:]...)
+	case GameTypeWrappedConstrictor:
+		stages = append(stages, wrappedConstrictorRulesetStages[1:]...)
 	case GameTypeRoyale:
 		stages = append(stages, royaleRulesetStages[1:]...)
 	case GameTypeSolo:
