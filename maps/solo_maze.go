@@ -54,6 +54,7 @@ func (m SoloMazeMap) Meta() Metadata {
 			Dimensions{19, 21},
 			Dimensions{25, 25},
 		),
+		Tags: []string{TAG_EXPERIMENTAL, TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 

@@ -23,6 +23,7 @@ func (m EmptyMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{},
 	}
 }
 
