@@ -254,7 +254,7 @@ func TestPlaceSnakesDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.BoardState.Width, test.BoardState.Height, len(test.SnakeIDs)), func(t *testing.T) {
-			require.Equal(t, test.BoardState.Width*test.BoardState.Height, len(GetUnoccupiedPoints(test.BoardState, true)))
+			require.Equal(t, test.BoardState.Width*test.BoardState.Height, len(GetUnoccupiedPoints(test.BoardState, true, false)))
 			err := PlaceSnakesAutomatically(MaxRand, test.BoardState, test.SnakeIDs)
 			require.Equal(t, test.Err, err, "Snakes: %d", len(test.BoardState.Snakes))
 			if err == nil {
@@ -769,10 +769,39 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 			},
 			[]Point{{2, 1}},
 		},
+		{
+			&BoardState{
+				Height:  1,
+				Width:   1,
+				Hazards: []Point{{0, 0}},
+			},
+			[]Point{},
+		},
+		{
+			&BoardState{
+				Height:  2,
+				Width:   2,
+				Hazards: []Point{{1, 1}},
+			},
+			[]Point{{0, 0}, {0, 1}, {1, 0}},
+		},
+		{
+			&BoardState{
+				Height: 2,
+				Width:  3,
+				Food:   []Point{{1, 1}, {2, 0}},
+				Snakes: []Snake{
+					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{0, 1}}},
+				},
+				Hazards: []Point{{0, 0}, {1, 0}},
+			},
+			[]Point{{2, 1}},
+		},
 	}
 
 	for _, test := range tests {
-		unoccupiedPoints := GetUnoccupiedPoints(test.Board, true)
+		unoccupiedPoints := GetUnoccupiedPoints(test.Board, true, true)
 		require.Equal(t, len(test.Expected), len(unoccupiedPoints))
 		for i, e := range test.Expected {
 			require.Equal(t, e, unoccupiedPoints[i])
