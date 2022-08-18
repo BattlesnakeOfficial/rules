@@ -26,6 +26,7 @@ const (
 	EliminatedByOutOfHealth         = "out-of-health"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
+	EliminatedByHazard              = "hazard"
 
 	// Error constants
 	ErrorTooManySnakes   = RulesetError("too many snakes for fixed start positions")
