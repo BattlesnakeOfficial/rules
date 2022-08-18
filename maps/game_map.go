@@ -44,6 +44,20 @@ func (d sizes) IsUnlimited() bool {
 	return len(d) == 1 && d[0].Width == 0
 }
 
+func (d sizes) IsAllowable(Width uint, Height uint) bool {
+	if d.IsUnlimited() {
+		return true
+	}
+
+	for _, size := range d {
+		if size.Width == Width && size.Height == Height {
+			return true
+		}
+	}
+
+	return false
+}
+
 // AnySize creates sizes for a board that has no fixed sizes (supports unlimited sizes).
 func AnySize() sizes {
 	return sizes{Dimensions{Width: 0, Height: 0}}

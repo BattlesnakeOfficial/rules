@@ -10,28 +10,6 @@ func init() {
 	globalRegistry.RegisterMap("hz_rivers_bridges_xl", RiverAndBridgesExtraLargeHazardsMap{})
 }
 
-func getUnoccupiedPoints(lastBoardState *rules.BoardState) []rules.Point {
-	unoccupiedPoints := rules.GetUnoccupiedPoints(lastBoardState, false)
-
-	var totallyUnoccupiedPoints []rules.Point
-	// we want to avoid placing food on hazards in this map
-	for _, p := range unoccupiedPoints {
-		isHazard := false
-		for _, h := range lastBoardState.Hazards {
-			if p == h {
-				isHazard = true
-				break
-			}
-		}
-
-		if !isHazard {
-			totallyUnoccupiedPoints = append(totallyUnoccupiedPoints, p)
-		}
-	}
-
-	return totallyUnoccupiedPoints
-}
-
 func setupRiverAndBridgesBoard(startingPositions [][]rules.Point, hazards []rules.Point, lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	width := lastBoardState.Width
 	height := lastBoardState.Height
@@ -93,7 +71,7 @@ func placeRiverAndBridgesFood(lastBoardState *rules.BoardState, settings rules.S
 
 	foodNeeded := checkFoodNeedingPlacement(rand, settings, lastBoardState)
 	if foodNeeded > 0 {
-		pts := getUnoccupiedPoints(lastBoardState)
+		pts := rules.GetUnoccupiedPoints(lastBoardState, false, true)
 		placeFoodRandomlyAtPositions(rand, lastBoardState, editor, foodNeeded, pts)
 	}
 
@@ -121,6 +99,10 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+		return rules.RulesetError("This map can only be played on a 11x11 board")
+	}
+
 	err := setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, lastBoardState, settings, editor)
 	if err != nil {
 		return err
@@ -192,6 +174,10 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+		return rules.RulesetError("This map can only be played on a 19x19 board")
+	}
+
 	err := setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, lastBoardState, settings, editor)
 	if err != nil {
 		return err
@@ -291,6 +277,10 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+		return rules.RulesetError("This map can only be played on a 25x25 board")
+	}
+
 	err := setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, lastBoardState, settings, editor)
 	if err != nil {
 		return err

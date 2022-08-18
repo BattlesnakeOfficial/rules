@@ -60,8 +60,8 @@ func TestRegisteredMaps(t *testing.T) {
 			}
 
 			// Check that at least one map size can be setup without error
-			for width := 0; width < maxBoardWidth; width++ {
-				for height := 0; height < maxBoardHeight; height++ {
+			for width := 0; width <= maxBoardWidth; width++ {
+				for height := 0; height <= maxBoardHeight; height++ {
 					initialBoardState := rules.NewBoardState(width, height)
 					initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
 					if meta.MaxPlayers > 1 {
