@@ -116,6 +116,7 @@ Each river has one or two 1-square "bridges" over them`,
 		MinPlayers: 1,
 		MaxPlayers: 8,
 		BoardSizes: FixedSizes(Dimensions{11, 11}),
+		Tags:       []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 
@@ -190,6 +191,7 @@ Each river has one or two 1-square "bridges" over them`,
 		MinPlayers: 1,
 		MaxPlayers: 12,
 		BoardSizes: FixedSizes(Dimensions{19, 19}),
+		Tags:       []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 
@@ -288,6 +290,7 @@ Each river has one or two 1-square "bridges" over them`,
 		MinPlayers: 1,
 		MaxPlayers: 12,
 		BoardSizes: FixedSizes(Dimensions{25, 25}),
+		Tags:       []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 
