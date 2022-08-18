@@ -136,20 +136,16 @@ var riversAndBridgesMediumStartPositions = [][]rules.Point{
 	{
 		{X: 1, Y: 1},
 		{X: 3, Y: 3},
-		{X: 1, Y: 3},
 	},
 	{
 		{X: 9, Y: 9},
 		{X: 7, Y: 7},
-		{X: 9, Y: 7},
 	},
 	{
 		{X: 1, Y: 9},
-		{X: 3, Y: 7},
 		{X: 3, Y: 9},
 	},
 	{
-		{X: 9, Y: 3},
 		{X: 9, Y: 1},
 		{X: 7, Y: 3},
 	},
