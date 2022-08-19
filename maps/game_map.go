@@ -4,6 +4,13 @@ import (
 	"github.com/BattlesnakeOfficial/rules"
 )
 
+const (
+	TAG_EXPERIMENTAL     = "experimental"     // experimental map, only available via CLI
+	TAG_SNAKE_PLACEMENT  = "snake-placement"  // map overrides default snake placement
+	TAG_HAZARD_PLACEMENT = "hazard-placement" // map places hazards
+	TAG_FOOD_PLACEMENT   = "food-placement"   // map overrides or adds to default food placement
+)
+
 type GameMap interface {
 	// Return a unique identifier for this map.
 	ID() string
@@ -82,6 +89,8 @@ type Metadata struct {
 	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
 	//   3. "unlimited" sizes (the board is not fixed and can scale to any reasonable size)
 	BoardSizes sizes
+	// Tags is a list of strings use to categorize the map.
+	Tags []string
 }
 
 // Editor is used by GameMap implementations to modify the board state.

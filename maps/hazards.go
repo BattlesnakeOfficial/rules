@@ -33,6 +33,7 @@ func (m InnerBorderHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -73,6 +74,7 @@ func (m ConcentricRingsHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -114,6 +116,7 @@ func (m ColumnsHazardsMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -153,6 +156,7 @@ func (m SpiralHazardsMap) Meta() Metadata {
 		MinPlayers: 1,
 		MaxPlayers: 16,
 		BoardSizes: OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:       []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -245,6 +249,7 @@ func (m ScatterFillMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -296,6 +301,7 @@ func (m DirectionalExpandingBoxMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -410,6 +416,7 @@ func (m ExpandingBoxMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -485,6 +492,7 @@ func (m ExpandingScatterMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
@@ -567,6 +575,7 @@ Each river has one or two 1-square "bridges" over them`,
 		MinPlayers: 1,
 		MaxPlayers: 12,
 		BoardSizes: FixedSizes(Dimensions{11, 11}, Dimensions{19, 19}, Dimensions{25, 25}),
+		Tags:       []string{TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
 }
 
