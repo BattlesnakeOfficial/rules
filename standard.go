@@ -184,7 +184,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 					snake.Health = SnakeMaxHealth
 				}
 				if snakeIsOutOfHealth(snake) {
-					EliminateSnake(snake, EliminatedByOutOfHealth, "", b.Turn+1)
+					EliminateSnake(snake, EliminatedByHazard, "", b.Turn+1)
 				}
 			}
 		}
