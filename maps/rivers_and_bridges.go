@@ -99,7 +99,7 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
 		return rules.RulesetError("This map can only be played on a 11x11 board")
 	}
 
@@ -174,7 +174,7 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
 		return rules.RulesetError("This map can only be played on a 19x19 board")
 	}
 
@@ -277,7 +277,7 @@ Each river has one or two 1-square "bridges" over them`,
 }
 
 func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(uint(lastBoardState.Width), uint(lastBoardState.Height)) {
+	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
 		return rules.RulesetError("This map can only be played on a 25x25 board")
 	}
 
