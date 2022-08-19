@@ -26,6 +26,7 @@ func (m SnailModeMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{TAG_EXPERIMENTAL, TAG_HAZARD_PLACEMENT},
 	}
 }
 
