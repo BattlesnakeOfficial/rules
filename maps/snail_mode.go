@@ -57,23 +57,6 @@ func (m SnailModeMap) SetupBoard(initialBoardState *rules.BoardState, settings r
 	return nil
 }
 
-// hash takes in a Point and the height of the board, and returns a unique integer to be used in maps
-// Convert the given point into an integer that can be used as a map key
-// This is takes the X and Y coordinates and combines them into a single integer
-// that uniquely identifies the point given the current board size
-func hash(point rules.Point, height int) int {
-	return point.X + point.Y*height
-}
-
-// dehash converts an integer back onto a Point.
-// Storing points as int allows using them as a map key.
-func dehash(hash int, height int) rules.Point {
-	x := hash % height
-	y := hash / height
-
-	return rules.Point{X: x, Y: y}
-}
-
 // storeTailLocation returns an offboard point that corresponds to the given point.
 // This is useful for storing state that can be accessed next turn.
 func storeTailLocation(point rules.Point, height int) rules.Point {
@@ -125,7 +108,7 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 
 	// Count the number of hazards for a given position
 	// Add non-double tail locations to a slice
-	hazardCounts := map[int]int{}
+	hazardCounts := map[rules.Point]int{}
 	for _, hazard := range lastBoardState.Hazards {
 
 		// discard out of bound
@@ -133,14 +116,13 @@ func (m SnailModeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 			onBoardTail := getPrevTailLocation(hazard, lastBoardState.Height)
 			tailLocations = append(tailLocations, onBoardTail)
 		} else {
-			hazardCounts[hash(hazard, lastBoardState.Height)]++
+			hazardCounts[hazard]++
 		}
 	}
 
 	// Add back existing hazards, but with a stack of 1 less than before.
 	// This has the effect of making the snail-trail disappear over time.
-	for hazardHash, count := range hazardCounts {
-		hazard := dehash(hazardHash, lastBoardState.Height)
+	for hazard, count := range hazardCounts {
 
 		for i := 0; i < count-1; i++ {
 			editor.AddHazard(hazard)
