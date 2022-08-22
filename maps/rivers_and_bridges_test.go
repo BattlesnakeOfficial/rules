@@ -27,6 +27,8 @@ func TestRiversAndBridgetsHazardsMap(t *testing.T) {
 		{maps.RiverAndBridgesMediumHazardsMap{}, 11, 11},
 		{maps.RiverAndBridgesLargeHazardsMap{}, 19, 19},
 		{maps.RiverAndBridgesExtraLargeHazardsMap{}, 25, 25},
+		{maps.IslandsAndBridgesMediumHazardsMap{}, 11, 11},
+		{maps.IslandsAndBridgesLargeHazardsMap{}, 19, 19},
 	}
 
 	// check all the supported sizes
