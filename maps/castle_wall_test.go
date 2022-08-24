@@ -8,48 +8,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCastleWallMap(t *testing.T) {
+func TestCastleWallHazardsMap(t *testing.T) {
+	// check error handling
+	m := maps.CastleWallMediumHazardsMap{}
+	settings := rules.Settings{}
+
+	// check error for unsupported board sizes
+	state := rules.NewBoardState(7, 7)
+	editor := maps.NewBoardStateEditor(state)
+	err := m.SetupBoard(state, settings, editor)
+	require.Error(t, err)
+
 	tests := []struct {
-		boardWidth      int
-		boardHeight     int
-		expectedError   error
-		expectedHazards []rules.Point
+		Map    maps.GameMap
+		Width  uint
+		Height uint
 	}{
-		{
-			boardWidth:      11,
-			boardHeight:     11,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 11, Y: 11}],
-		},
-		{
-			boardWidth:      19,
-			boardHeight:     19,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 19, Y: 19}],
-		},
-		{
-			boardWidth:      25,
-			boardHeight:     25,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 25, Y: 25}],
-		},
+		{maps.CastleWallMediumHazardsMap{}, 11, 11},
+		{maps.CastleWallLargeHazardsMap{}, 19, 19},
+		{maps.CastleWallExtraLargeHazardsMap{}, 25, 25},
 	}
+
+	// check all the supported sizes
 	for _, test := range tests {
-		m := maps.CastleWallMap{}
-		boardState := rules.NewBoardState(test.boardWidth, test.boardHeight)
-		settings := rules.Settings{}
-		editor := maps.NewBoardStateEditor(boardState)
-
-		err := m.SetupBoard(boardState, settings, editor)
-		if test.expectedError != nil {
-			require.Equal(t, test.expectedError, err)
-		} else {
-			require.NoError(t, err)
-			require.Equal(t, test.expectedHazards, boardState.Hazards)
-
-			for _, snake := range boardState.Snakes {
-				require.Equal(t, 3, len(snake.Body))
-			}
-		}
+		state = rules.NewBoardState(int(test.Width), int(test.Height))
+		state.Snakes = append(state.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
+		editor = maps.NewBoardStateEditor(state)
+		require.Empty(t, state.Hazards)
+		err = test.Map.SetupBoard(state, settings, editor)
+		require.NoError(t, err)
+		require.NotEmpty(t, state.Hazards)
 	}
 }
