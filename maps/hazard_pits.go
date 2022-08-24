@@ -51,24 +51,52 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	if !m.Meta().BoardSizes.IsAllowable(initialBoardState.Width, initialBoardState.Height) {
 		return rules.RulesetError("This map can only be played on a 11x11 board")
 	}
+
+	if len(initialBoardState.Snakes) > len(hazardPitStartPositions) {
+		return rules.ErrorTooManySnakes
+	}
+
 	rand := settings.GetRand(0)
 
 	rand.Shuffle(len(hazardPitStartPositions), func(i int, j int) {
 		hazardPitStartPositions[i], hazardPitStartPositions[j] = hazardPitStartPositions[j], hazardPitStartPositions[i]
 	})
-
-	// Place snakes
-	if len(initialBoardState.Snakes) > len(hazardPitStartPositions) {
-		return rules.ErrorTooManySnakes
+	snakeIDs := make([]string, 0, len(initialBoardState.Snakes))
+	for _, snake := range initialBoardState.Snakes {
+		snakeIDs = append(snakeIDs, snake.ID)
 	}
+
+	tempBoardState := rules.NewBoardState(initialBoardState.Width, initialBoardState.Height)
+	tempBoardState.Snakes = make([]rules.Snake, len(snakeIDs))
+
+	for i := 0; i < len(snakeIDs); i++ {
+		tempBoardState.Snakes[i] = rules.Snake{
+			ID:     snakeIDs[i],
+			Health: rules.SnakeMaxHealth,
+		}
+	}
+
 	for index, snake := range initialBoardState.Snakes {
 		head := hazardPitStartPositions[index]
-		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, snake.Health)
+		err := rules.PlaceSnake(tempBoardState, snake.ID, []rules.Point{head, head, head})
+		if err != nil {
+			return err
+		}
 	}
 
-	err := rules.PlaceFoodFixed(rand, initialBoardState)
+	err := rules.PlaceFoodFixed(rand, tempBoardState)
 	if err != nil {
 		return err
+	}
+
+	// Copy food from temp board state
+	for _, f := range tempBoardState.Food {
+		editor.AddFood(f)
+	}
+
+	// Copy snakes from temp board state
+	for _, snake := range tempBoardState.Snakes {
+		editor.PlaceSnake(snake.ID, snake.Body, snake.Health)
 	}
 
 	return nil
