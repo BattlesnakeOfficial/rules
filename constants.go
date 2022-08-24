@@ -26,6 +26,7 @@ const (
 	EliminatedByOutOfHealth         = "out-of-health"
 	EliminatedByHeadToHeadCollision = "head-collision"
 	EliminatedByOutOfBounds         = "wall-collision"
+	EliminatedByHazard              = "hazard"
 
 	// Error constants
 	ErrorTooManySnakes   = RulesetError("too many snakes for fixed start positions")
@@ -39,11 +40,12 @@ const (
 	ErrorMapNotFound     = RulesetError("map not found")
 
 	// Ruleset / game type names
-	GameTypeConstrictor = "constrictor"
-	GameTypeRoyale      = "royale"
-	GameTypeSolo        = "solo"
-	GameTypeStandard    = "standard"
-	GameTypeWrapped     = "wrapped"
+	GameTypeConstrictor        = "constrictor"
+	GameTypeRoyale             = "royale"
+	GameTypeSolo               = "solo"
+	GameTypeStandard           = "standard"
+	GameTypeWrapped            = "wrapped"
+	GameTypeWrappedConstrictor = "wrapped_constrictor"
 
 	// Game creation parameter names
 	ParamGameType            = "name"

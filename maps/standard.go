@@ -23,6 +23,7 @@ func (m StandardMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  16,
 		BoardSizes:  OddSizes(rules.BoardSizeSmall, rules.BoardSizeXXLarge),
+		Tags:        []string{},
 	}
 }
 
@@ -83,7 +84,7 @@ func checkFoodNeedingPlacement(rand rules.Rand, settings rules.Settings, state *
 }
 
 func placeFoodRandomly(rand rules.Rand, b *rules.BoardState, editor Editor, n int) {
-	unoccupiedPoints := rules.GetUnoccupiedPoints(b, false)
+	unoccupiedPoints := rules.GetUnoccupiedPoints(b, false, false)
 	placeFoodRandomlyAtPositions(rand, b, editor, n, unoccupiedPoints)
 }
 

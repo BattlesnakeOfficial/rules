@@ -432,7 +432,7 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 
 	// Finally, always place 1 food in center of board for dramatic purposes
 	isCenterOccupied := true
-	unoccupiedPoints := GetUnoccupiedPoints(b, true)
+	unoccupiedPoints := GetUnoccupiedPoints(b, true, false)
 	for _, point := range unoccupiedPoints {
 		if point == centerCoord {
 			isCenterOccupied = false
@@ -450,7 +450,7 @@ func PlaceFoodFixed(rand Rand, b *BoardState) error {
 // PlaceFoodRandomly adds up to n new food to the board in random unoccupied squares
 func PlaceFoodRandomly(rand Rand, b *BoardState, n int) error {
 	for i := 0; i < n; i++ {
-		unoccupiedPoints := GetUnoccupiedPoints(b, false)
+		unoccupiedPoints := GetUnoccupiedPoints(b, false, false)
 		if len(unoccupiedPoints) > 0 {
 			newFood := unoccupiedPoints[rand.Intn(len(unoccupiedPoints))]
 			b.Food = append(b.Food, newFood)
@@ -468,7 +468,7 @@ func absInt(n int) int {
 
 func GetEvenUnoccupiedPoints(b *BoardState) []Point {
 	// Start by getting unoccupied points
-	unoccupiedPoints := GetUnoccupiedPoints(b, true)
+	unoccupiedPoints := GetUnoccupiedPoints(b, true, false)
 
 	// Create a new array to hold points that are  even
 	evenUnoccupiedPoints := []Point{}
@@ -494,7 +494,7 @@ func removeCenterCoord(b *BoardState, points []Point) []Point {
 	return noCenterPoints
 }
 
-func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
+func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool, includeHazards bool) []Point {
 	pointIsOccupied := map[int]map[int]bool{}
 	for _, p := range b.Food {
 		if _, xExists := pointIsOccupied[p.X]; !xExists {
@@ -502,6 +502,7 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 		}
 		pointIsOccupied[p.X][p.Y] = true
 	}
+
 	for _, snake := range b.Snakes {
 		if snake.EliminatedCause != NotEliminated {
 			continue
@@ -526,6 +527,15 @@ func GetUnoccupiedPoints(b *BoardState, includePossibleMoves bool) []Point {
 					pointIsOccupied[nextP.X][nextP.Y] = true
 				}
 			}
+		}
+	}
+
+	if includeHazards {
+		for _, p := range b.Hazards {
+			if _, xExists := pointIsOccupied[p.X]; !xExists {
+				pointIsOccupied[p.X] = map[int]bool{}
+			}
+			pointIsOccupied[p.X][p.Y] = true
 		}
 	}
 

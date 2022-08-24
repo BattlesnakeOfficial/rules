@@ -11,6 +11,17 @@ var constrictorRulesetStages = []string{
 	StageModifySnakesAlwaysGrow,
 }
 
+var wrappedConstrictorRulesetStages = []string{
+	StageGameOverStandard,
+	StageMovementWrapBoundaries,
+	StageStarvationStandard,
+	StageHazardDamageStandard,
+	StageFeedSnakesStandard,
+	StageEliminationStandard,
+	StageSpawnFoodNoFood,
+	StageModifySnakesAlwaysGrow,
+}
+
 type ConstrictorRuleset struct {
 	StandardRuleset
 }

@@ -29,6 +29,7 @@ func TestRegisteredMaps(t *testing.T) {
 			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
 			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
 			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
+			require.NotNil(t, meta.Tags)
 			var setupBoardState *rules.BoardState
 
 			// "fuzz test" supported players
@@ -59,8 +60,8 @@ func TestRegisteredMaps(t *testing.T) {
 			}
 
 			// Check that at least one map size can be setup without error
-			for width := 0; width < maxBoardWidth; width++ {
-				for height := 0; height < maxBoardHeight; height++ {
+			for width := 0; width <= maxBoardWidth; width++ {
+				for height := 0; height <= maxBoardHeight; height++ {
 					initialBoardState := rules.NewBoardState(width, height)
 					initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
 					if meta.MaxPlayers > 1 {

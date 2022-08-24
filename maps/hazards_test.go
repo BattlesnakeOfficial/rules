@@ -89,29 +89,6 @@ func TestColumnsHazardsMap(t *testing.T) {
 	require.NotContains(t, state.Hazards, rules.Point{X: 1, Y: 0})
 }
 
-func TestRiversAndBridgetsHazardsMap(t *testing.T) {
-	// check error handling
-	m := maps.RiverAndBridgesHazardsMap{}
-	settings := rules.Settings{}
-
-	// check error for unsupported board sizes
-	state := rules.NewBoardState(9, 9)
-	editor := maps.NewBoardStateEditor(state)
-	err := m.SetupBoard(state, settings, editor)
-	require.Error(t, err)
-
-	// check all the supported sizes
-	for _, size := range []int{11, 19, 25} {
-		state = rules.NewBoardState(size, size)
-		state.Snakes = append(state.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
-		editor = maps.NewBoardStateEditor(state)
-		require.Empty(t, state.Hazards)
-		err = m.SetupBoard(state, settings, editor)
-		require.NoError(t, err)
-		require.NotEmpty(t, state.Hazards)
-	}
-}
-
 func TestSpiralHazardsMap(t *testing.T) {
 	// check error handling
 	m := maps.SpiralHazardsMap{}

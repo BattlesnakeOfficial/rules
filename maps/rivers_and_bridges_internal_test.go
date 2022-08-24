@@ -5,17 +5,18 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
+
 	"github.com/stretchr/testify/require"
 )
 
 func TestRiversAndBridgesSnakePlacement(t *testing.T) {
-	m := RiverAndBridgesHazardsMap{}
+	m := RiverAndBridgesMediumHazardsMap{}
 	settings := rules.Settings{}
 
 	// check all the supported sizes
-	for _, size := range []int{11, 19, 25} {
+	for _, size := range []int{11} {
 		initialState := rules.NewBoardState(size, size)
-		startPositions := riversAndBridgesStartPositions[rules.Point{X: size, Y: size}]
+		startPositions := riversAndBridgesMediumStartPositions
 		maxSnakes := len(startPositions)
 		for i := 0; i < maxSnakes; i++ {
 			initialState.Snakes = append(initialState.Snakes, rules.Snake{ID: fmt.Sprint(i), Body: []rules.Point{}})

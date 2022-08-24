@@ -25,6 +25,7 @@ func (m SinkholesMap) Meta() Metadata {
 		MinPlayers:  1,
 		MaxPlayers:  8,
 		BoardSizes:  FixedSizes(Dimensions{7, 7}, Dimensions{11, 11}, Dimensions{19, 19}),
+		Tags:        []string{TAG_HAZARD_PLACEMENT},
 	}
 }
 
