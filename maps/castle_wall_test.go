@@ -16,51 +16,16 @@ func TestCastleWallMap(t *testing.T) {
 		expectedHazards []rules.Point
 	}{
 		{
-			boardWidth:      7,
-			boardHeight:     7,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 7, Y: 7}],
-		},
-		{
 			boardWidth:      11,
 			boardHeight:     11,
 			expectedError:   nil,
 			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 11, Y: 11}],
 		},
 		{
-			boardWidth:      13,
-			boardHeight:     13,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 13, Y: 13}],
-		},
-		{
-			boardWidth:      15,
-			boardHeight:     15,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 15, Y: 15}],
-		},
-		{
-			boardWidth:      17,
-			boardHeight:     17,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 17, Y: 17}],
-		},
-		{
 			boardWidth:      19,
 			boardHeight:     19,
 			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 19, Y: 19}]},
-		{
-			boardWidth:      21,
-			boardHeight:     21,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 21, Y: 21}],
-		},
-		{
-			boardWidth:      23,
-			boardHeight:     23,
-			expectedError:   nil,
-			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 23, Y: 23}],
+			expectedHazards: maps.CastleWallPositions.Hazards[rules.Point{X: 19, Y: 19}],
 		},
 		{
 			boardWidth:      25,
