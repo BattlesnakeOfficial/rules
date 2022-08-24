@@ -128,7 +128,7 @@ func (m CastleWallMediumHazardsMap) ID() string {
 
 func (m CastleWallMediumHazardsMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Castle Wall",
+		Name:        "hz_castle_wall",
 		Description: "Wall of hazards around the board with dangerous bridges",
 		Author:      "bcambl",
 		Version:     1,
@@ -217,7 +217,7 @@ func (m CastleWallLargeHazardsMap) ID() string {
 
 func (m CastleWallLargeHazardsMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Castle Wall",
+		Name:        "hz_castle_wall_lg",
 		Description: "Wall of hazards around the board with dangerous bridges",
 		Author:      "bcambl",
 		Version:     1,
@@ -402,7 +402,7 @@ func (m CastleWallExtraLargeHazardsMap) ID() string {
 
 func (m CastleWallExtraLargeHazardsMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Castle Wall",
+		Name:        "hz_castle_wall_xl",
 		Description: "Wall of hazards around the board with dangerous bridges",
 		Author:      "bcambl",
 		Version:     1,
