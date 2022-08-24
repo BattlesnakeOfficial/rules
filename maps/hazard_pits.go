@@ -17,7 +17,7 @@ func (m HazardPitsMap) ID() string {
 func (m HazardPitsMap) Meta() Metadata {
 	return Metadata{
 		Name:        "hz_hazard_pits",
-		Description: "A map that that fills in grid-like pattern of squares with pits filled with hazard sauce. Every N turns the pits will fill with another layer of sauce. After 4 cycles the pits will drain and the process starts again",
+		Description: "A map that that fills in grid-like pattern of squares with pits filled with hazard sauce. Every N turns the pits will fill with another layer of sauce up to a maximum of 4 layers which last a few cycles, then the pits drain and the pattern repeats",
 		Author:      "Battlesnake",
 		Version:     1,
 		MinPlayers:  1,
@@ -48,6 +48,9 @@ func (m HazardPitsMap) AddHazardPits(board *rules.BoardState, settings rules.Set
 }
 
 func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(initialBoardState.Width, initialBoardState.Height) {
+		return rules.RulesetError("This map can only be played on a 11x11 board")
+	}
 	rand := settings.GetRand(0)
 
 	rand.Shuffle(len(hazardPitStartPositions), func(i int, j int) {
@@ -68,11 +71,6 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 		return err
 	}
 
-	err = m.AddHazardPits(initialBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -82,26 +80,25 @@ func (m HazardPitsMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 		return err
 	}
 
-	if lastBoardState.Turn == 0 {
-		return nil
-	}
-	// Turn 0 = 1 layer of hazards
-	// Turn 1*<ShrinkEveryNTurns> = 2 layers of hazards
-	// Turn 2*<ShrinkEveryNTurns> = 3 layers of hazards
-	// Turn 3*<ShrinkEveryNTurns> = 4 layers of hazards
-	// Turn 4*<ShrinkEveryNTurns> = restart the cycle, 1 layers of hazards
+	// Cycle 0 - no hazards
+	// Cycle 1 - 1 layer
+	// Cycle 2 - 2 layers
+	// Cycle 3 - 3 layers
+	// Cycle 4-6 - 4 layers of hazards
 
-	// Is it time to change the hazards
 	if lastBoardState.Turn%settings.RoyaleSettings.ShrinkEveryNTurns == 0 {
-		layers := lastBoardState.Turn%4 + 1
+		// Is it time to update the hazards
+		layers := (lastBoardState.Turn / settings.RoyaleSettings.ShrinkEveryNTurns) % 7
+		if layers > 4 {
+			layers = 4
+		}
 
 		editor.ClearHazards()
 
-		// Add 1-4 layers of hazard pits depending on the turn
-		for n := 0; n < (layers + 1); n++ {
+		// Add 1-4 layers of hazard pits depending on the cycle
+		for n := 0; n < layers; n++ {
 			m.AddHazardPits(lastBoardState, settings, editor)
 		}
-		// Remove food from the pit when it is full of sauce?
 	}
 	return nil
 }
