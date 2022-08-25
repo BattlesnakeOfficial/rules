@@ -10,66 +10,43 @@ func init() {
 	globalRegistry.RegisterMap("hz_castle_wall_xl", CastleWallExtraLargeHazardsMap{})
 }
 
-func setupCastleWallBoard(startingPositions [][]rules.Point, hazards []rules.Point, initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func setupCastleWallBoard(maxPlayers uint, startingPositions []rules.Point, hazards []rules.Point, initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(initialBoardState.Turn)
 
+	if len(initialBoardState.Snakes) > int(maxPlayers) {
+		return rules.ErrorTooManySnakes
+	}
+
 	// place snakes
-	var snakes []rules.Point
-	// always support up to 8x snakes on all supported board sizes
-	snakes = append(snakes, startingPositions[0]...)
-	if len(initialBoardState.Snakes) >= 5 {
-		snakes = append(snakes, startingPositions[1]...)
-	}
-
-	// only support 8 or less snakes on boards smaller than XLarge
-	if (len(initialBoardState.Snakes) > 8) && (initialBoardState.Width < rules.BoardSizeXLarge) {
-		return rules.ErrorTooManySnakes
-	}
-
-	// only support 12 or less snakes for xlarge board sizes
-	if (initialBoardState.Width >= rules.BoardSizeXLarge) && (len(initialBoardState.Snakes) > 12) {
-		return rules.ErrorTooManySnakes
-	}
-
-	// add positions 9-12 for xlarge board size
-	if (initialBoardState.Width >= rules.BoardSizeXLarge) && (len(initialBoardState.Snakes) > 8) {
-		snakes = append(snakes, startingPositions[2]...)
-	}
-
-	rand.Shuffle(len(snakes), func(i int, j int) {
-		snakes[i], snakes[j] = snakes[j], snakes[i]
+	rand.Shuffle(len(startingPositions), func(i int, j int) {
+		startingPositions[i], startingPositions[j] = startingPositions[j], startingPositions[i]
 	})
-
 	for index, snake := range initialBoardState.Snakes {
-		head := snakes[index]
+		head := startingPositions[index]
 		editor.PlaceSnake(snake.ID, []rules.Point{head, head, head}, rules.SnakeMaxHealth)
 	}
 
+	// place hazards
 	for _, h := range hazards {
 		editor.AddHazard(h)
 	}
 	return nil
 }
 
-func updateCastleWallBoard(food []rules.Point, lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func updateCastleWallBoard(maxFood int, food []rules.Point, lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	// no food spawning for first 10 turns
 	if lastBoardState.Turn < 10 {
 		return nil
 	}
 
-	// max of 2 food on medium & large board
-	if len(lastBoardState.Food) > 1 && lastBoardState.Width < rules.BoardSizeXLarge {
-		return nil
-	}
-
-	// max of 4 food on xlarge boards
-	if len(lastBoardState.Food) > 3 && lastBoardState.Width >= rules.BoardSizeXLarge {
+	// skip food spawn when max food present
+	if len(lastBoardState.Food) == maxFood {
 		return nil
 	}
 
 	rand := settings.GetRand(lastBoardState.Turn)
 
-	rand.Shuffle(len(castleWallMediumFood), func(i int, j int) {
+	rand.Shuffle(len(food), func(i int, j int) {
 		food[i], food[j] = food[j], food[i]
 	})
 
@@ -144,7 +121,13 @@ func (m CastleWallMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardSta
 		return rules.RulesetError("This map can only be played on a 11x11 board")
 	}
 
-	err := setupCastleWallBoard(castleWallMediumStartPositions, castleWallMediumHazards, initialBoardState, settings, editor)
+	var startPositions []rules.Point
+	startPositions = append(startPositions, castleWallMediumStartPositions[0]...)
+	if len(initialBoardState.Snakes) >= 5 {
+		startPositions = append(startPositions, castleWallMediumStartPositions[1]...)
+	}
+
+	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallMediumHazards, initialBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -152,7 +135,12 @@ func (m CastleWallMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardSta
 }
 
 func (m CastleWallMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return updateCastleWallBoard(castleWallMediumFood, lastBoardState, settings, editor)
+	maxFood := 2
+	err := updateCastleWallBoard(maxFood, castleWallMediumFood, lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var castleWallMediumStartPositions = [][]rules.Point{
@@ -233,7 +221,13 @@ func (m CastleWallLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardStat
 		return rules.RulesetError("This map can only be played on a 19x19 board")
 	}
 
-	err := setupCastleWallBoard(castleWallLargeStartPositions, castleWallLargeHazards, initialBoardState, settings, editor)
+	var startPositions []rules.Point
+	startPositions = append(startPositions, castleWallLargeStartPositions[0]...)
+	if len(initialBoardState.Snakes) >= 5 {
+		startPositions = append(startPositions, castleWallLargeStartPositions[1]...)
+	}
+
+	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallLargeHazards, initialBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -241,7 +235,12 @@ func (m CastleWallLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardStat
 }
 
 func (m CastleWallLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return updateCastleWallBoard(castleWallLargeFood, lastBoardState, settings, editor)
+	maxFood := 2
+	err := updateCastleWallBoard(maxFood, castleWallLargeFood, lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var castleWallLargeStartPositions = [][]rules.Point{
@@ -418,7 +417,17 @@ func (m CastleWallExtraLargeHazardsMap) SetupBoard(initialBoardState *rules.Boar
 		return rules.RulesetError("This map can only be played on a 25x25 board")
 	}
 
-	err := setupCastleWallBoard(castleWallExtraLargeStartPositions, castleWallExtraLargeHazards, initialBoardState, settings, editor)
+	var startPositions []rules.Point
+	startPositions = append(startPositions, castleWallExtraLargeStartPositions[0]...)
+	if len(initialBoardState.Snakes) >= 5 {
+		startPositions = append(startPositions, castleWallExtraLargeStartPositions[1]...)
+	}
+	// add positions 9-12 when required
+	if len(initialBoardState.Snakes) > 8 {
+		startPositions = append(startPositions, castleWallExtraLargeStartPositions[2]...)
+	}
+
+	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallExtraLargeHazards, initialBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -426,7 +435,12 @@ func (m CastleWallExtraLargeHazardsMap) SetupBoard(initialBoardState *rules.Boar
 }
 
 func (m CastleWallExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return updateCastleWallBoard(castleWallExtraLargeFood, lastBoardState, settings, editor)
+	maxFood := 4
+	err := updateCastleWallBoard(maxFood, castleWallExtraLargeFood, lastBoardState, settings, editor)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var castleWallExtraLargeStartPositions = [][]rules.Point{
