@@ -27,7 +27,7 @@ func (m HazardPitsMap) Meta() Metadata {
 	}
 }
 
-func (m HazardPitsMap) AddHazardPits(board *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m HazardPitsMap) AddHazardPits(board *rules.BoardState, settings rules.Settings, editor Editor) {
 	for x := 0; x < board.Width; x++ {
 		for y := 0; y < board.Height; y++ {
 			if x%2 == 1 && y%2 == 1 {
@@ -44,7 +44,6 @@ func (m HazardPitsMap) AddHazardPits(board *rules.BoardState, settings rules.Set
 			}
 		}
 	}
-	return nil
 }
 
 func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
