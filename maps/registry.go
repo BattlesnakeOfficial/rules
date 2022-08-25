@@ -25,7 +25,7 @@ func (registry MapRegistry) RegisterMap(id string, m GameMap) {
 // List returns all registered map IDs in alphabetical order
 func (registry MapRegistry) List() []string {
 	var keys []string
-	for k, _ := range registry {
+	for k := range registry {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)

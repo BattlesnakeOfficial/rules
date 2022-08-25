@@ -75,4 +75,14 @@ func (m *mapInfo) display(id string) {
 			fmt.Print("\n")
 		}
 	}
+	fmt.Print("Tags:")
+	if len(meta.Tags) < 1 {
+		fmt.Print("\n")
+	}
+	for i, t := range meta.Tags {
+		fmt.Printf(" %s", t)
+		if i == (len(meta.Tags) - 1) {
+			fmt.Print("\n")
+		}
+	}
 }
