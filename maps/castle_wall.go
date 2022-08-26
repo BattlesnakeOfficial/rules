@@ -50,48 +50,38 @@ func updateCastleWallBoard(maxFood int, food []rules.Point, lastBoardState *rule
 		food[i], food[j] = food[j], food[i]
 	})
 
+foodPlacementLoop:
 	for _, f := range food {
-		tileIsOccupied := false
-
-	snakeLoop:
 		for _, snake := range lastBoardState.Snakes {
 			for _, point := range snake.Body {
 				if point.X == f.X && point.Y == f.Y {
-					tileIsOccupied = true
-					break snakeLoop
+					continue foodPlacementLoop
 				}
 			}
 		}
 
 		for _, existingFood := range lastBoardState.Food {
 			if existingFood.X == f.X && existingFood.Y == f.Y {
-				tileIsOccupied = true
-				break
+				continue foodPlacementLoop
 			}
 
 			// also avoid spawning food in same passage as existing food
 			if existingFood.X+1 == f.X && existingFood.Y == f.Y {
-				tileIsOccupied = true
-				break
+				continue foodPlacementLoop
 			}
 			if existingFood.X-1 == f.X && existingFood.Y == f.Y {
-				tileIsOccupied = true
-				break
+				continue foodPlacementLoop
 			}
 			if existingFood.X == f.X && existingFood.Y+1 == f.Y {
-				tileIsOccupied = true
-				break
+				continue foodPlacementLoop
 			}
 			if existingFood.X == f.X && existingFood.Y-1 == f.Y {
-				tileIsOccupied = true
-				break
+				continue foodPlacementLoop
 			}
 		}
 
-		if !tileIsOccupied {
-			editor.AddFood(f)
-			break
-		}
+		editor.AddFood(f)
+		break
 	}
 
 	return nil
@@ -127,20 +117,12 @@ func (m CastleWallMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardSta
 		startPositions = append(startPositions, castleWallMediumStartPositions[1]...)
 	}
 
-	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallMediumHazards, initialBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallMediumHazards, initialBoardState, settings, editor)
 }
 
 func (m CastleWallMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 2
-	err := updateCastleWallBoard(maxFood, castleWallMediumFood, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return updateCastleWallBoard(maxFood, castleWallMediumFood, lastBoardState, settings, editor)
 }
 
 var castleWallMediumStartPositions = [][]rules.Point{
@@ -227,20 +209,12 @@ func (m CastleWallLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardStat
 		startPositions = append(startPositions, castleWallLargeStartPositions[1]...)
 	}
 
-	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallLargeHazards, initialBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallLargeHazards, initialBoardState, settings, editor)
 }
 
 func (m CastleWallLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 2
-	err := updateCastleWallBoard(maxFood, castleWallLargeFood, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return updateCastleWallBoard(maxFood, castleWallLargeFood, lastBoardState, settings, editor)
 }
 
 var castleWallLargeStartPositions = [][]rules.Point{
@@ -427,20 +401,12 @@ func (m CastleWallExtraLargeHazardsMap) SetupBoard(initialBoardState *rules.Boar
 		startPositions = append(startPositions, castleWallExtraLargeStartPositions[2]...)
 	}
 
-	err := setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallExtraLargeHazards, initialBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallExtraLargeHazards, initialBoardState, settings, editor)
 }
 
 func (m CastleWallExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 4
-	err := updateCastleWallBoard(maxFood, castleWallExtraLargeFood, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return updateCastleWallBoard(maxFood, castleWallExtraLargeFood, lastBoardState, settings, editor)
 }
 
 var castleWallExtraLargeStartPositions = [][]rules.Point{
