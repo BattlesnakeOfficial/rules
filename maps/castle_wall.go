@@ -53,9 +53,25 @@ func updateCastleWallBoard(maxFood int, food []rules.Point, lastBoardState *rule
 foodPlacementLoop:
 	for _, f := range food {
 		for _, snake := range lastBoardState.Snakes {
-			for _, point := range snake.Body {
+			for i, point := range snake.Body {
 				if point.X == f.X && point.Y == f.Y {
 					continue foodPlacementLoop
+				}
+
+				// also avoid spawning food next to a snake head
+				if i == 0 {
+					if point.X+1 == f.X && point.Y == f.Y {
+						continue foodPlacementLoop
+					}
+					if point.X-1 == f.X && point.Y == f.Y {
+						continue foodPlacementLoop
+					}
+					if point.X == f.X && point.Y+1 == f.Y {
+						continue foodPlacementLoop
+					}
+					if point.X == f.X && point.Y-1 == f.Y {
+						continue foodPlacementLoop
+					}
 				}
 			}
 		}
