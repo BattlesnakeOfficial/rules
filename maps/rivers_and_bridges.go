@@ -8,6 +8,8 @@ func init() {
 	globalRegistry.RegisterMap("hz_rivers_bridges", RiverAndBridgesMediumHazardsMap{})
 	globalRegistry.RegisterMap("hz_rivers_bridges_lg", RiverAndBridgesLargeHazardsMap{})
 	globalRegistry.RegisterMap("hz_rivers_bridges_xl", RiverAndBridgesExtraLargeHazardsMap{})
+	globalRegistry.RegisterMap("hz_islands_bridges", IslandsAndBridgesMediumHazardsMap{})
+	globalRegistry.RegisterMap("hz_islands_bridges_lg", IslandsAndBridgesLargeHazardsMap{})
 }
 
 func setupRiverAndBridgesBoard(startingPositions [][]rules.Point, hazards []rules.Point, lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -103,11 +105,7 @@ func (m RiverAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardS
 		return rules.RulesetError("This map can only be played on a 11x11 board")
 	}
 
-	err := setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, lastBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -178,11 +176,7 @@ func (m RiverAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardSt
 		return rules.RulesetError("This map can only be played on a 19x19 board")
 	}
 
-	err := setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, lastBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -281,11 +275,7 @@ func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(lastBoardState *rules.Bo
 		return rules.RulesetError("This map can only be played on a 25x25 board")
 	}
 
-	err := setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, lastBoardState, settings, editor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, lastBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -373,4 +363,140 @@ var riversAndBridgesExtraLargeHazards = []rules.Point{
 	{X: 12, Y: 8},
 	{X: 8, Y: 12},
 	{X: 12, Y: 16},
+}
+
+type IslandsAndBridgesMediumHazardsMap struct{}
+
+func (m IslandsAndBridgesMediumHazardsMap) ID() string {
+	return "hz_islands_bridges"
+}
+
+func (m IslandsAndBridgesMediumHazardsMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_islands_bridges",
+		Description: `Creates fixed maps that have a lake of hazard in the middle with rivers going in the cardinal directions and around the edges of the map. Bridges across the rivers are provided at key points`,
+		Author:      "Battlesnake",
+		Version:     1,
+		MinPlayers:  1,
+		MaxPlayers:  4,
+		BoardSizes:  FixedSizes(Dimensions{11, 11}),
+		Tags:        []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
+	}
+}
+
+func (m IslandsAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
+		return rules.RulesetError("This map can only be played on a 11x11 board")
+	}
+
+	return setupRiverAndBridgesBoard(islandsAndBridgesMediumStartPositions, islandsAndBridgesMediumHazards, lastBoardState, settings, editor)
+}
+
+func (m IslandsAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
+}
+
+var islandsAndBridgesMediumStartPositions = [][]rules.Point{
+	{
+		{X: 3, Y: 1}, {X: 1, Y: 3},
+	},
+	{
+		{X: 9, Y: 7}, {X: 7, Y: 9},
+	},
+	{
+		{X: 3, Y: 9}, {X: 1, Y: 7},
+	},
+	{
+		{X: 7, Y: 1}, {X: 9, Y: 3},
+	},
+}
+
+var islandsAndBridgesMediumHazards = []rules.Point{
+	{X: 5, Y: 10},
+	{X: 5, Y: 9},
+	{X: 5, Y: 7},
+	{X: 5, Y: 6},
+	{X: 5, Y: 5},
+	{X: 5, Y: 4},
+	{X: 5, Y: 3},
+	{X: 5, Y: 0},
+	{X: 5, Y: 1},
+	{X: 6, Y: 5},
+	{X: 7, Y: 5},
+	{X: 9, Y: 5},
+	{X: 10, Y: 5},
+	{X: 4, Y: 5},
+	{X: 3, Y: 5},
+	{X: 1, Y: 5},
+	{X: 0, Y: 5},
+	{X: 1, Y: 10},
+	{X: 9, Y: 10},
+	{X: 1, Y: 0},
+	{X: 9, Y: 0},
+	{X: 10, Y: 1},
+	{X: 10, Y: 0},
+	{X: 10, Y: 10},
+	{X: 10, Y: 9},
+	{X: 0, Y: 10},
+	{X: 0, Y: 9},
+	{X: 0, Y: 1},
+	{X: 0, Y: 0},
+	{X: 0, Y: 6},
+	{X: 0, Y: 4},
+	{X: 10, Y: 6},
+	{X: 10, Y: 4},
+	{X: 6, Y: 10},
+	{X: 4, Y: 10},
+	{X: 6, Y: 0},
+	{X: 4, Y: 0},
+}
+
+type IslandsAndBridgesLargeHazardsMap struct{}
+
+func (m IslandsAndBridgesLargeHazardsMap) ID() string {
+	return "hz_islands_bridges_lg"
+}
+
+func (m IslandsAndBridgesLargeHazardsMap) Meta() Metadata {
+	return Metadata{
+		Name:        "hz_islands_bridges_lg",
+		Description: `Creates fixed maps that have a lake of hazard in the middle with rivers going in the cardinal directions and around the edges of the map. Bridges across the rivers are provided at key points`,
+		Author:      "Battlesnake",
+		Version:     1,
+		MinPlayers:  1,
+		MaxPlayers:  16,
+		BoardSizes:  FixedSizes(Dimensions{19, 19}),
+		Tags:        []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
+	}
+}
+
+func (m IslandsAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
+		return rules.RulesetError("This map can only be played on a 19x19 board")
+	}
+
+	return setupRiverAndBridgesBoard(islandsAndBridgesLargeStartPositions, islandsAndBridgesLargeHazards, lastBoardState, settings, editor)
+}
+
+func (m IslandsAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
+}
+
+var islandsAndBridgesLargeStartPositions = [][]rules.Point{
+	{
+		{X: 2, Y: 2}, {X: 2, Y: 6}, {X: 6, Y: 2}, {X: 6, Y: 6},
+	},
+	{
+		{X: 12, Y: 2}, {X: 16, Y: 2}, {X: 16, Y: 6}, {X: 12, Y: 6},
+	},
+	{
+		{X: 16, Y: 16}, {X: 16, Y: 12}, {X: 12, Y: 12}, {X: 12, Y: 16},
+	},
+	{
+		{X: 2, Y: 16}, {X: 6, Y: 16}, {X: 6, Y: 12}, {X: 2, Y: 12},
+	},
+}
+
+var islandsAndBridgesLargeHazards = []rules.Point{
+	{X: 9, Y: 18}, {X: 9, Y: 0}, {X: 9, Y: 1}, {X: 9, Y: 2}, {X: 9, Y: 3}, {X: 9, Y: 5}, {X: 9, Y: 6}, {X: 9, Y: 8}, {X: 9, Y: 7}, {X: 9, Y: 9}, {X: 9, Y: 10}, {X: 9, Y: 11}, {X: 9, Y: 12}, {X: 9, Y: 13}, {X: 9, Y: 15}, {X: 9, Y: 16}, {X: 9, Y: 17}, {X: 2, Y: 9}, {X: 1, Y: 9}, {X: 0, Y: 9}, {X: 3, Y: 9}, {X: 5, Y: 9}, {X: 6, Y: 9}, {X: 7, Y: 9}, {X: 8, Y: 9}, {X: 10, Y: 9}, {X: 16, Y: 9}, {X: 15, Y: 9}, {X: 13, Y: 9}, {X: 12, Y: 9}, {X: 11, Y: 9}, {X: 17, Y: 9}, {X: 18, Y: 9}, {X: 10, Y: 8}, {X: 8, Y: 8}, {X: 8, Y: 10}, {X: 10, Y: 10}, {X: 18, Y: 8}, {X: 18, Y: 7}, {X: 18, Y: 6}, {X: 18, Y: 10}, {X: 18, Y: 11}, {X: 18, Y: 12}, {X: 0, Y: 10}, {X: 0, Y: 11}, {X: 0, Y: 12}, {X: 0, Y: 8}, {X: 0, Y: 7}, {X: 0, Y: 6}, {X: 6, Y: 0}, {X: 7, Y: 0}, {X: 8, Y: 0}, {X: 10, Y: 0}, {X: 11, Y: 0}, {X: 12, Y: 0}, {X: 10, Y: 18}, {X: 11, Y: 18}, {X: 12, Y: 18}, {X: 8, Y: 18}, {X: 7, Y: 18}, {X: 6, Y: 18}, {X: 0, Y: 18}, {X: 0, Y: 17}, {X: 0, Y: 16}, {X: 0, Y: 15}, {X: 1, Y: 18}, {X: 2, Y: 18}, {X: 3, Y: 18}, {X: 1, Y: 17}, {X: 15, Y: 18}, {X: 16, Y: 18}, {X: 17, Y: 18}, {X: 18, Y: 18}, {X: 18, Y: 17}, {X: 18, Y: 16}, {X: 18, Y: 15}, {X: 17, Y: 17}, {X: 18, Y: 3}, {X: 18, Y: 2}, {X: 18, Y: 1}, {X: 18, Y: 0}, {X: 17, Y: 0}, {X: 16, Y: 0}, {X: 15, Y: 0}, {X: 17, Y: 1}, {X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}, {X: 1, Y: 1}, {X: 10, Y: 1}, {X: 8, Y: 1}, {X: 8, Y: 17}, {X: 10, Y: 17}, {X: 17, Y: 10}, {X: 17, Y: 8}, {X: 1, Y: 8}, {X: 1, Y: 10},
 }
