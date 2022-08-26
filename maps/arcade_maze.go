@@ -63,8 +63,10 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 		editor.AddHazard(hazard)
 	}
 
-	// Add food in center
-	editor.AddFood(rules.Point{X: 9, Y: 11})
+	if settings.MinimumFood > 0 {
+		// Add food in center
+		editor.AddFood(rules.Point{X: 9, Y: 11})
+	}
 
 	return nil
 }
