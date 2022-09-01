@@ -254,36 +254,29 @@ func (gameState *GameState) Run() {
 		}
 	}
 
-	isDraw := true
-	if gameState.GameType == "solo" {
-		log.Printf("[DONE]: Game completed after %v turns.", boardState.Turn)
-		if exportGame {
-			// These checks for exportGame are present to avoid vacuuming up RAM when an export is not requred.
-			for _, snakeState := range gameState.snakeStates {
-				gameExporter.winner = snakeState
-				break
-			}
-		}
-	} else {
-		var winner SnakeState
-		for _, snake := range boardState.Snakes {
-			snakeState := gameState.snakeStates[snake.ID]
-			if snake.EliminatedCause == rules.NotEliminated {
-				isDraw = false
-				winner = snakeState
-			}
-			gameState.sendEndRequest(boardState, snakeState)
+	gameExporter.isDraw = false
+
+	if len(gameState.snakeStates) > 1 {
+		// A draw is possible if there is more than one snake in the game.
+		gameExporter.isDraw = true
+	}
+
+	for _, snake := range boardState.Snakes {
+		snakeState := gameState.snakeStates[snake.ID]
+		if snake.EliminatedCause == rules.NotEliminated {
+			gameExporter.isDraw = false
+			gameExporter.winner = snakeState
 		}
 
-		if isDraw {
-			log.Printf("[DONE]: Game completed after %v turns. It was a draw.", boardState.Turn)
-		} else {
-			log.Printf("[DONE]: Game completed after %v turns. %v is the winner.", boardState.Turn, winner.Name)
-		}
-		if exportGame {
-			gameExporter.winner = winner
-			gameExporter.isDraw = isDraw
-		}
+		gameState.sendEndRequest(boardState, snakeState)
+	}
+
+	if gameExporter.isDraw {
+		log.Printf("[DONE]: Game completed after %v turns. It was a draw.", boardState.Turn)
+	} else if gameExporter.winner.Name != "" {
+		log.Printf("[DONE]: Game completed after %v turns. %v was the winner.", boardState.Turn, gameExporter.winner.Name)
+	} else {
+		log.Printf("[DONE]: Game completed after %v turns.", boardState.Turn)
 	}
 
 	if gameState.ViewInBrowser {
