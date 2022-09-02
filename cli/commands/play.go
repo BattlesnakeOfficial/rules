@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -236,15 +237,15 @@ func (gameState *GameState) Run() {
 		if gameState.ViewMap {
 			gameState.printMap(boardState)
 		} else {
-			var numSnakesAlive int
+			var aliveSnakeNames []string
 			for _, snake := range boardState.Snakes {
 				if snake.EliminatedCause == rules.NotEliminated {
-					numSnakesAlive++
+					aliveSnakeNames = append(aliveSnakeNames, gameState.snakeStates[snake.ID].Name)
 				}
 			}
 			log.INFO.Printf(
-				"Turn: %d, Snakes Alive: %d, Food: %d, Hazards: %d",
-				boardState.Turn, numSnakesAlive, len(boardState.Food), len(boardState.Hazards),
+				"Turn: %d, Snakes Alive: [%v], Food: %d, Hazards: %d",
+				boardState.Turn, strings.Join(aliveSnakeNames, ", "), len(boardState.Food), len(boardState.Hazards),
 			)
 		}
 
