@@ -2,15 +2,18 @@ package commands
 
 import (
 	"fmt"
+	stdlog "log"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use:   "battlesnake",
@@ -41,7 +44,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.battlesnake.yaml)")
-
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Enable debug logging")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -67,5 +70,14 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+
+	// Setup logging
+	log.SetStdoutOutput(os.Stderr)
+	log.SetFlags(stdlog.Ltime | stdlog.Lmicroseconds)
+	if verbose {
+		log.SetStdoutThreshold(log.LevelDebug)
+	} else {
+		log.SetStdoutThreshold(log.LevelInfo)
 	}
 }

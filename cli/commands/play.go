@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"strconv"
 	"sync"
@@ -22,6 +20,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
+	log "github.com/spf13/jwalterweatherman"
 )
 
 // Used to store state for each SnakeState while running a local game
@@ -55,7 +54,6 @@ type GameState struct {
 	UseColor            bool
 	Seed                int64
 	TurnDelay           int
-	DebugRequests       bool
 	Output              string
 	ViewInBrowser       bool
 	BoardURL            string
@@ -98,7 +96,6 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().Int64VarP(&gameState.Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().IntVarP(&gameState.TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().IntVarP(&gameState.TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
-	playCmd.Flags().BoolVar(&gameState.DebugRequests, "debug-requests", false, "Log body of all requests sent")
 	playCmd.Flags().StringVarP(&gameState.Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
@@ -129,7 +126,7 @@ func (gameState *GameState) initialize() {
 	// Load game map
 	gameMap, err := maps.GetMap(gameState.MapName)
 	if err != nil {
-		log.Fatalf("Failed to load game map %#v: %v", gameState.MapName, err)
+		log.ERROR.Fatalf("Failed to load game map %#v: %v", gameState.MapName, err)
 	}
 	gameState.gameMap = gameMap
 
@@ -173,10 +170,6 @@ func (gameState *GameState) Run() {
 		isDraw:        false,
 	}
 
-	if gameState.ViewMap {
-		gameState.printMap(boardState)
-	}
-
 	boardGame := board.Game{
 		ID:     gameState.gameID,
 		Status: "running",
@@ -194,21 +187,26 @@ func (gameState *GameState) Run() {
 	if gameState.ViewInBrowser {
 		serverURL, err := boardServer.Listen()
 		if err != nil {
-			log.Fatalf("Error starting HTTP server: %v", err)
+			log.ERROR.Fatalf("Error starting HTTP server: %v", err)
 		}
-		log.Printf("Board server listening on %s", serverURL)
+		defer boardServer.Shutdown()
+		log.INFO.Printf("Board server listening on %s", serverURL)
 
 		boardURL := fmt.Sprintf(gameState.BoardURL+"?engine=%s&game=%s&autoplay=true", serverURL, gameState.gameID)
 
-		log.Printf("Opening board URL: %s", boardURL)
+		log.INFO.Printf("Opening board URL: %s", boardURL)
 		if err := browser.OpenURL(boardURL); err != nil {
-			log.Printf("Failed to open browser: %v", err)
+			log.ERROR.Printf("Failed to open browser: %v", err)
 		}
-	}
 
-	if gameState.ViewInBrowser {
 		// send turn zero to websocket server
 		boardServer.SendEvent(gameState.buildFrameEvent(boardState))
+	}
+
+	log.INFO.Printf("Ruleset: %v, Seed: %v", gameState.GameType, gameState.Seed)
+
+	if gameState.ViewMap {
+		gameState.printMap(boardState)
 	}
 
 	var endTime time.Time
@@ -238,7 +236,16 @@ func (gameState *GameState) Run() {
 		if gameState.ViewMap {
 			gameState.printMap(boardState)
 		} else {
-			log.Printf("[%v]: State: %v\n", boardState.Turn, boardState)
+			var numSnakesAlive int
+			for _, snake := range boardState.Snakes {
+				if snake.EliminatedCause == rules.NotEliminated {
+					numSnakesAlive++
+				}
+			}
+			log.INFO.Printf(
+				"Turn: %d, Snakes Alive: %d, Food: %d, Hazards: %d",
+				boardState.Turn, numSnakesAlive, len(boardState.Food), len(boardState.Hazards),
+			)
 		}
 
 		if gameState.TurnDelay > 0 {
@@ -272,11 +279,11 @@ func (gameState *GameState) Run() {
 	}
 
 	if gameExporter.isDraw {
-		log.Printf("[DONE]: Game completed after %v turns. It was a draw.", boardState.Turn)
+		log.INFO.Printf("Game completed after %v turns. It was a draw.", boardState.Turn)
 	} else if gameExporter.winner.Name != "" {
-		log.Printf("[DONE]: Game completed after %v turns. %v was the winner.", boardState.Turn, gameExporter.winner.Name)
+		log.INFO.Printf("Game completed after %v turns. %v was the winner.", boardState.Turn, gameExporter.winner.Name)
 	} else {
-		log.Printf("[DONE]: Game completed after %v turns.", boardState.Turn)
+		log.INFO.Printf("Game completed after %v turns.", boardState.Turn)
 	}
 
 	if gameState.ViewInBrowser {
@@ -289,13 +296,8 @@ func (gameState *GameState) Run() {
 	if exportGame {
 		err := gameExporter.FlushToFile(gameState.Output, "JSONL")
 		if err != nil {
-			log.Printf("[WARN]: Unable to export game. Reason: %v\n", err.Error())
-			os.Exit(1)
+			log.ERROR.Fatalf("Unable to export game. Reason: %v", err)
 		}
-	}
-
-	if gameState.ViewInBrowser {
-		boardServer.Shutdown()
 	}
 }
 
@@ -306,11 +308,11 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 	}
 	boardState, err := maps.SetupBoard(gameState.gameMap.ID(), gameState.ruleset.Settings(), gameState.Width, gameState.Height, snakeIds)
 	if err != nil {
-		log.Fatalf("Error Initializing Board State: %v", err)
+		log.ERROR.Fatalf("Error Initializing Board State: %v", err)
 	}
 	boardState, err = gameState.ruleset.ModifyInitialBoardState(boardState)
 	if err != nil {
-		log.Fatalf("Error Initializing Board State: %v", err)
+		log.ERROR.Fatalf("Error Initializing Board State: %v", err)
 	}
 
 	for _, snakeState := range gameState.snakeStates {
@@ -318,12 +320,10 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 		requestBody := serialiseSnakeRequest(snakeRequest)
 		u, _ := url.ParseRequestURI(snakeState.URL)
 		u.Path = path.Join(u.Path, "start")
-		if gameState.DebugRequests {
-			log.Printf("POST %s: %v", u, string(requestBody))
-		}
+		log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
 		_, err = gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 		if err != nil {
-			log.Printf("[WARN]: Request to %v failed", u.String())
+			log.WARN.Printf("Request to %v failed", u.String())
 		}
 	}
 	return boardState
@@ -369,12 +369,12 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 	}
 	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
 	if err != nil {
-		log.Fatalf("Error producing next board state: %v", err)
+		log.ERROR.Fatalf("Error producing next board state: %v", err)
 	}
 
 	boardState, err = maps.UpdateBoard(gameState.gameMap.ID(), boardState, gameState.ruleset.Settings())
 	if err != nil {
-		log.Fatalf("Error updating board with game map: %v", err)
+		log.ERROR.Fatalf("Error updating board with game map: %v", err)
 	}
 
 	boardState.Turn += 1
@@ -387,54 +387,52 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 	requestBody := serialiseSnakeRequest(snakeRequest)
 	u, _ := url.ParseRequestURI(snakeState.URL)
 	u.Path = path.Join(u.Path, "move")
-	if gameState.DebugRequests {
-		log.Printf("POST %s: %v", u, string(requestBody))
-	}
+	log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
 	res, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 
 	// Use snake's last move as the default in case of an error
 	snakeMove := rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove}
 
 	if err != nil {
-		log.Printf(
-			"[WARN]: Request to %v failed\n"+
-				"\tError: %s\n", u.String(), err)
+		log.WARN.Printf(
+			"Request to %v failed\n"+
+				"\tError: %s", u.String(), err)
 		return snakeMove
 	}
 	if res.Body == nil {
-		log.Printf(
-			"[WARN]: Failed to parse response from %v\n"+
-				"\tError: body is empty\n", u.String())
+		log.WARN.Printf(
+			"Failed to parse response from %v\n"+
+				"\tError: body is empty", u.String())
 		return snakeMove
 	}
 	defer res.Body.Close()
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
-		log.Printf(
-			"[WARN]: Failed to read response body from %v\n"+
-				"\tError: %v\n", u.String(), readErr)
+		log.WARN.Printf(
+			"Failed to read response body from %v\n"+
+				"\tError: %v", u.String(), readErr)
 		return snakeMove
 	}
 	if res.StatusCode != http.StatusOK {
-		log.Printf(
-			"[WARN]: Got non-ok status code from %v\n"+
+		log.WARN.Printf(
+			"Got non-ok status code from %v\n"+
 				"\tStatusCode: %d (expected %d)\n"+
-				"\tBody: %q\n", u.String(), res.StatusCode, http.StatusOK, body)
+				"\tBody: %q", u.String(), res.StatusCode, http.StatusOK, body)
 		return snakeMove
 	}
 	playerResponse := client.MoveResponse{}
 	jsonErr := json.Unmarshal(body, &playerResponse)
 	if jsonErr != nil {
-		log.Printf(
-			"[WARN]: Failed to decode JSON from %v\n"+
+		log.WARN.Printf(
+			"Failed to decode JSON from %v\n"+
 				"\tError: %v\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), jsonErr, body)
 		return snakeMove
 	}
 	if playerResponse.Move != "up" && playerResponse.Move != "down" && playerResponse.Move != "left" && playerResponse.Move != "right" {
-		log.Printf(
-			"[WARN]: Failed to parse JSON data from %v\n"+
+		log.WARN.Printf(
+			"Failed to parse JSON data from %v\n"+
 				"\tError: invalid move %q, valid moves are \"up\", \"down\", \"left\" or \"right\"\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), playerResponse.Move, body)
@@ -450,12 +448,10 @@ func (gameState *GameState) sendEndRequest(boardState *rules.BoardState, snakeSt
 	requestBody := serialiseSnakeRequest(snakeRequest)
 	u, _ := url.ParseRequestURI(snakeState.URL)
 	u.Path = path.Join(u.Path, "end")
-	if gameState.DebugRequests {
-		log.Printf("POST %s: %v", u, string(requestBody))
-	}
+	log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
 	_, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		log.Printf("[WARN]: Request to %v failed", u.String())
+		log.WARN.Printf("Request to %v failed", u.String())
 	}
 }
 
@@ -501,7 +497,7 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		numSnakes = numURLs
 	}
 	if numNames != numURLs {
-		log.Println("[WARN]: Number of Names and URLs do not match: defaults will be applied to missing values")
+		log.DEBUG.Println("Number of Names and URLs do not match: defaults will be applied to missing values")
 	}
 	for i := int(0); i < numSnakes; i++ {
 		var snakeName string
@@ -512,21 +508,18 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		if i < numNames {
 			snakeName = gameState.Names[i]
 		} else {
-			log.Printf("[WARN]: Name for URL %v is missing: a default name will be applied\n", gameState.URLs[i])
+			log.DEBUG.Printf("Name for URL %v is missing: a default name will be applied", gameState.URLs[i])
 			snakeName = id
 		}
 
 		if i < numURLs {
 			u, err := url.ParseRequestURI(gameState.URLs[i])
 			if err != nil {
-				log.Printf("[WARN]: URL %v is not valid: a default will be applied\n", gameState.URLs[i])
-				snakeURL = "https://example.com"
-			} else {
-				snakeURL = u.String()
+				log.ERROR.Fatalf("URL %v is not valid: %v", gameState.URLs[i], err)
 			}
+			snakeURL = u.String()
 		} else {
-			log.Printf("[WARN]: URL for Name %v is missing: a default URL will be applied\n", gameState.Names[i])
-			snakeURL = "https://example.com"
+			log.ERROR.Fatalf("URL for name %v is missing", gameState.Names[i])
 		}
 
 		snakeState := SnakeState{
@@ -535,32 +528,33 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		var snakeErr error
 		res, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
-			log.Printf("[WARN]: Request to %v failed: %v", snakeURL, err)
-			snakeErr = err
-		} else {
-			snakeState.StatusCode = res.StatusCode
-
-			if res.Body != nil {
-				defer res.Body.Close()
-				body, readErr := ioutil.ReadAll(res.Body)
-				if readErr != nil {
-					log.Fatal(readErr)
-				}
-
-				pingResponse := client.SnakeMetadataResponse{}
-				jsonErr := json.Unmarshal(body, &pingResponse)
-				if jsonErr != nil {
-					snakeErr = jsonErr
-					log.Printf("Error reading response from %v: %v", snakeURL, jsonErr)
-				} else {
-					snakeState.Head = pingResponse.Head
-					snakeState.Tail = pingResponse.Tail
-					snakeState.Color = pingResponse.Color
-					snakeState.Author = pingResponse.Author
-					snakeState.Version = pingResponse.Version
-				}
-			}
+			log.ERROR.Fatalf("Snake metadata request to %v failed: %v", snakeURL, err)
 		}
+
+		snakeState.StatusCode = res.StatusCode
+
+		if res.Body == nil {
+			log.ERROR.Fatalf("Empty response body from snake metadata URL: %v", snakeURL)
+		}
+
+		defer res.Body.Close()
+		body, readErr := ioutil.ReadAll(res.Body)
+		if readErr != nil {
+			log.ERROR.Fatalf("Error reading from snake metadata URL %v: %v", snakeURL, readErr)
+		}
+
+		pingResponse := client.SnakeMetadataResponse{}
+		jsonErr := json.Unmarshal(body, &pingResponse)
+		if jsonErr != nil {
+			log.ERROR.Fatalf("Failed to parse response from %v: %v", snakeURL, jsonErr)
+		}
+
+		snakeState.Head = pingResponse.Head
+		snakeState.Tail = pingResponse.Tail
+		snakeState.Color = pingResponse.Color
+		snakeState.Author = pingResponse.Author
+		snakeState.Version = pingResponse.Version
+
 		if snakeErr != nil {
 			snakeState.Error = snakeErr
 		}
@@ -572,7 +566,7 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 
 func (gameState *GameState) printMap(boardState *rules.BoardState) {
 	var o bytes.Buffer
-	o.WriteString(fmt.Sprintf("Ruleset: %s, Seed: %d, Turn: %v\n", gameState.GameType, gameState.Seed, boardState.Turn))
+	o.WriteString(fmt.Sprintf("Turn: %d\n", boardState.Turn))
 	board := make([][]string, boardState.Width)
 	for i := range board {
 		board[i] = make([]string, boardState.Height)
@@ -611,21 +605,28 @@ func (gameState *GameState) printMap(boardState *rules.BoardState) {
 		o.WriteString(fmt.Sprintf("Food ⚕: %v\n", boardState.Food))
 	}
 	for _, s := range boardState.Snakes {
-		red, green, blue := parseSnakeColor(gameState.snakeStates[s.ID].Color)
+		state := gameState.snakeStates[s.ID]
+
+		red, green, blue := parseSnakeColor(state.Color)
 		for _, b := range s.Body {
 			if b.X >= 0 && b.X < boardState.Width && b.Y >= 0 && b.Y < boardState.Height {
 				if gameState.UseColor {
 					board[b.X][b.Y] = fmt.Sprintf(TERM_FG_RGB+"■", red, green, blue)
 				} else {
-					board[b.X][b.Y] = string(gameState.snakeStates[s.ID].Character)
+					board[b.X][b.Y] = string(state.Character)
 				}
 			}
 		}
 		if gameState.UseColor {
-			o.WriteString(fmt.Sprintf("%v "+TERM_FG_RGB+TERM_BG_WHITE+"■■■"+TERM_RESET+": %v\n", gameState.snakeStates[s.ID].Name, red, green, blue, s))
+			o.WriteString(fmt.Sprintf("%v "+TERM_FG_RGB+TERM_BG_WHITE+"■■■"+TERM_RESET+": ", state.Name, red, green, blue))
 		} else {
-			o.WriteString(fmt.Sprintf("%v %c: %v\n", gameState.snakeStates[s.ID].Name, gameState.snakeStates[s.ID].Character, s))
+			o.WriteString(fmt.Sprintf("%v %c: ", state.Name, state.Character))
 		}
+		o.WriteString(fmt.Sprintf("Health: %d", s.Health))
+		if s.EliminatedCause != rules.NotEliminated {
+			o.WriteString(fmt.Sprintf(", Eliminated: %v, Turn: %d", s.EliminatedCause, s.EliminatedOnTurn))
+		}
+		o.WriteString("\n")
 	}
 	for y := boardState.Height - 1; y >= 0; y-- {
 		if gameState.UseColor {
@@ -639,7 +640,7 @@ func (gameState *GameState) printMap(boardState *rules.BoardState) {
 		}
 		o.WriteString("\n")
 	}
-	log.Print(o.String())
+	fmt.Println(o.String())
 }
 
 func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.GameEvent {
@@ -698,7 +699,7 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 func serialiseSnakeRequest(snakeRequest client.SnakeRequest) []byte {
 	requestJSON, err := json.Marshal(snakeRequest)
 	if err != nil {
-		log.Fatalf("Error marshalling JSON from State: %v", err)
+		log.ERROR.Fatalf("Error marshalling JSON from State: %v", err)
 	}
 	return requestJSON
 }

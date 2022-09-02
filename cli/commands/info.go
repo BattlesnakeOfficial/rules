@@ -2,10 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/spf13/cobra"
+	log "github.com/spf13/jwalterweatherman"
 
 	"github.com/BattlesnakeOfficial/rules/maps"
-	"github.com/spf13/cobra"
 )
 
 type mapInfo struct {
@@ -35,7 +36,7 @@ func NewMapInfoCommand() *cobra.Command {
 			if len(args) < 1 {
 				err := cmd.Help()
 				if err != nil {
-					log.Fatal(err)
+					log.ERROR.Fatal(err)
 				}
 				return
 			}
@@ -59,7 +60,7 @@ func NewMapInfoCommand() *cobra.Command {
 func (m *mapInfo) display(id string) {
 	gameMap, err := maps.GetMap(id)
 	if err != nil {
-		log.Fatalf("Failed to load game map %#v: %v", id, err)
+		log.ERROR.Fatalf("Failed to load game map %v: %v", id, err)
 	}
 	meta := gameMap.Meta()
 	fmt.Println("Name:", meta.Name)

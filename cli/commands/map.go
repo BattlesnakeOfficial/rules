@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
+	log "github.com/spf13/jwalterweatherman"
 )
 
 func NewMapCommand() *cobra.Command {
@@ -15,7 +14,7 @@ func NewMapCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := cmd.Help()
 			if err != nil {
-				log.Fatal(err)
+				log.ERROR.Fatal(err)
 			}
 		},
 	}
