@@ -508,8 +508,8 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		if i < numNames {
 			snakeName = gameState.Names[i]
 		} else {
-			log.DEBUG.Printf("Name for URL %v is missing: a default name will be applied", gameState.URLs[i])
-			snakeName = id
+			log.DEBUG.Printf("Name for URL %v is missing: a name will be generated automatically", gameState.URLs[i])
+			snakeName = GenerateSnakeName()
 		}
 
 		if i < numURLs {
