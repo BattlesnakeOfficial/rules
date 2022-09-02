@@ -208,6 +208,8 @@ func (gameState *GameState) Run() {
 
 	if gameState.ViewMap {
 		gameState.printMap(boardState)
+	} else {
+		gameState.printState(boardState)
 	}
 
 	var endTime time.Time
@@ -237,16 +239,7 @@ func (gameState *GameState) Run() {
 		if gameState.ViewMap {
 			gameState.printMap(boardState)
 		} else {
-			var aliveSnakeNames []string
-			for _, snake := range boardState.Snakes {
-				if snake.EliminatedCause == rules.NotEliminated {
-					aliveSnakeNames = append(aliveSnakeNames, gameState.snakeStates[snake.ID].Name)
-				}
-			}
-			log.INFO.Printf(
-				"Turn: %d, Snakes Alive: [%v], Food: %d, Hazards: %d",
-				boardState.Turn, strings.Join(aliveSnakeNames, ", "), len(boardState.Food), len(boardState.Hazards),
-			)
+			gameState.printState(boardState)
 		}
 
 		if gameState.TurnDelay > 0 {
@@ -562,6 +555,19 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		log.INFO.Printf("Snake ID: %v URL: %v, Name: \"%v\"", snakeState.ID, snakeURL, snakeState.Name)
 	}
 	return snakes
+}
+
+func (gameState *GameState) printState(boardState *rules.BoardState) {
+	var aliveSnakeNames []string
+	for _, snake := range boardState.Snakes {
+		if snake.EliminatedCause == rules.NotEliminated {
+			aliveSnakeNames = append(aliveSnakeNames, gameState.snakeStates[snake.ID].Name)
+		}
+	}
+	log.INFO.Printf(
+		"Turn: %d, Snakes Alive: [%v], Food: %d, Hazards: %d",
+		boardState.Turn, strings.Join(aliveSnakeNames, ", "), len(boardState.Food), len(boardState.Hazards),
+	)
 }
 
 func (gameState *GameState) printMap(boardState *rules.BoardState) {
