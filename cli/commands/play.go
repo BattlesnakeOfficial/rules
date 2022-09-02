@@ -497,9 +497,6 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 	} else {
 		numSnakes = numURLs
 	}
-	if numNames != numURLs {
-		log.DEBUG.Println("Number of Names and URLs do not match: defaults will be applied to missing values")
-	}
 	for i := int(0); i < numSnakes; i++ {
 		var snakeName string
 		var snakeURL string
@@ -561,6 +558,8 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		}
 
 		snakes[snakeState.ID] = snakeState
+
+		log.INFO.Printf("Snake ID: %v URL: %v, Name: \"%v\"", snakeState.ID, snakeURL, snakeState.Name)
 	}
 	return snakes
 }
