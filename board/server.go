@@ -3,12 +3,12 @@ package board
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
+	log "github.com/spf13/jwalterweatherman"
 )
 
 // A minimal server capable of handling the requests from a single browser client running the board viewer.
@@ -51,7 +51,7 @@ func (server *BoardServer) handleGame(w http.ResponseWriter, r *http.Request) {
 		Game Game
 	}{server.game})
 	if err != nil {
-		log.Printf("Unable to serialize game: %v", err)
+		log.ERROR.Printf("Unable to serialize game: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -61,37 +61,37 @@ func (server *BoardServer) handleGame(w http.ResponseWriter, r *http.Request) {
 func (server *BoardServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("Unable to upgrade connection: %v", err)
+		log.ERROR.Printf("Unable to upgrade connection: %v", err)
 		return
 	}
 
 	defer func() {
 		err = ws.Close()
 		if err != nil {
-			log.Printf("Unable to close websocket stream")
+			log.ERROR.Printf("Unable to close websocket stream")
 		}
 	}()
 
 	for event := range server.events {
 		jsonStr, err := json.Marshal(event)
 		if err != nil {
-			log.Printf("Unable to serialize event for websocket: %v", err)
+			log.ERROR.Printf("Unable to serialize event for websocket: %v", err)
 		}
 
 		err = ws.WriteMessage(websocket.TextMessage, jsonStr)
 		if err != nil {
-			log.Printf("Unable to write to websocket: %v", err)
+			log.ERROR.Printf("Unable to write to websocket: %v", err)
 			break
 		}
 	}
 
-	log.Printf("Finished writing all game events, signalling game server to stop")
+	log.DEBUG.Printf("Finished writing all game events, signalling game server to stop")
 	close(server.done)
 
-	log.Printf("Sending websocket close message")
+	log.DEBUG.Printf("Sending websocket close message")
 	err = ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	if err != nil {
-		log.Printf("Problem closing websocket: %v", err)
+		log.ERROR.Printf("Problem closing websocket: %v", err)
 	}
 }
 
@@ -103,7 +103,7 @@ func (server *BoardServer) Listen() (string, error) {
 	go func() {
 		err = server.httpServer.Serve(listener)
 		if err != http.ErrServerClosed {
-			log.Printf("Error in board HTTP server: %v", err)
+			log.ERROR.Printf("Error in board HTTP server: %v", err)
 		}
 	}()
 
@@ -115,13 +115,13 @@ func (server *BoardServer) Listen() (string, error) {
 func (server *BoardServer) Shutdown() {
 	close(server.events)
 
-	log.Printf("Waiting for websocket clients to finish")
+	log.DEBUG.Printf("Waiting for websocket clients to finish")
 	<-server.done
-	log.Printf("Server is done, exiting")
+	log.DEBUG.Printf("Server is done, exiting")
 
 	err := server.httpServer.Shutdown(context.Background())
 	if err != nil {
-		log.Printf("Error shutting down HTTP server: %v", err)
+		log.ERROR.Printf("Error shutting down HTTP server: %v", err)
 	}
 }
 

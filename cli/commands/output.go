@@ -3,8 +3,9 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
+
+	log "github.com/spf13/jwalterweatherman"
 
 	"github.com/BattlesnakeOfficial/rules/client"
 )
@@ -30,7 +31,7 @@ func (ge *GameExporter) FlushToFile(filepath string, format string) error {
 	if format == "JSONL" {
 		formattedOutput, formattingErr = ge.ConvertToJSON()
 	} else {
-		log.Fatalf("Invalid output format passed: %s", format)
+		log.ERROR.Fatalf("Invalid output format passed: %s", format)
 	}
 
 	if formattingErr != nil {
@@ -50,7 +51,7 @@ func (ge *GameExporter) FlushToFile(filepath string, format string) error {
 		}
 	}
 
-	log.Printf("Written %d lines of output to file: %s\n", len(formattedOutput), filepath)
+	log.DEBUG.Printf("Written %d lines of output to file: %s\n", len(formattedOutput), filepath)
 
 	return nil
 }

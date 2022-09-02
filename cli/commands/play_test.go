@@ -25,7 +25,6 @@ func buildDefaultGameState() *GameState {
 		Seed:                1,
 		TurnDelay:           0,
 		TurnDuration:        0,
-		DebugRequests:       false,
 		Output:              "",
 		FoodSpawnChance:     15,
 		MinimumFood:         1,
