@@ -75,7 +75,7 @@ func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 	rand := settings.GetRand(lastBoardState.Turn)
 
 	// Respect FoodSpawnChance setting
-	if rand.Intn(100) > settings.FoodSpawnChance {
+	if settings.FoodSpawnChance == 0 || rand.Intn(100) > settings.FoodSpawnChance {
 		return nil
 	}
 
