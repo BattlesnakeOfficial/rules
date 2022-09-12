@@ -7,6 +7,95 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestMetadataValidate(t *testing.T) {
+	for label, test := range map[string]struct {
+		metadata   Metadata
+		boardState *rules.BoardState
+		expected   error
+	}{
+		"unlimited": {
+			Metadata{
+				BoardSizes: AnySize(),
+			},
+			rules.NewBoardState(99, 99),
+			nil,
+		},
+		"in sizes": {
+			Metadata{
+				BoardSizes: OddSizes(7, 25),
+			},
+			rules.NewBoardState(7, 7),
+			nil,
+		},
+		"too small": {
+			Metadata{
+				BoardSizes: OddSizes(7, 25),
+			},
+			rules.NewBoardState(6, 6),
+			rules.RulesetError("This map can only be played on these board sizes: 7x7, 9x9, 11x11, 13x13, 15x15, 17x17, 19x19, 21x21, 23x23, 25x25"),
+		},
+		"too large": {
+			Metadata{
+				BoardSizes: OddSizes(7, 25),
+			},
+			rules.NewBoardState(26, 26),
+			rules.RulesetError("This map can only be played on these board sizes: 7x7, 9x9, 11x11, 13x13, 15x15, 17x17, 19x19, 21x21, 23x23, 25x25"),
+		},
+		"valid players": {
+			Metadata{
+				BoardSizes: AnySize(),
+				MinPlayers: 4,
+				MaxPlayers: 4,
+			},
+			&rules.BoardState{
+				Snakes: []rules.Snake{
+					{ID: "1"},
+					{ID: "2"},
+					{ID: "3"},
+					{ID: "4"},
+				},
+			},
+			nil,
+		},
+		"too few players": {
+			Metadata{
+				BoardSizes: AnySize(),
+				MinPlayers: 3,
+				MaxPlayers: 4,
+			},
+			&rules.BoardState{
+				Snakes: []rules.Snake{
+					{ID: "1"},
+					{ID: "2"},
+				},
+			},
+			rules.RulesetError("This map can only be played with 3-4 players"),
+		},
+		"too many players": {
+			Metadata{
+				BoardSizes: AnySize(),
+				MinPlayers: 3,
+				MaxPlayers: 4,
+			},
+			&rules.BoardState{
+				Snakes: []rules.Snake{
+					{ID: "1"},
+					{ID: "2"},
+					{ID: "3"},
+					{ID: "4"},
+					{ID: "5"},
+				},
+			},
+			rules.RulesetError("This map can only be played with 3-4 players"),
+		},
+	} {
+		t.Run(label, func(t *testing.T) {
+			actual := test.metadata.Validate(test.boardState)
+			require.Equal(t, test.expected, actual)
+		})
+	}
+}
+
 func TestMapSizes(t *testing.T) {
 	s := FixedSizes(Dimensions{11, 12})
 	require.Equal(t, s[0].Width, uint(11))

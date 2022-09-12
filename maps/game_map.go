@@ -1,6 +1,9 @@
 package maps
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/BattlesnakeOfficial/rules"
 )
 
@@ -23,6 +26,47 @@ type GameMap interface {
 
 	// Called every turn to optionally update the board.
 	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+}
+
+type Metadata struct {
+	Name        string
+	Author      string
+	Description string
+	// Version is the current version of the game map.
+	// Each time a map is changed, the version number should be incremented by 1.
+	Version uint
+	// MinPlayers is the minimum number of players that the map supports.
+	MinPlayers uint
+	// MaxPlayers is the maximum number of players that the map supports.
+	MaxPlayers uint
+	// BoardSizes is a list of supported board sizes. Board sizes can fall into one of 3 categories:
+	//   1. one fixed size (i.e. [11x11])
+	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
+	//   3. "unlimited" sizes (the board is not fixed and can scale to any reasonable size)
+	BoardSizes sizes
+	// Tags is a list of strings use to categorize the map.
+	Tags []string
+}
+
+func (meta Metadata) Validate(boardState *rules.BoardState) error {
+	if !meta.BoardSizes.IsAllowable(boardState.Width, boardState.Height) {
+		var sizesStrings []string
+		for _, size := range meta.BoardSizes {
+			sizesStrings = append(sizesStrings, fmt.Sprintf("%dx%d", size.Width, size.Height))
+		}
+
+		return rules.RulesetError("This map can only be played on these board sizes: " + strings.Join(sizesStrings, ", "))
+	}
+
+	if meta.MinPlayers != 0 && len(boardState.Snakes) < int(meta.MinPlayers) {
+		return rules.RulesetError(fmt.Sprintf("This map can only be played with %d-%d players", meta.MinPlayers, meta.MaxPlayers))
+	}
+
+	if meta.MaxPlayers != 0 && len(boardState.Snakes) > int(meta.MaxPlayers) {
+		return rules.RulesetError(fmt.Sprintf("This map can only be played with %d-%d players", meta.MinPlayers, meta.MaxPlayers))
+	}
+
+	return nil
 }
 
 // Dimensions describes the size of a Battlesnake board.
@@ -85,26 +129,6 @@ func FixedSizes(a Dimensions, b ...Dimensions) sizes {
 	s = append(s, a)
 	s = append(s, b...)
 	return s
-}
-
-type Metadata struct {
-	Name        string
-	Author      string
-	Description string
-	// Version is the current version of the game map.
-	// Each time a map is changed, the version number should be incremented by 1.
-	Version uint
-	// MinPlayers is the minimum number of players that the map supports.
-	MinPlayers uint
-	// MaxPlayers is the maximum number of players that the map supports.
-	MaxPlayers uint
-	// BoardSizes is a list of supported board sizes. Board sizes can fall into one of 3 categories:
-	//   1. one fixed size (i.e. [11x11])
-	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
-	//   3. "unlimited" sizes (the board is not fixed and can scale to any reasonable size)
-	BoardSizes sizes
-	// Tags is a list of strings use to categorize the map.
-	Tags []string
 }
 
 // Editor is used by GameMap implementations to modify the board state.
