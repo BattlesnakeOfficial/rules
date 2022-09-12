@@ -25,7 +25,6 @@ func TestRegisteredMaps(t *testing.T) {
 			require.Equalf(t, mapName, gameMap.ID(), "%#v game map doesn't return its own ID", mapName)
 			meta := gameMap.Meta()
 			require.True(t, meta.Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", meta.Version))
-			require.NotZero(t, meta.MinPlayers, "registered maps must have minimum players declared")
 			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
 			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
 			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
