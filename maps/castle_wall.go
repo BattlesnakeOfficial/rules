@@ -10,7 +10,7 @@ func init() {
 	globalRegistry.RegisterMap("hz_castle_wall_xl", CastleWallExtraLargeHazardsMap{})
 }
 
-func setupCastleWallBoard(maxPlayers uint, startingPositions []rules.Point, hazards []rules.Point, initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func setupCastleWallBoard(maxPlayers int, startingPositions []rules.Point, hazards []rules.Point, initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(initialBoardState.Turn)
 
 	if len(initialBoardState.Snakes) > int(maxPlayers) {

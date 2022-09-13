@@ -25,7 +25,6 @@ func TestRegisteredMaps(t *testing.T) {
 			require.Equalf(t, mapName, gameMap.ID(), "%#v game map doesn't return its own ID", mapName)
 			meta := gameMap.Meta()
 			require.True(t, meta.Version > 0, fmt.Sprintf("registered maps must have a valid version (>= 1) - '%d' is invalid", meta.Version))
-			require.NotZero(t, meta.MinPlayers, "registered maps must have minimum players declared")
 			require.NotZero(t, meta.MaxPlayers, "registered maps must have maximum players declared")
 			require.LessOrEqual(t, meta.MaxPlayers, meta.MaxPlayers, "max players should always be >= min players")
 			require.NotEmpty(t, meta.BoardSizes, "registered maps must have at least one supported size declared")
@@ -37,7 +36,7 @@ func TestRegisteredMaps(t *testing.T) {
 			for i := meta.MinPlayers; i < meta.MaxPlayers; i++ {
 				t.Run(fmt.Sprintf("%d players", i), func(t *testing.T) {
 					initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
-					for j := uint(0); j < i; j++ {
+					for j := 0; j < i; j++ {
 						initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: fmt.Sprint(j), Body: []rules.Point{}})
 					}
 					err := gameMap.SetupBoard(initialBoardState, testSettings, NewBoardStateEditor(initialBoardState))
@@ -50,7 +49,7 @@ func TestRegisteredMaps(t *testing.T) {
 				for _, mapSize := range meta.BoardSizes {
 					t.Run(fmt.Sprintf("%dx%d map size", mapSize.Width, mapSize.Height), func(t *testing.T) {
 						initialBoardState := rules.NewBoardState(int(mapSize.Width), int(mapSize.Height))
-						for i := uint(0); i < meta.MaxPlayers; i++ {
+						for i := 0; i < meta.MaxPlayers; i++ {
 							initialBoardState.Snakes = append(initialBoardState.Snakes, rules.Snake{ID: fmt.Sprint(i), Body: []rules.Point{}})
 						}
 						err := gameMap.SetupBoard(initialBoardState, testSettings, NewBoardStateEditor(initialBoardState))

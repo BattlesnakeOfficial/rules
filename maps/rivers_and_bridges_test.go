@@ -21,8 +21,8 @@ func TestRiversAndBridgetsHazardsMap(t *testing.T) {
 
 	tests := []struct {
 		Map    maps.GameMap
-		Width  uint
-		Height uint
+		Width  int
+		Height int
 	}{
 		{maps.RiverAndBridgesMediumHazardsMap{}, 11, 11},
 		{maps.RiverAndBridgesLargeHazardsMap{}, 19, 19},
@@ -33,7 +33,7 @@ func TestRiversAndBridgetsHazardsMap(t *testing.T) {
 
 	// check all the supported sizes
 	for _, test := range tests {
-		state = rules.NewBoardState(int(test.Width), int(test.Height))
+		state = rules.NewBoardState(test.Width, test.Height)
 		state.Snakes = append(state.Snakes, rules.Snake{ID: "1", Body: []rules.Point{}})
 		editor = maps.NewBoardStateEditor(state)
 		require.Empty(t, state.Hazards)

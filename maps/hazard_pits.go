@@ -20,8 +20,8 @@ func (m HazardPitsMap) Meta() Metadata {
 		Description: "A map that that fills in grid-like pattern of squares with pits filled with hazard sauce. Every N turns the pits will fill with another layer of sauce up to a maximum of 4 layers which last a few cycles, then the pits drain and the pattern repeats",
 		Author:      "Battlesnake",
 		Version:     1,
-		MinPlayers:  1,
-		MaxPlayers:  4,
+		MinPlayers:  0,
+		MaxPlayers:  len(hazardPitStartPositions),
 		BoardSizes:  FixedSizes(Dimensions{11, 11}),
 		Tags:        []string{TAG_FOOD_PLACEMENT, TAG_HAZARD_PLACEMENT, TAG_SNAKE_PLACEMENT},
 	}
@@ -47,12 +47,8 @@ func (m HazardPitsMap) AddHazardPits(board *rules.BoardState, settings rules.Set
 }
 
 func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(initialBoardState.Width, initialBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 11x11 board")
-	}
-
-	if len(initialBoardState.Snakes) > len(hazardPitStartPositions) {
-		return rules.ErrorTooManySnakes
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
 
 	rand := settings.GetRand(0)
