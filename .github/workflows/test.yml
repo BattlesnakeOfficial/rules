@@ -42,14 +42,7 @@ jobs:
       with:
         go-version: '${{ env.GO_VERSION }}'
     - name: Run go test
-      run: go test -race -coverprofile=coverage.txt ./...
-    - name: Upload coverage to codecov.io
-      if: github.event_name == 'push'
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.txt
-        fail_ci_if_error: true
+      run: go test -race ./...
 
   build-cli:
     name: Build CLI (go build)
