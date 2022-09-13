@@ -34,11 +34,11 @@ type Metadata struct {
 	Description string
 	// Version is the current version of the game map.
 	// Each time a map is changed, the version number should be incremented by 1.
-	Version uint
+	Version int
 	// MinPlayers is the minimum number of players that the map supports.
-	MinPlayers uint
+	MinPlayers int
 	// MaxPlayers is the maximum number of players that the map supports.
-	MaxPlayers uint
+	MaxPlayers int
 	// BoardSizes is a list of supported board sizes. Board sizes can fall into one of 3 categories:
 	//   1. one fixed size (i.e. [11x11])
 	//   2. multiple, fixed sizes (i.e. [11x11, 19x19, 25x25])
@@ -73,10 +73,10 @@ func (meta Metadata) Validate(boardState *rules.BoardState) error {
 type Dimensions struct {
 	// Width is the width, in number of board squares, of the board.
 	// The value 0 has a special meaning to mean unlimited.
-	Width uint
+	Width int
 	// Height is the height, in number of board squares, of the board.
 	// The value 0 has a special meaning to mean unlimited.
-	Height uint
+	Height int
 }
 
 // sizes is a list of board sizes that a map supports.
@@ -94,7 +94,7 @@ func (d sizes) IsAllowable(Width int, Height int) bool {
 	}
 
 	for _, size := range d {
-		if size.Width == uint(Width) && size.Height == uint(Height) {
+		if size.Width == Width && size.Height == Height {
 			return true
 		}
 	}
@@ -111,7 +111,7 @@ func AnySize() sizes {
 // in the vertical and horizontal directions.
 // Examples:
 //  - OddSizes(11,21) produces [(11,11), (13,13), (15,15), (17,17), (19,19), (21,21)]
-func OddSizes(min, max uint) sizes {
+func OddSizes(min, max int) sizes {
 	var s sizes
 	for i := min; i <= max; i += 2 {
 		s = append(s, Dimensions{Width: i, Height: i})
