@@ -12,57 +12,21 @@ func init() {
 	globalRegistry.RegisterMap("hz_islands_bridges_lg", IslandsAndBridgesLargeHazardsMap{})
 }
 
-func setupRiverAndBridgesBoard(startingPositions [][]rules.Point, hazards []rules.Point, lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	width := lastBoardState.Width
-	height := lastBoardState.Height
-
-	numSnakes := len(lastBoardState.Snakes)
-	if numSnakes == 0 {
-		return rules.RulesetError("too few snakes - at least one snake must be present")
-	}
-
+func setupRiverAndBridgesBoard(startingPositions [][]rules.Point, hazards []rules.Point, initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
 
-	snakeIDs := make([]string, 0, len(lastBoardState.Snakes))
-	for _, snake := range lastBoardState.Snakes {
-		snakeIDs = append(snakeIDs, snake.ID)
-	}
-
-	tempBoardState := rules.NewBoardState(width, height)
-	tempBoardState.Snakes = make([]rules.Snake, len(snakeIDs))
-
-	for i := 0; i < len(snakeIDs); i++ {
-		tempBoardState.Snakes[i] = rules.Snake{
-			ID:     snakeIDs[i],
-			Health: rules.SnakeMaxHealth,
-		}
-	}
-	err := rules.PlaceSnakesInQuadrants(rand, tempBoardState, startingPositions)
+	err := PlaceSnakesInQuadrants(rand, editor, initialBoardState.Snakes, startingPositions)
 	if err != nil {
 		return err
-	}
-
-	err = rules.PlaceFoodFixed(rand, tempBoardState)
-	if err != nil {
-		return err
-	}
-
-	// Copy food from temp board state
-	for _, f := range tempBoardState.Food {
-		// skip the center food
-		if f.X == lastBoardState.Width/2 && f.Y == lastBoardState.Height/2 {
-			continue
-		}
-		editor.AddFood(f)
-	}
-
-	// Copy snakes from temp board state
-	for _, snake := range tempBoardState.Snakes {
-		editor.PlaceSnake(snake.ID, snake.Body, snake.Health)
 	}
 
 	for _, p := range hazards {
 		editor.AddHazard(p)
+	}
+
+	err = PlaceFoodFixed(rand, initialBoardState, editor)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -100,12 +64,11 @@ Each river has one or two 1-square "bridges" over them`,
 	}
 }
 
-func (m RiverAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 11x11 board")
+func (m RiverAndBridgesMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
-
-	return setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, lastBoardState, settings, editor)
+	return setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, initialBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -171,12 +134,12 @@ Each river has one or two 1-square "bridges" over them`,
 	}
 }
 
-func (m RiverAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 19x19 board")
+func (m RiverAndBridgesLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
 
-	return setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, lastBoardState, settings, editor)
+	return setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, initialBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -270,12 +233,12 @@ Each river has one or two 1-square "bridges" over them`,
 	}
 }
 
-func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 25x25 board")
+func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
 
-	return setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, lastBoardState, settings, editor)
+	return setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, initialBoardState, settings, editor)
 }
 
 func (m RiverAndBridgesExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -384,12 +347,12 @@ func (m IslandsAndBridgesMediumHazardsMap) Meta() Metadata {
 	}
 }
 
-func (m IslandsAndBridgesMediumHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 11x11 board")
+func (m IslandsAndBridgesMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
 
-	return setupRiverAndBridgesBoard(islandsAndBridgesMediumStartPositions, islandsAndBridgesMediumHazards, lastBoardState, settings, editor)
+	return setupRiverAndBridgesBoard(islandsAndBridgesMediumStartPositions, islandsAndBridgesMediumHazards, initialBoardState, settings, editor)
 }
 
 func (m IslandsAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
@@ -470,12 +433,12 @@ func (m IslandsAndBridgesLargeHazardsMap) Meta() Metadata {
 	}
 }
 
-func (m IslandsAndBridgesLargeHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if !m.Meta().BoardSizes.IsAllowable(lastBoardState.Width, lastBoardState.Height) {
-		return rules.RulesetError("This map can only be played on a 19x19 board")
+func (m IslandsAndBridgesLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := m.Meta().Validate(initialBoardState); err != nil {
+		return err
 	}
 
-	return setupRiverAndBridgesBoard(islandsAndBridgesLargeStartPositions, islandsAndBridgesLargeHazards, lastBoardState, settings, editor)
+	return setupRiverAndBridgesBoard(islandsAndBridgesLargeStartPositions, islandsAndBridgesLargeHazards, initialBoardState, settings, editor)
 }
 
 func (m IslandsAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {

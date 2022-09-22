@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRiversAndBridgetsHazardsMap(t *testing.T) {
+func TestRiversAndBridgesHazardsMap(t *testing.T) {
 	// check error handling
 	m := maps.RiverAndBridgesMediumHazardsMap{}
 	settings := rules.Settings{}
@@ -40,5 +40,8 @@ func TestRiversAndBridgetsHazardsMap(t *testing.T) {
 		err = test.Map.SetupBoard(state, settings, editor)
 		require.NoError(t, err)
 		require.NotEmpty(t, state.Hazards)
+		require.Len(t, state.Food, 1)
+		food := state.Food[0]
+		require.NotContains(t, state.Hazards, food)
 	}
 }
