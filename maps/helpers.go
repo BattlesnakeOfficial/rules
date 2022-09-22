@@ -177,3 +177,112 @@ func isOnBoard(w, h, x, y int) bool {
 
 	return true
 }
+
+func PlaceSnakesInQuadrants(rand rules.Rand, editor Editor, snakes []rules.Snake, quadrants [][]rules.Point) error {
+	if len(quadrants) != 4 {
+		return rules.RulesetError("invalid start point configuration - not divided into quadrants")
+	}
+
+	// make sure all quadrants have the same number of positions
+	for i := 1; i < 4; i++ {
+		if len(quadrants[i]) != len(quadrants[0]) {
+			return rules.RulesetError("invalid start point configuration - quadrants aren't even")
+		}
+	}
+
+	quads := make([]rules.RandomPositionBucket, 4)
+	for i := 0; i < 4; i++ {
+		quads[i].Fill(quadrants[i]...)
+	}
+
+	currentQuad := rand.Intn(4) // randomly pick a quadrant to start from
+
+	// evenly distribute snakes across quadrants, randomly, by rotating through the quadrants
+	for _, snake := range snakes {
+		p, err := quads[currentQuad].Take(rand)
+		if err != nil {
+			return err
+		}
+
+		editor.PlaceSnake(snake.ID, []rules.Point{p, p, p}, rules.SnakeMaxHealth)
+
+		currentQuad = (currentQuad + 1) % 4
+	}
+
+	return nil
+}
+
+func PlaceFoodFixed(rand rules.Rand, initialBoardState *rules.BoardState, editor Editor) error {
+	width, height := initialBoardState.Width, initialBoardState.Height
+	centerCoord := rules.Point{X: (width - 1) / 2, Y: (height - 1) / 2}
+
+	isSmallBoard := width*height < rules.BoardSizeMedium*rules.BoardSizeMedium
+
+	// Up to 4 snakes can be placed such that food is nearby on small boards.
+	// Otherwise, we skip this and only try to place food in the center.
+	snakeBodies := editor.SnakeBodies()
+	if len(snakeBodies) <= 4 || !isSmallBoard {
+		// Place 1 food within exactly 2 moves of each snake, but never towards the center or in a corner
+		for _, snakeBody := range snakeBodies {
+			snakeHead := snakeBody[0]
+			possibleFoodLocations := []rules.Point{
+				{X: snakeHead.X - 1, Y: snakeHead.Y - 1},
+				{X: snakeHead.X - 1, Y: snakeHead.Y + 1},
+				{X: snakeHead.X + 1, Y: snakeHead.Y - 1},
+				{X: snakeHead.X + 1, Y: snakeHead.Y + 1},
+			}
+
+			// Remove any invalid/unwanted positions
+			availableFoodLocations := []rules.Point{}
+			for _, p := range possibleFoodLocations {
+
+				// Don't place in the center
+				if centerCoord == p {
+					continue
+				}
+
+				// Ignore points already occupied by food or hazards
+				if editor.IsOccupied(p, true, true, true) {
+					continue
+				}
+
+				// Food must be further than snake from center on at least one axis
+				isAwayFromCenter := false
+				if p.X < snakeHead.X && snakeHead.X < centerCoord.X {
+					isAwayFromCenter = true
+				} else if centerCoord.X < snakeHead.X && snakeHead.X < p.X {
+					isAwayFromCenter = true
+				} else if p.Y < snakeHead.Y && snakeHead.Y < centerCoord.Y {
+					isAwayFromCenter = true
+				} else if centerCoord.Y < snakeHead.Y && snakeHead.Y < p.Y {
+					isAwayFromCenter = true
+				}
+				if !isAwayFromCenter {
+					continue
+				}
+
+				// Don't spawn food in corners
+				if (p.X == 0 || p.X == (width-1)) && (p.Y == 0 || p.Y == (height-1)) {
+					continue
+				}
+
+				availableFoodLocations = append(availableFoodLocations, p)
+			}
+
+			if len(availableFoodLocations) <= 0 {
+				return rules.ErrorNoRoomForFood
+			}
+
+			// Select randomly from available locations
+			placedFood := availableFoodLocations[rand.Intn(len(availableFoodLocations))]
+			editor.AddFood(placedFood)
+		}
+	}
+
+	// Finally, try to place 1 food in center of board for dramatic purposes
+	if !editor.IsOccupied(centerCoord, true, true, true) {
+		editor.AddFood(centerCoord)
+	}
+
+	return nil
+}

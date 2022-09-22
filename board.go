@@ -189,11 +189,11 @@ func PlaceManySnakesDistributed(rand Rand, b *BoardState, snakeIDs []string) err
 	hOffset := quadHSpace / 3
 	vOffset := quadVSpace / 3
 
-	quads := make([]randomPositionBucket, 4)
+	quads := make([]RandomPositionBucket, 4)
 
 	// quad 1
-	quads[0] = randomPositionBucket{}
-	quads[0].fill(
+	quads[0] = RandomPositionBucket{}
+	quads[0].Fill(
 		Point{X: hOffset, Y: vOffset},
 		Point{X: quadHSpace - hOffset, Y: vOffset},
 		Point{X: hOffset, Y: quadVSpace - vOffset},
@@ -201,27 +201,27 @@ func PlaceManySnakesDistributed(rand Rand, b *BoardState, snakeIDs []string) err
 	)
 
 	// quad 2
-	quads[1] = randomPositionBucket{}
+	quads[1] = RandomPositionBucket{}
 	for _, p := range quads[0].positions {
-		quads[1].fill(Point{X: b.Width - p.X - 1, Y: p.Y})
+		quads[1].Fill(Point{X: b.Width - p.X - 1, Y: p.Y})
 	}
 
 	// quad 3
-	quads[2] = randomPositionBucket{}
+	quads[2] = RandomPositionBucket{}
 	for _, p := range quads[0].positions {
-		quads[2].fill(Point{X: p.X, Y: b.Height - p.Y - 1})
+		quads[2].Fill(Point{X: p.X, Y: b.Height - p.Y - 1})
 	}
 
 	// quad 4
-	quads[3] = randomPositionBucket{}
+	quads[3] = RandomPositionBucket{}
 	for _, p := range quads[0].positions {
-		quads[3].fill(Point{X: b.Width - p.X - 1, Y: b.Height - p.Y - 1})
+		quads[3].Fill(Point{X: b.Width - p.X - 1, Y: b.Height - p.Y - 1})
 	}
 
 	currentQuad := rand.Intn(4) // randomly pick a quadrant to start from
 	// evenly distribute snakes across quadrants, randomly, by rotating through the quadrants
 	for i := 0; i < len(b.Snakes); i++ {
-		p, err := quads[currentQuad].take(rand)
+		p, err := quads[currentQuad].Take(rand)
 		if err != nil {
 			return err
 		}
@@ -235,51 +235,15 @@ func PlaceManySnakesDistributed(rand Rand, b *BoardState, snakeIDs []string) err
 	return nil
 }
 
-func PlaceSnakesInQuadrants(rand Rand, b *BoardState, quadrants [][]Point) error {
-
-	if len(quadrants) != 4 {
-		return RulesetError("invalid start point configuration - not divided into quadrants")
-	}
-
-	// make sure all quadrants have the same number of positions
-	for i := 1; i < 4; i++ {
-		if len(quadrants[i]) != len(quadrants[0]) {
-			return RulesetError("invalid start point configuration - quadrants aren't even")
-		}
-	}
-
-	quads := make([]randomPositionBucket, 4)
-	for i := 0; i < 4; i++ {
-		quads[i].fill(quadrants[i]...)
-	}
-
-	currentQuad := rand.Intn(4) // randomly pick a quadrant to start from
-
-	// evenly distribute snakes across quadrants, randomly, by rotating through the quadrants
-	for i := 0; i < len(b.Snakes); i++ {
-		p, err := quads[currentQuad].take(rand)
-		if err != nil {
-			return err
-		}
-		for j := 0; j < SnakeStartSize; j++ {
-			b.Snakes[i].Body = append(b.Snakes[i].Body, p)
-		}
-
-		currentQuad = (currentQuad + 1) % 4
-	}
-
-	return nil
-}
-
-type randomPositionBucket struct {
+type RandomPositionBucket struct {
 	positions []Point
 }
 
-func (rpb *randomPositionBucket) fill(p ...Point) {
+func (rpb *RandomPositionBucket) Fill(p ...Point) {
 	rpb.positions = append(rpb.positions, p...)
 }
 
-func (rpb *randomPositionBucket) take(rand Rand) (Point, error) {
+func (rpb *RandomPositionBucket) Take(rand Rand) (Point, error) {
 	if len(rpb.positions) == 0 {
 		return Point{}, RulesetError("no more positions available")
 	}
@@ -359,6 +323,7 @@ func PlaceFoodAutomatically(rand Rand, b *BoardState) error {
 	return PlaceFoodRandomly(rand, b, len(b.Snakes))
 }
 
+// Deprecated: will be replaced by maps.PlaceFoodFixed
 func PlaceFoodFixed(rand Rand, b *BoardState) error {
 	centerCoord := Point{(b.Width - 1) / 2, (b.Height - 1) / 2}
 

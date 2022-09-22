@@ -115,3 +115,33 @@ func TestUpdateBoard(t *testing.T) {
 		require.Equal(t, []rules.Point{{X: 3, Y: 4}, {X: 3, Y: 5}, {X: 2, Y: 2}}, boardState.Hazards)
 	})
 }
+
+func TestPlaceFoodFixed(t *testing.T) {
+	initialBoardState := rules.NewBoardState(rules.BoardSizeMedium, rules.BoardSizeMedium)
+	editor := maps.NewBoardStateEditor(initialBoardState.Clone())
+
+	editor.PlaceSnake("1", []rules.Point{{X: 1, Y: 1}}, 100)
+	editor.PlaceSnake("2", []rules.Point{{X: 9, Y: 1}}, 100)
+	editor.PlaceSnake("3", []rules.Point{{X: 4, Y: 9}}, 100)
+	editor.PlaceSnake("4", []rules.Point{{X: 6, Y: 6}}, 100)
+
+	// Hazards everywhere except for the expected food placements
+	for x := 0; x < initialBoardState.Width; x++ {
+		for y := 0; y < initialBoardState.Height; y++ {
+			editor.AddHazard(rules.Point{X: x, Y: y})
+		}
+	}
+	editor.RemoveHazard(rules.Point{X: 0, Y: 2})
+	editor.RemoveHazard(rules.Point{X: 8, Y: 0})
+	editor.RemoveHazard(rules.Point{X: 3, Y: 10})
+	editor.RemoveHazard(rules.Point{X: 7, Y: 7})
+
+	err := maps.PlaceFoodFixed(rules.MaxRand, initialBoardState, editor)
+	require.NoError(t, err)
+
+	food := editor.Food()
+	require.Contains(t, food, rules.Point{X: 0, Y: 2})
+	require.Contains(t, food, rules.Point{X: 8, Y: 0})
+	require.Contains(t, food, rules.Point{X: 3, Y: 10})
+	require.Contains(t, food, rules.Point{X: 7, Y: 7})
+}
