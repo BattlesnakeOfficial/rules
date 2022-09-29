@@ -45,7 +45,6 @@ Flags:
   -r, --seed int                  Random Seed (default 1656460409268690000)
   -d, --delay int                 Turn Delay in Milliseconds
   -D, --duration int              Minimum Turn Duration in Milliseconds
-      --debug-requests            Log body of all requests sent
   -o, --output string             File path to output game state to. Existing files will be overwritten
       --browser                   View the game in the browser using the Battlesnake game board
       --board-url string          Base URL for the game board when using --browser (default "https://board.battlesnake.com")
@@ -57,6 +56,7 @@ Flags:
 
 Global Flags:
       --config string   config file (default is $HOME/.battlesnake.yaml)
+      --verbose         Enable debug logging
 ```
 
 Battlesnake names and URLs will be paired together in sequence, for example:
