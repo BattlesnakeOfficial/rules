@@ -395,8 +395,7 @@ func TestGetMoveForSnake(t *testing.T) {
 		responseBody    string
 		responseLatency time.Duration
 
-		expectedMove  rules.SnakeMove
-		expectedState SnakeState
+		expectedSnakeState SnakeState
 	}{
 		{
 			name:       "invalid URL",
@@ -406,9 +405,11 @@ func TestGetMoveForSnake(t *testing.T) {
 				URL:      "",
 				LastMove: rules.MoveLeft,
 			},
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveLeft,
+			expectedSnakeState: SnakeState{
+				ID:       "one",
+				URL:      "",
+				LastMove: rules.MoveLeft,
+				Error:    errors.New(`parse "": empty url`),
 			},
 		},
 		{
@@ -420,9 +421,11 @@ func TestGetMoveForSnake(t *testing.T) {
 				LastMove: rules.MoveLeft,
 			},
 			responseErr: errors.New("connection error"),
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveLeft,
+			expectedSnakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+				Error:    errors.New("connection error"),
 			},
 		},
 		{
@@ -436,9 +439,13 @@ func TestGetMoveForSnake(t *testing.T) {
 			responseCode:    200,
 			responseBody:    `right`,
 			responseLatency: 54 * time.Millisecond,
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveLeft,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				Error:      errors.New("invalid character 'r' looking for beginning of value"),
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
 			},
 		},
 		{
@@ -452,9 +459,12 @@ func TestGetMoveForSnake(t *testing.T) {
 			responseCode:    200,
 			responseBody:    `{"move": "north"}`,
 			responseLatency: 54 * time.Millisecond,
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveLeft,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
 			},
 		},
 		{
@@ -467,9 +477,12 @@ func TestGetMoveForSnake(t *testing.T) {
 			},
 			responseCode:    500,
 			responseLatency: 54 * time.Millisecond,
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveLeft,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				StatusCode: 500,
+				Latency:    54 * time.Millisecond,
 			},
 		},
 		{
@@ -482,9 +495,12 @@ func TestGetMoveForSnake(t *testing.T) {
 			responseCode:    200,
 			responseBody:    `{"move": "right"}`,
 			responseLatency: 54 * time.Millisecond,
-			expectedMove: rules.SnakeMove{
-				ID:   "one",
-				Move: rules.MoveRight,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveRight,
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
 			},
 		},
 	}
@@ -495,10 +511,14 @@ func TestGetMoveForSnake(t *testing.T) {
 			gameState.snakeStates = map[string]SnakeState{test.snakeState.ID: test.snakeState}
 			gameState.httpClient = stubHTTPClient{test.responseErr, test.responseCode, test.responseBody, test.responseLatency}
 
-			move, statusCode, latency := gameState.getMoveForSnake(test.boardState, test.snakeState)
-			require.Equal(t, test.expectedMove, move)
-			require.Equal(t, test.responseCode, statusCode)
-			require.Equal(t, test.responseLatency, latency)
+			nextSnakeState := gameState.getSnakeUpdate(test.boardState, test.snakeState)
+			if test.expectedSnakeState.Error != nil {
+				require.EqualError(t, nextSnakeState.Error, test.expectedSnakeState.Error.Error())
+			} else {
+				require.NoError(t, nextSnakeState.Error)
+			}
+			nextSnakeState.Error = test.expectedSnakeState.Error
+			require.Equal(t, test.expectedSnakeState, nextSnakeState)
 		})
 	}
 }

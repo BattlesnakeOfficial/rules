@@ -327,28 +327,20 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 }
 
 func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *rules.BoardState {
-	var moves []rules.SnakeMove
+	stateUpdates := make(chan SnakeState, len(gameState.snakeStates))
+
 	if gameState.Sequential {
-		for id, snakeState := range gameState.snakeStates {
+		for _, snakeState := range gameState.snakeStates {
 			for _, snake := range boardState.Snakes {
 				if snakeState.ID == snake.ID && snake.EliminatedCause == rules.NotEliminated {
-					move, statusCode, latency := gameState.getMoveForSnake(boardState, snakeState)
-					moves = append(moves, move)
-
-					snakeState.StatusCode = statusCode
-					snakeState.Latency = latency
-					gameState.snakeStates[id] = snakeState
+					nextSnakeState := gameState.getSnakeUpdate(boardState, snakeState)
+					stateUpdates <- nextSnakeState
 				}
 			}
 		}
+		close(stateUpdates)
 	} else {
 		var wg sync.WaitGroup
-		type moveResponse struct {
-			move       rules.SnakeMove
-			statusCode int
-			latency    time.Duration
-		}
-		c := make(chan moveResponse, len(gameState.snakeStates))
 
 		for _, snakeState := range gameState.snakeStates {
 			for _, snake := range boardState.Snakes {
@@ -356,34 +348,23 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 					wg.Add(1)
 					go func(snakeState SnakeState) {
 						defer wg.Done()
-						move, statusCode, latency := gameState.getMoveForSnake(boardState, snakeState)
-						c <- moveResponse{
-							move:       move,
-							statusCode: statusCode,
-							latency:    latency,
-						}
+						nextSnakeState := gameState.getSnakeUpdate(boardState, snakeState)
+						stateUpdates <- nextSnakeState
 					}(snakeState)
 				}
 			}
 		}
 
 		wg.Wait()
-		close(c)
-
-		for message := range c {
-			moves = append(moves, message.move)
-
-			snakeState := gameState.snakeStates[message.move.ID]
-			snakeState.StatusCode = message.statusCode
-			snakeState.Latency = message.latency
-			gameState.snakeStates[message.move.ID] = snakeState
-		}
+		close(stateUpdates)
 	}
-	for _, move := range moves {
-		snakeState := gameState.snakeStates[move.ID]
-		snakeState.LastMove = move.Move
-		gameState.snakeStates[move.ID] = snakeState
+
+	var moves []rules.SnakeMove
+	for snakeState := range stateUpdates {
+		gameState.snakeStates[snakeState.ID] = snakeState
+		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
+
 	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
 	if err != nil {
 		log.ERROR.Fatalf("Error producing next board state: %v", err)
@@ -399,9 +380,10 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 	return boardState
 }
 
-func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeState SnakeState) (snakeMove rules.SnakeMove, statusCode int, duration time.Duration) {
-	// Use snake's last move as the default in case of an error
-	snakeMove = rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove}
+func (gameState *GameState) getSnakeUpdate(boardState *rules.BoardState, snakeState SnakeState) SnakeState {
+	snakeState.StatusCode = 0
+	snakeState.Error = nil
+	snakeState.Latency = 0
 
 	snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
 	requestBody := serialiseSnakeRequest(snakeRequest)
@@ -409,27 +391,30 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 	u, err := url.ParseRequestURI(snakeState.URL)
 	if err != nil {
 		log.ERROR.Printf("Error parsing snake URL %#v: %v", snakeState.URL, err)
-		return snakeMove, 0, 0
+		snakeState.Error = err
+		return snakeState
 	}
 	u.Path = path.Join(u.Path, "move")
 	log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
 	res, responseTime, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 
+	snakeState.Latency = responseTime
+
 	if err != nil {
 		log.WARN.Printf(
 			"Request to %v failed\n"+
 				"\tError: %s", u.String(), err)
-		return
+		snakeState.Error = err
+		return snakeState
 	}
 
-	statusCode = res.StatusCode
-	duration = responseTime
+	snakeState.StatusCode = res.StatusCode
 
 	if res.Body == nil {
 		log.WARN.Printf(
 			"Failed to parse response from %v\n"+
 				"\tError: body is empty", u.String())
-		return
+		return snakeState
 	}
 	defer res.Body.Close()
 	body, readErr := ioutil.ReadAll(res.Body)
@@ -437,14 +422,15 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 		log.WARN.Printf(
 			"Failed to read response body from %v\n"+
 				"\tError: %v", u.String(), readErr)
-		return
+		snakeState.Error = readErr
+		return snakeState
 	}
 	if res.StatusCode != http.StatusOK {
 		log.WARN.Printf(
 			"Got non-ok status code from %v\n"+
 				"\tStatusCode: %d (expected %d)\n"+
 				"\tBody: %q", u.String(), res.StatusCode, http.StatusOK, body)
-		return
+		return snakeState
 	}
 
 	playerResponse := client.MoveResponse{}
@@ -455,7 +441,8 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 				"\tError: %v\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), jsonErr, body)
-		return
+		snakeState.Error = jsonErr
+		return snakeState
 	}
 	if playerResponse.Move != "up" && playerResponse.Move != "down" && playerResponse.Move != "left" && playerResponse.Move != "right" {
 		log.WARN.Printf(
@@ -463,11 +450,12 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 				"\tError: invalid move %q, valid moves are \"up\", \"down\", \"left\" or \"right\"\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), playerResponse.Move, body)
-		return
+		return snakeState
 	}
 
-	snakeMove.Move = playerResponse.Move
-	return
+	snakeState.LastMove = playerResponse.Move
+
+	return snakeState
 }
 
 func (gameState *GameState) sendEndRequest(boardState *rules.BoardState, snakeState SnakeState) {
