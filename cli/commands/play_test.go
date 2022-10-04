@@ -1,8 +1,14 @@
 package commands
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/BattlesnakeOfficial/rules"
 	"github.com/BattlesnakeOfficial/rules/board"
@@ -279,6 +285,7 @@ func TestBuildFrameEvent(t *testing.T) {
 					Version:    "1.5",
 					Error:      nil,
 					StatusCode: 200,
+					Latency:    54 * time.Millisecond,
 				},
 			},
 			expected: board.GameEvent{
@@ -300,7 +307,7 @@ func TestBuildFrameEvent(t *testing.T) {
 							Color:         "#ff00ff",
 							HeadType:      "silly",
 							TailType:      "default",
-							Latency:       "1",
+							Latency:       "54",
 							Author:        "AUTHOR",
 							StatusCode:    200,
 							Error:         "",
@@ -330,9 +337,11 @@ func TestBuildFrameEvent(t *testing.T) {
 			snakeStates: map[string]SnakeState{
 				"bad_status": {
 					StatusCode: 504,
+					Latency:    54 * time.Millisecond,
 				},
 				"connection_error": {
-					Error: fmt.Errorf("error connecting to host"),
+					Error:   fmt.Errorf("error connecting to host"),
+					Latency: 0,
 				},
 			},
 			expected: board.GameEvent{
@@ -342,7 +351,7 @@ func TestBuildFrameEvent(t *testing.T) {
 					Snakes: []board.Snake{
 						{
 							ID:         "bad_status",
-							Latency:    "1",
+							Latency:    "54",
 							StatusCode: 504,
 							Error:      "7:Bad HTTP status code 504",
 						},
@@ -366,4 +375,213 @@ func TestBuildFrameEvent(t *testing.T) {
 			require.Equalf(t, test.expected, actual, "%#v", actual)
 		})
 	}
+}
+
+func TestGetMoveForSnake(t *testing.T) {
+	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
+	s2 := rules.Snake{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}}
+	boardState := &rules.BoardState{
+		Height: 11,
+		Width:  11,
+		Snakes: []rules.Snake{s1, s2},
+	}
+
+	tests := []struct {
+		name            string
+		boardState      *rules.BoardState
+		snakeState      SnakeState
+		responseErr     error
+		responseCode    int
+		responseBody    string
+		responseLatency time.Duration
+
+		expectedSnakeState SnakeState
+	}{
+		{
+			name:       "invalid URL",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:       "one",
+				URL:      "",
+				LastMove: rules.MoveLeft,
+			},
+			expectedSnakeState: SnakeState{
+				ID:       "one",
+				URL:      "",
+				LastMove: rules.MoveLeft,
+				Error:    errors.New(`parse "": empty url`),
+			},
+		},
+		{
+			name:       "error response",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+			},
+			responseErr: errors.New("connection error"),
+			expectedSnakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+				Error:    errors.New("connection error"),
+			},
+		},
+		{
+			name:       "bad response body",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+			},
+			responseCode:    200,
+			responseBody:    `right`,
+			responseLatency: 54 * time.Millisecond,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				Error:      errors.New("invalid character 'r' looking for beginning of value"),
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
+			},
+		},
+		{
+			name:       "bad move value",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+			},
+			responseCode:    200,
+			responseBody:    `{"move": "north"}`,
+			responseLatency: 54 * time.Millisecond,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
+			},
+		},
+		{
+			name:       "bad status code",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:       "one",
+				URL:      "http://example.com",
+				LastMove: rules.MoveLeft,
+			},
+			responseCode:    500,
+			responseLatency: 54 * time.Millisecond,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveLeft,
+				StatusCode: 500,
+				Latency:    54 * time.Millisecond,
+			},
+		},
+		{
+			name:       "successful move",
+			boardState: boardState,
+			snakeState: SnakeState{
+				ID:  "one",
+				URL: "http://example.com",
+			},
+			responseCode:    200,
+			responseBody:    `{"move": "right"}`,
+			responseLatency: 54 * time.Millisecond,
+			expectedSnakeState: SnakeState{
+				ID:         "one",
+				URL:        "http://example.com",
+				LastMove:   rules.MoveRight,
+				StatusCode: 200,
+				Latency:    54 * time.Millisecond,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameState := buildDefaultGameState()
+			gameState.initialize()
+			gameState.snakeStates = map[string]SnakeState{test.snakeState.ID: test.snakeState}
+			gameState.httpClient = stubHTTPClient{test.responseErr, test.responseCode, test.responseBody, test.responseLatency}
+
+			nextSnakeState := gameState.getSnakeUpdate(test.boardState, test.snakeState)
+			if test.expectedSnakeState.Error != nil {
+				require.EqualError(t, nextSnakeState.Error, test.expectedSnakeState.Error.Error())
+			} else {
+				require.NoError(t, nextSnakeState.Error)
+			}
+			nextSnakeState.Error = test.expectedSnakeState.Error
+			require.Equal(t, test.expectedSnakeState, nextSnakeState)
+		})
+	}
+}
+
+func TestCreateNextBoardState(t *testing.T) {
+	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
+	boardState := &rules.BoardState{
+		Height: 11,
+		Width:  11,
+		Snakes: []rules.Snake{s1},
+	}
+	snakeState := SnakeState{
+		ID:  s1.ID,
+		URL: "http://example.com",
+	}
+
+	for _, sequential := range []bool{false, true} {
+		t.Run(fmt.Sprintf("sequential_%v", sequential), func(t *testing.T) {
+			gameState := buildDefaultGameState()
+			gameState.Sequential = sequential
+			gameState.initialize()
+			gameState.snakeStates = map[string]SnakeState{s1.ID: snakeState}
+			gameState.httpClient = stubHTTPClient{nil, 200, `{"move": "right"}`, 54 * time.Millisecond}
+
+			nextBoardState := gameState.createNextBoardState(boardState)
+			snakeState = gameState.snakeStates[s1.ID]
+
+			require.NotNil(t, nextBoardState)
+			require.Equal(t, nextBoardState.Turn, 1)
+			require.Equal(t, nextBoardState.Snakes[0].Body[0], rules.Point{X: 4, Y: 3})
+			require.Equal(t, snakeState.LastMove, rules.MoveRight)
+			require.Equal(t, snakeState.StatusCode, 200)
+			require.Equal(t, snakeState.Latency, 54*time.Millisecond)
+		})
+	}
+}
+
+type stubHTTPClient struct {
+	err        error
+	statusCode int
+	body       string
+	latency    time.Duration
+}
+
+func (client stubHTTPClient) request() (*http.Response, time.Duration, error) {
+	if client.err != nil {
+		return nil, client.latency, client.err
+	}
+	body := ioutil.NopCloser(bytes.NewBufferString(client.body))
+
+	response := &http.Response{
+		Header:     make(http.Header),
+		Body:       body,
+		StatusCode: client.statusCode,
+	}
+
+	return response, client.latency, nil
+}
+
+func (client stubHTTPClient) Get(url string) (*http.Response, time.Duration, error) {
+	return client.request()
+}
+
+func (client stubHTTPClient) Post(url string, contentType string, body io.Reader) (*http.Response, time.Duration, error) {
+	return client.request()
 }

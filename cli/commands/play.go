@@ -38,6 +38,7 @@ type SnakeState struct {
 	Version    string
 	Error      error
 	StatusCode int
+	Latency    time.Duration
 }
 
 type GameState struct {
@@ -67,7 +68,7 @@ type GameState struct {
 	settings    map[string]string
 	snakeStates map[string]SnakeState
 	gameID      string
-	httpClient  http.Client
+	httpClient  TimedHttpClient
 	ruleset     rules.Ruleset
 	gameMap     maps.GameMap
 }
@@ -120,8 +121,10 @@ func (gameState *GameState) initialize() {
 	if gameState.Timeout == 0 {
 		gameState.Timeout = 500
 	}
-	gameState.httpClient = http.Client{
-		Timeout: time.Duration(gameState.Timeout) * time.Millisecond,
+	gameState.httpClient = timedHTTPClient{
+		&http.Client{
+			Timeout: time.Duration(gameState.Timeout) * time.Millisecond,
+		},
 	}
 
 	// Load game map
@@ -315,7 +318,7 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 		u, _ := url.ParseRequestURI(snakeState.URL)
 		u.Path = path.Join(u.Path, "start")
 		log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
-		_, err = gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
+		_, _, err = gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 		if err != nil {
 			log.WARN.Printf("Request to %v failed", u.String())
 		}
@@ -324,18 +327,20 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 }
 
 func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *rules.BoardState {
-	var moves []rules.SnakeMove
+	stateUpdates := make(chan SnakeState, len(gameState.snakeStates))
+
 	if gameState.Sequential {
 		for _, snakeState := range gameState.snakeStates {
 			for _, snake := range boardState.Snakes {
 				if snakeState.ID == snake.ID && snake.EliminatedCause == rules.NotEliminated {
-					moves = append(moves, gameState.getMoveForSnake(boardState, snakeState))
+					nextSnakeState := gameState.getSnakeUpdate(boardState, snakeState)
+					stateUpdates <- nextSnakeState
 				}
 			}
 		}
+		close(stateUpdates)
 	} else {
 		var wg sync.WaitGroup
-		c := make(chan rules.SnakeMove, len(gameState.snakeStates))
 
 		for _, snakeState := range gameState.snakeStates {
 			for _, snake := range boardState.Snakes {
@@ -343,24 +348,23 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 					wg.Add(1)
 					go func(snakeState SnakeState) {
 						defer wg.Done()
-						c <- gameState.getMoveForSnake(boardState, snakeState)
+						nextSnakeState := gameState.getSnakeUpdate(boardState, snakeState)
+						stateUpdates <- nextSnakeState
 					}(snakeState)
 				}
 			}
 		}
 
 		wg.Wait()
-		close(c)
+		close(stateUpdates)
+	}
 
-		for move := range c {
-			moves = append(moves, move)
-		}
+	var moves []rules.SnakeMove
+	for snakeState := range stateUpdates {
+		gameState.snakeStates[snakeState.ID] = snakeState
+		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
-	for _, move := range moves {
-		snakeState := gameState.snakeStates[move.ID]
-		snakeState.LastMove = move.Move
-		gameState.snakeStates[move.ID] = snakeState
-	}
+
 	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
 	if err != nil {
 		log.ERROR.Fatalf("Error producing next board state: %v", err)
@@ -376,28 +380,41 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 	return boardState
 }
 
-func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeState SnakeState) rules.SnakeMove {
+func (gameState *GameState) getSnakeUpdate(boardState *rules.BoardState, snakeState SnakeState) SnakeState {
+	snakeState.StatusCode = 0
+	snakeState.Error = nil
+	snakeState.Latency = 0
+
 	snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
 	requestBody := serialiseSnakeRequest(snakeRequest)
-	u, _ := url.ParseRequestURI(snakeState.URL)
+
+	u, err := url.ParseRequestURI(snakeState.URL)
+	if err != nil {
+		log.ERROR.Printf("Error parsing snake URL %#v: %v", snakeState.URL, err)
+		snakeState.Error = err
+		return snakeState
+	}
 	u.Path = path.Join(u.Path, "move")
 	log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
-	res, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
+	res, responseTime, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 
-	// Use snake's last move as the default in case of an error
-	snakeMove := rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove}
+	snakeState.Latency = responseTime
 
 	if err != nil {
 		log.WARN.Printf(
 			"Request to %v failed\n"+
 				"\tError: %s", u.String(), err)
-		return snakeMove
+		snakeState.Error = err
+		return snakeState
 	}
+
+	snakeState.StatusCode = res.StatusCode
+
 	if res.Body == nil {
 		log.WARN.Printf(
 			"Failed to parse response from %v\n"+
 				"\tError: body is empty", u.String())
-		return snakeMove
+		return snakeState
 	}
 	defer res.Body.Close()
 	body, readErr := ioutil.ReadAll(res.Body)
@@ -405,15 +422,17 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 		log.WARN.Printf(
 			"Failed to read response body from %v\n"+
 				"\tError: %v", u.String(), readErr)
-		return snakeMove
+		snakeState.Error = readErr
+		return snakeState
 	}
 	if res.StatusCode != http.StatusOK {
 		log.WARN.Printf(
 			"Got non-ok status code from %v\n"+
 				"\tStatusCode: %d (expected %d)\n"+
 				"\tBody: %q", u.String(), res.StatusCode, http.StatusOK, body)
-		return snakeMove
+		return snakeState
 	}
+
 	playerResponse := client.MoveResponse{}
 	jsonErr := json.Unmarshal(body, &playerResponse)
 	if jsonErr != nil {
@@ -422,7 +441,8 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 				"\tError: %v\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), jsonErr, body)
-		return snakeMove
+		snakeState.Error = jsonErr
+		return snakeState
 	}
 	if playerResponse.Move != "up" && playerResponse.Move != "down" && playerResponse.Move != "left" && playerResponse.Move != "right" {
 		log.WARN.Printf(
@@ -430,11 +450,12 @@ func (gameState *GameState) getMoveForSnake(boardState *rules.BoardState, snakeS
 				"\tError: invalid move %q, valid moves are \"up\", \"down\", \"left\" or \"right\"\n"+
 				"\tBody: %q\n"+
 				"\tSee https://docs.battlesnake.com/references/api#post-move", u.String(), playerResponse.Move, body)
-		return snakeMove
+		return snakeState
 	}
 
-	snakeMove.Move = playerResponse.Move
-	return snakeMove
+	snakeState.LastMove = playerResponse.Move
+
+	return snakeState
 }
 
 func (gameState *GameState) sendEndRequest(boardState *rules.BoardState, snakeState SnakeState) {
@@ -443,7 +464,7 @@ func (gameState *GameState) sendEndRequest(boardState *rules.BoardState, snakeSt
 	u, _ := url.ParseRequestURI(snakeState.URL)
 	u.Path = path.Join(u.Path, "end")
 	log.DEBUG.Printf("POST %s: %v", u, string(requestBody))
-	_, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
+	_, _, err := gameState.httpClient.Post(u.String(), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.WARN.Printf("Request to %v failed", u.String())
 	}
@@ -517,7 +538,7 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 			Name: snakeName, URL: snakeURL, ID: id, LastMove: "up", Character: bodyChars[i%8],
 		}
 		var snakeErr error
-		res, err := gameState.httpClient.Get(snakeURL)
+		res, _, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
 			log.ERROR.Fatalf("Snake metadata request to %v failed: %v", snakeURL, err)
 		}
@@ -655,6 +676,10 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 	for _, snake := range boardState.Snakes {
 		snakeState := gameState.snakeStates[snake.ID]
 
+		latencyMS := snakeState.Latency.Milliseconds()
+		if latencyMS == 0 {
+			latencyMS = 1
+		}
 		convertedSnake := board.Snake{
 			ID:            snake.ID,
 			Name:          snakeState.Name,
@@ -667,9 +692,7 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 			StatusCode:    snakeState.StatusCode,
 			IsBot:         false,
 			IsEnvironment: false,
-
-			// Not supporting local latency for now - there are better ways to test performance locally
-			Latency: "1",
+			Latency:       fmt.Sprint(latencyMS),
 		}
 		if snakeState.Error != nil {
 			// Instead of trying to keep in sync with the production engine's
