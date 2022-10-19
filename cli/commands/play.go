@@ -710,6 +710,10 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 		snakeState := gameState.snakeStates[snake.ID]
 
 		latencyMS := snakeState.Latency.Milliseconds()
+		// round up latency of 0 to 1, to avoid legacy error display in board
+		if latencyMS == 0 {
+			latencyMS = 1
+		}
 		convertedSnake := board.Snake{
 			ID:            snake.ID,
 			Name:          snakeState.Name,

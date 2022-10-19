@@ -361,7 +361,7 @@ func TestBuildFrameEvent(t *testing.T) {
 						},
 						{
 							ID:         "connection_error",
-							Latency:    "0",
+							Latency:    "1",
 							StatusCode: 0,
 							Error:      "0:Error communicating with server",
 						},
