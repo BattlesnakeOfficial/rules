@@ -1,0 +1,110 @@
+{
+  "game": {
+    "id": "GAME_ID",
+    "ruleset": {
+      "name": "standard",
+      "version": "cli",
+      "settings": {
+        "foodSpawnChance": 1,
+        "minimumFood": 2,
+        "hazardDamagePerTurn": 3,
+        "hazardMap": "",
+        "hazardMapAuthor": "",
+        "royale": {
+          "shrinkEveryNTurns": 4
+        },
+        "squad": {
+          "allowBodyCollisions": false,
+          "sharedElimination": false,
+          "sharedHealth": false,
+          "sharedLength": false
+        }
+      }
+    },
+    "map": "standard",
+    "timeout": 500,
+    "source": ""
+  },
+  "turn": 1,
+  "board": {
+    "height": 11,
+    "width": 11,
+    "snakes": [
+      {
+        "id": "snk_0",
+        "name": "example snake",
+        "latency": "42",
+        "health": 100,
+        "body": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 5
+          }
+        ],
+        "head": {
+          "x": 1,
+          "y": 5
+        },
+        "length": 3,
+        "shout": "",
+        "squad": "",
+        "customizations": {
+          "color": "#123456",
+          "head": "safe",
+          "tail": "curled"
+        }
+      }
+    ],
+    "food": [
+      {
+        "x": 0,
+        "y": 4
+      },
+      {
+        "x": 5,
+        "y": 5
+      }
+    ],
+    "hazards": []
+  },
+  "you": {
+    "id": "snk_0",
+    "name": "example snake",
+    "latency": "42",
+    "health": 100,
+    "body": [
+      {
+        "x": 1,
+        "y": 5
+      },
+      {
+        "x": 1,
+        "y": 5
+      },
+      {
+        "x": 1,
+        "y": 5
+      }
+    ],
+    "head": {
+      "x": 1,
+      "y": 5
+    },
+    "length": 3,
+    "shout": "",
+    "squad": "",
+    "customizations": {
+      "color": "#123456",
+      "head": "safe",
+      "tail": "curled"
+    }
+  }
+}

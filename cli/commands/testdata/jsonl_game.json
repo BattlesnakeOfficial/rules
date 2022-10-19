@@ -1,0 +1,26 @@
+{
+  "id": "GAME_ID",
+  "ruleset": {
+    "name": "standard",
+    "version": "cli",
+    "settings": {
+      "foodSpawnChance": 1,
+      "minimumFood": 2,
+      "hazardDamagePerTurn": 3,
+      "hazardMap": "",
+      "hazardMapAuthor": "",
+      "royale": {
+        "shrinkEveryNTurns": 4
+      },
+      "squad": {
+        "allowBodyCollisions": false,
+        "sharedElimination": false,
+        "sharedHealth": false,
+        "sharedLength": false
+      }
+    }
+  },
+  "map": "standard",
+  "timeout": 500,
+  "source": ""
+}

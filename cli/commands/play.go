@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -56,7 +58,7 @@ type GameState struct {
 	UseColor            bool
 	Seed                int64
 	TurnDelay           int
-	Output              string
+	OutputPath          string
 	ViewInBrowser       bool
 	BoardURL            string
 	FoodSpawnChance     int
@@ -71,6 +73,8 @@ type GameState struct {
 	httpClient  TimedHttpClient
 	ruleset     rules.Ruleset
 	gameMap     maps.GameMap
+	outputFile  io.WriteCloser
+	idGenerator func(int) string
 }
 
 func NewPlayCommand() *cobra.Command {
@@ -81,6 +85,9 @@ func NewPlayCommand() *cobra.Command {
 		Short: "Play a game of Battlesnake locally.",
 		Long:  "Play a game of Battlesnake locally.",
 		Run: func(cmd *cobra.Command, args []string) {
+			if err := gameState.Initialize(); err != nil {
+				log.ERROR.Fatalf("Error initializing game: %v", err)
+			}
 			gameState.Run()
 		},
 	}
@@ -98,7 +105,7 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().Int64VarP(&gameState.Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().IntVarP(&gameState.TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().IntVarP(&gameState.TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
-	playCmd.Flags().StringVarP(&gameState.Output, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
+	playCmd.Flags().StringVarP(&gameState.OutputPath, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
 
@@ -113,7 +120,7 @@ func NewPlayCommand() *cobra.Command {
 }
 
 // Setup a GameState once all the fields have been parsed from the command-line.
-func (gameState *GameState) initialize() {
+func (gameState *GameState) Initialize() error {
 	// Generate game ID
 	gameState.gameID = uuid.New().String()
 
@@ -130,7 +137,7 @@ func (gameState *GameState) initialize() {
 	// Load game map
 	gameMap, err := maps.GetMap(gameState.MapName)
 	if err != nil {
-		log.ERROR.Fatalf("Failed to load game map %#v: %v", gameState.MapName, err)
+		return fmt.Errorf("Failed to load game map %#v: %v", gameState.MapName, err)
 	}
 	gameState.gameMap = gameMap
 
@@ -153,25 +160,36 @@ func (gameState *GameState) initialize() {
 
 	// Initialize snake states as empty until we can ping the snake URLs
 	gameState.snakeStates = map[string]SnakeState{}
+
+	if gameState.OutputPath != "" {
+		f, err := os.OpenFile(gameState.OutputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			return fmt.Errorf("Failed to open output file: %w", err)
+		}
+		gameState.outputFile = f
+	}
+
+	return nil
 }
 
 // Setup and run a full game.
 func (gameState *GameState) Run() {
-	gameState.initialize()
-
 	// Setup local state for snakes
 	gameState.snakeStates = gameState.buildSnakesFromOptions()
 
 	rand.Seed(gameState.Seed)
 
 	boardState := gameState.initializeBoardFromArgs()
-	exportGame := gameState.Output != ""
 
 	gameExporter := GameExporter{
 		game:          gameState.createClientGame(),
 		snakeRequests: make([]client.SnakeRequest, 0),
 		winner:        SnakeState{},
 		isDraw:        false,
+	}
+	exportGame := gameState.outputFile != nil
+	if exportGame {
+		defer gameState.outputFile.Close()
 	}
 
 	boardGame := board.Game{
@@ -258,6 +276,15 @@ func (gameState *GameState) Run() {
 		}
 	}
 
+	// Export final turn
+	if exportGame {
+		for _, snakeState := range gameState.snakeStates {
+			snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
+			gameExporter.AddSnakeRequest(snakeRequest)
+			break
+		}
+	}
+
 	gameExporter.isDraw = false
 
 	if len(gameState.snakeStates) > 1 {
@@ -291,10 +318,11 @@ func (gameState *GameState) Run() {
 	}
 
 	if exportGame {
-		err := gameExporter.FlushToFile(gameState.Output, "JSONL")
+		lines, err := gameExporter.FlushToFile(gameState.outputFile)
 		if err != nil {
 			log.ERROR.Fatalf("Unable to export game. Reason: %v", err)
 		}
+		log.INFO.Printf("Wrote %d lines to output file: %s", lines, gameState.OutputPath)
 	}
 }
 
@@ -515,7 +543,12 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		var snakeName string
 		var snakeURL string
 
-		id := uuid.New().String()
+		var id string
+		if gameState.idGenerator != nil {
+			id = gameState.idGenerator(i)
+		} else {
+			id = uuid.New().String()
+		}
 
 		if i < numNames {
 			snakeName = gameState.Names[i]
@@ -677,9 +710,6 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 		snakeState := gameState.snakeStates[snake.ID]
 
 		latencyMS := snakeState.Latency.Milliseconds()
-		if latencyMS == 0 {
-			latencyMS = 1
-		}
 		convertedSnake := board.Snake{
 			ID:            snake.ID,
 			Name:          snakeState.Name,
@@ -734,12 +764,13 @@ func serialiseSnakeRequest(snakeRequest client.SnakeRequest) []byte {
 }
 
 func convertRulesSnake(snake rules.Snake, snakeState SnakeState) client.Snake {
+	latencyMS := snakeState.Latency.Milliseconds()
 	return client.Snake{
 		ID:      snake.ID,
 		Name:    snakeState.Name,
 		Health:  snake.Health,
 		Body:    client.CoordFromPointArray(snake.Body),
-		Latency: "0",
+		Latency: fmt.Sprint(latencyMS),
 		Head:    client.CoordFromPoint(snake.Body[0]),
 		Length:  int(len(snake.Body)),
 		Shout:   "",
