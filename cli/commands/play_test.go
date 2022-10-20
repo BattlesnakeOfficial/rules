@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ func buildDefaultGameState() *GameState {
 		Seed:                1,
 		TurnDelay:           0,
 		TurnDuration:        0,
-		Output:              "",
+		OutputPath:          "",
 		FoodSpawnChance:     15,
 		MinimumFood:         1,
 		HazardDamagePerTurn: 14,
@@ -67,7 +68,8 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	}
 
 	gameState := buildDefaultGameState()
-	gameState.initialize()
+	err := gameState.Initialize()
+	require.NoError(t, err)
 	gameState.gameID = "GAME_ID"
 	gameState.snakeStates = map[string]SnakeState{
 		s1State.ID: s1State,
@@ -118,7 +120,8 @@ func TestSettingsRequestSerialization(t *testing.T) {
 			gameState.ShrinkEveryNTurns = 17
 			gameState.GameType = gt
 
-			gameState.initialize()
+			err := gameState.Initialize()
+			require.NoError(t, err)
 			gameState.gameID = "GAME_ID"
 			gameState.snakeStates = map[string]SnakeState{s1State.ID: s1State, s2State.ID: s2State}
 
@@ -159,13 +162,14 @@ func TestConvertRulesSnakes(t *testing.T) {
 					Color:     "#012345",
 					LastMove:  "up",
 					Character: '+',
+					Latency:   time.Millisecond * 42,
 				},
 			},
 			expected: []client.Snake{
 				{
 					ID:      "one",
 					Name:    "ONE",
-					Latency: "0",
+					Latency: "42",
 					Health:  100,
 					Body:    []client.Coord{{X: 3, Y: 3}, {X: 2, Y: 3}},
 					Head:    client.Coord{X: 3, Y: 3},
@@ -507,9 +511,10 @@ func TestGetMoveForSnake(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gameState := buildDefaultGameState()
-			gameState.initialize()
+			err := gameState.Initialize()
+			require.NoError(t, err)
 			gameState.snakeStates = map[string]SnakeState{test.snakeState.ID: test.snakeState}
-			gameState.httpClient = stubHTTPClient{test.responseErr, test.responseCode, test.responseBody, test.responseLatency}
+			gameState.httpClient = stubHTTPClient{test.responseErr, test.responseCode, func(_ string) string { return test.responseBody }, test.responseLatency}
 
 			nextSnakeState := gameState.getSnakeUpdate(test.boardState, test.snakeState)
 			if test.expectedSnakeState.Error != nil {
@@ -539,9 +544,10 @@ func TestCreateNextBoardState(t *testing.T) {
 		t.Run(fmt.Sprintf("sequential_%v", sequential), func(t *testing.T) {
 			gameState := buildDefaultGameState()
 			gameState.Sequential = sequential
-			gameState.initialize()
+			err := gameState.Initialize()
+			require.NoError(t, err)
 			gameState.snakeStates = map[string]SnakeState{s1.ID: snakeState}
-			gameState.httpClient = stubHTTPClient{nil, 200, `{"move": "right"}`, 54 * time.Millisecond}
+			gameState.httpClient = stubHTTPClient{nil, 200, func(_ string) string { return `{"move": "right"}` }, 54 * time.Millisecond}
 
 			nextBoardState := gameState.createNextBoardState(boardState)
 			snakeState = gameState.snakeStates[s1.ID]
@@ -556,18 +562,92 @@ func TestCreateNextBoardState(t *testing.T) {
 	}
 }
 
+func TestOutputFile(t *testing.T) {
+	gameState := buildDefaultGameState()
+	gameState.Names = []string{"example snake"}
+	gameState.URLs = []string{"http://example.com"}
+	err := gameState.Initialize()
+	require.NoError(t, err)
+
+	gameState.gameID = "GAME_ID"
+	gameState.idGenerator = func(index int) string { return fmt.Sprintf("snk_%d", index) }
+
+	gameState.httpClient = stubHTTPClient{nil, http.StatusOK, func(url string) string {
+		switch url {
+		case "http://example.com":
+			return `
+			{
+			  "apiversion": "1",
+			  "author": "author",
+			  "color": "#123456",
+			  "head": "safe",
+			  "tail": "curled",
+			  "version": "0.0.1-beta"
+			}
+		`
+		case "http://example.com/move":
+			return `{"move": "left"}`
+		}
+		return ""
+	}, time.Millisecond * 42}
+	outputFile := new(closableBuffer)
+	gameState.outputFile = outputFile
+
+	gameState.ruleset = StubRuleset{maxTurns: 1, settings: rules.Settings{
+		FoodSpawnChance:     1,
+		MinimumFood:         2,
+		HazardDamagePerTurn: 3,
+		RoyaleSettings: rules.RoyaleSettings{
+			ShrinkEveryNTurns: 4,
+		},
+	}}
+
+	gameState.Run()
+
+	lines := strings.Split(outputFile.String(), "\n")
+	require.Len(t, lines, 5)
+	test.RequireJSONMatchesFixture(t, "testdata/jsonl_game.json", lines[0])
+	test.RequireJSONMatchesFixture(t, "testdata/jsonl_turn_0.json", lines[1])
+	test.RequireJSONMatchesFixture(t, "testdata/jsonl_turn_1.json", lines[2])
+	test.RequireJSONMatchesFixture(t, "testdata/jsonl_game_complete.json", lines[3])
+	require.Equal(t, "", lines[4])
+}
+
+type closableBuffer struct {
+	bytes.Buffer
+}
+
+func (closableBuffer) Close() error { return nil }
+
+type StubRuleset struct {
+	maxTurns int
+	settings rules.Settings
+}
+
+func (ruleset StubRuleset) Name() string             { return "standard" }
+func (ruleset StubRuleset) Settings() rules.Settings { return ruleset.settings }
+func (ruleset StubRuleset) ModifyInitialBoardState(initialState *rules.BoardState) (*rules.BoardState, error) {
+	return initialState, nil
+}
+func (ruleset StubRuleset) CreateNextBoardState(prevState *rules.BoardState, moves []rules.SnakeMove) (*rules.BoardState, error) {
+	return prevState, nil
+}
+func (ruleset StubRuleset) IsGameOver(state *rules.BoardState) (bool, error) {
+	return state.Turn >= ruleset.maxTurns, nil
+}
+
 type stubHTTPClient struct {
 	err        error
 	statusCode int
-	body       string
+	body       func(url string) string
 	latency    time.Duration
 }
 
-func (client stubHTTPClient) request() (*http.Response, time.Duration, error) {
+func (client stubHTTPClient) request(url string) (*http.Response, time.Duration, error) {
 	if client.err != nil {
 		return nil, client.latency, client.err
 	}
-	body := ioutil.NopCloser(bytes.NewBufferString(client.body))
+	body := ioutil.NopCloser(bytes.NewBufferString(client.body(url)))
 
 	response := &http.Response{
 		Header:     make(http.Header),
@@ -579,9 +659,9 @@ func (client stubHTTPClient) request() (*http.Response, time.Duration, error) {
 }
 
 func (client stubHTTPClient) Get(url string) (*http.Response, time.Duration, error) {
-	return client.request()
+	return client.request(url)
 }
 
 func (client stubHTTPClient) Post(url string, contentType string, body io.Reader) (*http.Response, time.Duration, error) {
-	return client.request()
+	return client.request(url)
 }

@@ -3,9 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-
-	log "github.com/spf13/jwalterweatherman"
+	"io"
 
 	"github.com/BattlesnakeOfficial/rules/client"
 )
@@ -23,37 +21,20 @@ type result struct {
 	IsDraw     bool   `json:"isDraw"`
 }
 
-func (ge *GameExporter) FlushToFile(filepath string, format string) error {
-	var formattedOutput []string
-	var formattingErr error
-
-	// TODO: Support more formats
-	if format == "JSONL" {
-		formattedOutput, formattingErr = ge.ConvertToJSON()
-	} else {
-		log.ERROR.Fatalf("Invalid output format passed: %s", format)
-	}
-
-	if formattingErr != nil {
-		return formattingErr
-	}
-
-	f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+func (ge *GameExporter) FlushToFile(outputFile io.Writer) (int, error) {
+	formattedOutput, err := ge.ConvertToJSON()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	defer f.Close()
 
 	for _, line := range formattedOutput {
-		_, err := f.WriteString(fmt.Sprintf("%s\n", line))
+		_, err := io.WriteString(outputFile, fmt.Sprintf("%s\n", line))
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	log.DEBUG.Printf("Written %d lines of output to file: %s\n", len(formattedOutput), filepath)
-
-	return nil
+	return len(formattedOutput), nil
 }
 
 func (ge *GameExporter) ConvertToJSON() ([]string, error) {
