@@ -631,7 +631,7 @@ type StubRuleset struct {
 
 func (ruleset StubRuleset) Name() string             { return "standard" }
 func (ruleset StubRuleset) Settings() rules.Settings { return ruleset.settings }
-func (ruleset StubRuleset) Execute(prevState *rules.BoardState, settings rules.Settings, moves []rules.SnakeMove) (bool, *rules.BoardState, error) {
+func (ruleset StubRuleset) Execute(prevState *rules.BoardState, moves []rules.SnakeMove) (bool, *rules.BoardState, error) {
 	return prevState.Turn >= ruleset.maxTurns, prevState, nil
 }
 

@@ -30,7 +30,7 @@ func (gc *gameTestCase) requireValidNextState(t *testing.T, r Ruleset) {
 	t.Run(gc.name, func(t *testing.T) {
 		t.Helper()
 		prev := gc.prevState.Clone() // clone to protect against mutation (so we can re-use test cases)
-		_, nextState, err := r.Execute(prev, r.Settings(), gc.moves)
+		_, nextState, err := r.Execute(prev, gc.moves)
 		require.Equal(t, gc.expectedError, err)
 		if gc.expectedState != nil {
 			require.Equal(t, gc.expectedState.Width, nextState.Width)

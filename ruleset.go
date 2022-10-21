@@ -13,9 +13,7 @@ type Ruleset interface {
 
 	// Processes the next turn of the ruleset, returning whether the game has ended, the next BoardState, or an error.
 	// For turn zero (initialization), moves will be left empty.
-	//
-	// TODO: remove settings argument - it's no longer necessary for the ruleset because it has to store and return settings already.
-	Execute(prevState *BoardState, settings Settings, moves []SnakeMove) (gameOver bool, nextState *BoardState, err error)
+	Execute(prevState *BoardState, moves []SnakeMove) (gameOver bool, nextState *BoardState, err error)
 }
 
 type SnakeMove struct {
@@ -174,8 +172,8 @@ func (r pipelineRuleset) Settings() Settings {
 func (r pipelineRuleset) Name() string { return r.name }
 
 // impl Ruleset
-func (r pipelineRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
-	return r.pipeline.Execute(bs, s, sm)
+func (r pipelineRuleset) Execute(bs *BoardState, sm []SnakeMove) (bool, *BoardState, error) {
+	return r.pipeline.Execute(bs, r.Settings(), sm)
 }
 
 func (r pipelineRuleset) Err() error {

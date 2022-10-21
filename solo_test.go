@@ -18,7 +18,7 @@ func TestSoloName(t *testing.T) {
 func TestSoloCreateNextBoardStateSanity(t *testing.T) {
 	boardState := &BoardState{}
 	r := getSoloRuleset(Settings{})
-	gameOver, _, err := r.Execute(boardState, r.Settings(), []SnakeMove{})
+	gameOver, _, err := r.Execute(boardState, []SnakeMove{})
 	require.NoError(t, err)
 	require.True(t, gameOver)
 }
@@ -51,7 +51,7 @@ func TestSoloIsGameOver(t *testing.T) {
 			Food:   []Point{},
 		}
 
-		actual, _, err := r.Execute(b, r.Settings(), nil)
+		actual, _, err := r.Execute(b, nil)
 		require.NoError(t, err)
 		require.Equal(t, test.Expected, actual)
 	}
@@ -123,19 +123,11 @@ func TestSoloEliminationOutOfBounds(t *testing.T) {
 	initialState, err := CreateDefaultBoardState(MaxRand, 2, 2, []string{"one"})
 	require.NoError(t, err)
 
-	_, next, err := r.Execute(
-		initialState,
-		r.Settings(),
-		[]SnakeMove{{ID: "one", Move: "right"}},
-	)
+	_, next, err := r.Execute(initialState, []SnakeMove{{ID: "one", Move: "right"}})
 	require.NoError(t, err)
 	require.NotNil(t, initialState)
 
-	ended, next, err := r.Execute(
-		next,
-		r.Settings(),
-		[]SnakeMove{{ID: "one", Move: "right"}},
-	)
+	ended, next, err := r.Execute(next, []SnakeMove{{ID: "one", Move: "right"}})
 	require.NoError(t, err)
 	require.NotNil(t, initialState)
 

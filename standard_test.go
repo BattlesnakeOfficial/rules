@@ -19,7 +19,7 @@ func TestSanity(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, state)
 
-	gameOver, state, err := r.Execute(state, r.Settings(), []SnakeMove{})
+	gameOver, state, err := r.Execute(state, []SnakeMove{})
 	require.NoError(t, err)
 	require.True(t, gameOver)
 	require.NotNil(t, state)
@@ -280,7 +280,7 @@ func TestEatingOnLastMove(t *testing.T) {
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
+		_, nextState, err := r.Execute(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -402,7 +402,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
+		_, nextState, err := r.Execute(test.prevState, test.moves)
 		require.Equal(t, test.expectedError, err)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -479,7 +479,7 @@ func TestRegressionIssue19(t *testing.T) {
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
+		_, nextState, err := r.Execute(test.prevState, test.moves)
 		require.Equal(t, err, test.expectedError)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -1629,7 +1629,7 @@ func TestIsGameOver(t *testing.T) {
 			Food:   []Point{},
 		}
 
-		actual, _, err := r.Execute(b, r.Settings(), nil)
+		actual, _, err := r.Execute(b, nil)
 		require.NoError(t, err)
 		require.Equal(t, test.Expected, actual)
 	}

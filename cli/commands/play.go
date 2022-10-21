@@ -354,7 +354,7 @@ func (gameState *GameState) initializeBoardFromArgs() (bool, *rules.BoardState, 
 	if err != nil {
 		return false, nil, fmt.Errorf("Error initializing BoardState with map: %w", err)
 	}
-	gameOver, boardState, err := gameState.ruleset.Execute(boardState, gameState.ruleset.Settings(), nil)
+	gameOver, boardState, err := gameState.ruleset.Execute(boardState, nil)
 	if err != nil {
 		return false, nil, fmt.Errorf("Error initializing BoardState with ruleset: %w", err)
 	}
@@ -412,7 +412,7 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (
 		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
 
-	gameOver, boardState, err := gameState.ruleset.Execute(boardState, gameState.ruleset.Settings(), moves)
+	gameOver, boardState, err := gameState.ruleset.Execute(boardState, moves)
 	if err != nil {
 		return false, boardState, fmt.Errorf("Error producing next board state: %w", err)
 	}

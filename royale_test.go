@@ -26,12 +26,12 @@ func TestRoyaleDefaultSanity(t *testing.T) {
 		},
 	}
 	r := getRoyaleRuleset(1, 0)
-	_, _, err := r.Execute(boardState, r.Settings(), []SnakeMove{{"1", "right"}, {"2", "right"}})
+	_, _, err := r.Execute(boardState, []SnakeMove{{"1", "right"}, {"2", "right"}})
 	require.Error(t, err)
 	require.Equal(t, errors.New("royale game can't shrink more frequently than every turn"), err)
 
 	r = getRoyaleRuleset(1, 1)
-	_, boardState, err = r.Execute(boardState, r.Settings(), []SnakeMove{})
+	_, boardState, err = r.Execute(boardState, []SnakeMove{})
 	require.NoError(t, err)
 	require.Len(t, boardState.Hazards, 0)
 }

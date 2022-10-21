@@ -32,7 +32,7 @@ func TestLeft(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
@@ -72,7 +72,7 @@ func TestRight(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
@@ -112,7 +112,7 @@ func TestUp(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
@@ -152,7 +152,7 @@ func TestDown(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
@@ -195,7 +195,7 @@ func TestEdgeCrossingCollision(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
@@ -239,7 +239,7 @@ func TestEdgeCrossingEating(t *testing.T) {
 
 	r := getWrappedRuleset(Settings{})
 
-	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, snakeMoves)
 	require.NoError(t, err)
 	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))

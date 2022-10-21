@@ -124,11 +124,11 @@ func TestRulesetBuilderGameOver(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%v_%v", test.gameType, test.solo), func(t *testing.T) {
-			rsb := rules.NewRulesetBuilder().WithSolo(test.solo)
+			rsb := rules.NewRulesetBuilder().WithSettings(settings).WithSolo(test.solo)
 
 			ruleset := rsb.NamedRuleset(test.gameType)
 
-			gameOver, _, err := ruleset.Execute(boardState, settings, moves)
+			gameOver, _, err := ruleset.Execute(boardState, moves)
 
 			require.NoError(t, err)
 			require.Equal(t, test.gameOver, gameOver)
