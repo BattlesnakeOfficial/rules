@@ -22,31 +22,6 @@ var wrappedConstrictorRulesetStages = []string{
 	StageModifySnakesAlwaysGrow,
 }
 
-type ConstrictorRuleset struct {
-	StandardRuleset
-}
-
-func (r *ConstrictorRuleset) Name() string { return GameTypeConstrictor }
-
-func (r ConstrictorRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
-	return NewPipeline(constrictorRulesetStages...).Execute(bs, s, sm)
-}
-
-func (r *ConstrictorRuleset) ModifyInitialBoardState(initialBoardState *BoardState) (*BoardState, error) {
-	_, nextState, err := r.Execute(initialBoardState, r.Settings(), nil)
-	return nextState, err
-}
-
-func (r *ConstrictorRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
-
-	return nextState, err
-}
-
-func (r *ConstrictorRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return GameOverStandard(b, r.Settings(), nil)
-}
-
 func RemoveFoodConstrictor(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	// Remove all food from the board
 	b.Food = []Point{}

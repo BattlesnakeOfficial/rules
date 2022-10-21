@@ -8,38 +8,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStandardRulesetInterface(t *testing.T) {
-	var _ Ruleset = (*StandardRuleset)(nil)
+func getStandardRuleset(settings Settings) Ruleset {
+	return NewRulesetBuilder().WithSettings(settings).NamedRuleset(GameTypeStandard)
 }
 
 func TestSanity(t *testing.T) {
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 
 	state, err := CreateDefaultBoardState(MaxRand, 0, 0, []string{})
 	require.NoError(t, err)
 	require.NotNil(t, state)
 
-	state, err = r.ModifyInitialBoardState(state)
+	gameOver, state, err := r.Execute(state, r.Settings(), []SnakeMove{})
 	require.NoError(t, err)
+	require.True(t, gameOver)
 	require.NotNil(t, state)
 	require.Equal(t, 0, state.Width)
 	require.Equal(t, 0, state.Height)
 	require.Len(t, state.Food, 0)
 	require.Len(t, state.Snakes, 0)
-
-	next, err := r.CreateNextBoardState(
-		&BoardState{},
-		[]SnakeMove{},
-	)
-	require.NoError(t, err)
-	require.NotNil(t, next)
-	require.Equal(t, 0, state.Width)
-	require.Equal(t, 0, state.Height)
-	require.Len(t, state.Snakes, 0)
 }
 
 func TestStandardName(t *testing.T) {
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	require.Equal(t, "standard", r.Name())
 }
 
@@ -220,14 +211,10 @@ func TestStandardCreateNextBoardState(t *testing.T) {
 		standardCaseMoveEatAndGrow,
 		standardMoveAndCollideMAD,
 	}
-	r := StandardRuleset{}
-	rb := NewRulesetBuilder().WithParams(map[string]string{
-		ParamGameType: GameTypeStandard,
-	})
+	r := getStandardRuleset(Settings{})
 	for _, gc := range cases {
-		gc.requireValidNextState(t, &r)
-		// also test a RulesBuilder constructed instance
-		gc.requireValidNextState(t, rb.Ruleset())
+		// test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, r)
 		// also test a pipeline with the same settings
 		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeStandard, NewPipeline(standardRulesetStages...)))
 	}
@@ -291,9 +278,9 @@ func TestEatingOnLastMove(t *testing.T) {
 	}
 
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
 		require.Equal(t, err, test.expectedError)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -413,9 +400,9 @@ func TestHeadToHeadOnFood(t *testing.T) {
 	}
 
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
 		require.Equal(t, test.expectedError, err)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -490,9 +477,9 @@ func TestRegressionIssue19(t *testing.T) {
 	}
 
 	rand.Seed(0) // Seed with a value that will reliably not spawn food
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
-		nextState, err := r.CreateNextBoardState(test.prevState, test.moves)
+		_, nextState, err := r.Execute(test.prevState, r.Settings(), test.moves)
 		require.Equal(t, err, test.expectedError)
 		if test.expectedState != nil {
 			require.Equal(t, test.expectedState.Width, nextState.Width)
@@ -561,7 +548,7 @@ func TestMoveSnakes(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		moves := []SnakeMove{
 			{ID: "one", Move: test.MoveOne},
@@ -612,7 +599,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.Equal(t, ErrorNoMoveFound, err)
 }
@@ -637,7 +624,7 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.Equal(t, ErrorNoMoveFound, err)
 }
@@ -662,7 +649,7 @@ func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.NoError(t, err)
 	require.Equal(t, []Point{{1, 0}}, b.Snakes[0].Body)
@@ -706,7 +693,7 @@ func TestMoveSnakesDefault(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		b := &BoardState{
 			Snakes: []Snake{
@@ -810,7 +797,7 @@ func TestReduceSnakeHealth(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	_, err := ReduceSnakeHealthStandard(b, r.Settings(), mockSnakeMoves())
 	require.NoError(t, err)
 	require.Equal(t, b.Snakes[0].Health, 98)
@@ -1222,7 +1209,6 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			b := &BoardState{
@@ -1230,7 +1216,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 				Height: 10,
 				Snakes: test.Snakes,
 			}
-			_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
+			_, err := EliminateSnakesStandard(b, Settings{}, mockSnakeMoves())
 			require.Equal(t, test.Err, err)
 			for i, snake := range b.Snakes {
 				require.Equal(t, test.ExpectedEliminatedCauses[i], snake.EliminatedCause)
@@ -1267,7 +1253,7 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		b := &BoardState{Width: 10, Height: 10, Snakes: test.Snakes}
 		_, err := EliminateSnakesStandard(b, r.Settings(), mockSnakeMoves())
@@ -1342,7 +1328,7 @@ func TestMaybeDamageHazards(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{Turn: 41, Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
-		r := StandardRuleset{HazardDamagePerTurn: 100}
+		r := NewRulesetBuilder().WithSettings(Settings{HazardDamagePerTurn: 100}).NamedRuleset(GameTypeStandard)
 		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 
@@ -1386,7 +1372,7 @@ func TestHazardDamagePerTurn(t *testing.T) {
 		if test.Food {
 			b.Food = []Point{{0, 0}}
 		}
-		r := StandardRuleset{HazardDamagePerTurn: test.HazardDamagePerTurn}
+		r := getStandardRuleset(Settings{HazardDamagePerTurn: test.HazardDamagePerTurn})
 
 		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.Equal(t, test.Error, err)
@@ -1462,7 +1448,7 @@ func TestMaybeFeedSnakes(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		b := &BoardState{
 			Snakes: test.Snakes,
@@ -1493,7 +1479,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r := StandardRuleset{MinimumFood: test.MinimumFood}
+		r := getStandardRuleset(Settings{MinimumFood: test.MinimumFood})
 		b := &BoardState{
 			Height: 11,
 			Width:  11,
@@ -1511,7 +1497,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 }
 
 func TestMaybeSpawnFoodZeroChance(t *testing.T) {
-	r := StandardRuleset{FoodSpawnChance: 0}
+	r := getStandardRuleset(Settings{FoodSpawnChance: 0})
 	b := &BoardState{
 		Height: 11,
 		Width:  11,
@@ -1529,7 +1515,7 @@ func TestMaybeSpawnFoodZeroChance(t *testing.T) {
 }
 
 func TestMaybeSpawnFoodHundredChance(t *testing.T) {
-	r := StandardRuleset{FoodSpawnChance: 100}
+	r := getStandardRuleset(Settings{FoodSpawnChance: 100})
 	b := &BoardState{
 		Height: 11,
 		Width:  11,
@@ -1561,7 +1547,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		{165, []Point{{4, 4}}, 2},
 	}
 
-	r := StandardRuleset{FoodSpawnChance: 50}
+	r := getStandardRuleset(Settings{FoodSpawnChance: 50})
 	for _, test := range tests {
 		b := &BoardState{
 			Height: 4,
@@ -1634,7 +1620,7 @@ func TestIsGameOver(t *testing.T) {
 		},
 	}
 
-	r := StandardRuleset{}
+	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		b := &BoardState{
 			Height: 11,
@@ -1643,7 +1629,7 @@ func TestIsGameOver(t *testing.T) {
 			Food:   []Point{},
 		}
 
-		actual, err := r.IsGameOver(b)
+		actual, _, err := r.Execute(b, r.Settings(), nil)
 		require.NoError(t, err)
 		require.Equal(t, test.Expected, actual)
 	}

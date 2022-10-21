@@ -88,7 +88,9 @@ func NewPlayCommand() *cobra.Command {
 			if err := gameState.Initialize(); err != nil {
 				log.ERROR.Fatalf("Error initializing game: %v", err)
 			}
-			gameState.Run()
+			if err := gameState.Run(); err != nil {
+				log.ERROR.Fatalf("Error running game: %v", err)
+			}
 		},
 	}
 
@@ -143,7 +145,6 @@ func (gameState *GameState) Initialize() error {
 
 	// Create settings object
 	gameState.settings = map[string]string{
-		rules.ParamGameType:            gameState.GameType,
 		rules.ParamFoodSpawnChance:     fmt.Sprint(gameState.FoodSpawnChance),
 		rules.ParamMinimumFood:         fmt.Sprint(gameState.MinimumFood),
 		rules.ParamHazardDamagePerTurn: fmt.Sprint(gameState.HazardDamagePerTurn),
@@ -155,7 +156,7 @@ func (gameState *GameState) Initialize() error {
 		WithSeed(gameState.Seed).
 		WithParams(gameState.settings).
 		WithSolo(len(gameState.URLs) < 2).
-		Ruleset()
+		NamedRuleset(gameState.GameType)
 	gameState.ruleset = ruleset
 
 	// Initialize snake states as empty until we can ping the snake URLs
@@ -173,13 +174,22 @@ func (gameState *GameState) Initialize() error {
 }
 
 // Setup and run a full game.
-func (gameState *GameState) Run() {
+func (gameState *GameState) Run() error {
+	var gameOver bool
+	var err error
+
 	// Setup local state for snakes
-	gameState.snakeStates = gameState.buildSnakesFromOptions()
+	gameState.snakeStates, err = gameState.buildSnakesFromOptions()
+	if err != nil {
+		return fmt.Errorf("Error getting snake metadata: %w", err)
+	}
 
 	rand.Seed(gameState.Seed)
 
-	boardState := gameState.initializeBoardFromArgs()
+	gameOver, boardState, err := gameState.initializeBoardFromArgs()
+	if err != nil {
+		return fmt.Errorf("Error initializing board: %w", err)
+	}
 
 	gameExporter := GameExporter{
 		game:          gameState.createClientGame(),
@@ -209,7 +219,7 @@ func (gameState *GameState) Run() {
 	if gameState.ViewInBrowser {
 		serverURL, err := boardServer.Listen()
 		if err != nil {
-			log.ERROR.Fatalf("Error starting HTTP server: %v", err)
+			return fmt.Errorf("Error starting HTTP server: %w", err)
 		}
 		defer boardServer.Shutdown()
 		log.INFO.Printf("Board server listening on %s", serverURL)
@@ -233,34 +243,42 @@ func (gameState *GameState) Run() {
 		gameState.printState(boardState)
 	}
 
+	// Export game first, if enabled, so that we capture the request for turn zero.
+	if exportGame {
+		// The output file was designed in a way so that (nearly) every entry is equivalent to a valid API request.
+		// This is meant to help unlock further development of tools such as replaying a saved game by simply copying each line and sending it as a POST request.
+		// There was a design choice to be made here: the difference between SnakeRequest and BoardState is the `you` key.
+		// We could choose to either store the SnakeRequest of each snake OR to omit the `you` key OR fill the `you` key with one of the snakes
+		// In all cases the API request is technically non-compliant with how the actual API request should be.
+		// The third option (filling the `you` key with an arbitrary snake) is the closest to the actual API request that would need the least manipulation to
+		// be adjusted to look like an API call for a specific snake in the game.
+		for _, snakeState := range gameState.snakeStates {
+			snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
+			gameExporter.AddSnakeRequest(snakeRequest)
+			break
+		}
+	}
+
 	var endTime time.Time
-	for v := false; !v; v, _ = gameState.ruleset.IsGameOver(boardState) {
+	for !gameOver {
 		if gameState.TurnDuration > 0 {
 			endTime = time.Now().Add(time.Duration(gameState.TurnDuration) * time.Millisecond)
 		}
 
-		// Export game first, if enabled, so that we save the board on turn zero
-		if exportGame {
-			// The output file was designed in a way so that (nearly) every entry is equivalent to a valid API request.
-			// This is meant to help unlock further development of tools such as replaying a saved game by simply copying each line and sending it as a POST request.
-			// There was a design choice to be made here: the difference between SnakeRequest and BoardState is the `you` key.
-			// We could choose to either store the SnakeRequest of each snake OR to omit the `you` key OR fill the `you` key with one of the snakes
-			// In all cases the API request is technically non-compliant with how the actual API request should be.
-			// The third option (filling the `you` key with an arbitrary snake) is the closest to the actual API request that would need the least manipulation to
-			// be adjusted to look like an API call for a specific snake in the game.
-			for _, snakeState := range gameState.snakeStates {
-				snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
-				gameExporter.AddSnakeRequest(snakeRequest)
-				break
-			}
+		gameOver, boardState, err = gameState.createNextBoardState(boardState)
+		if err != nil {
+			return fmt.Errorf("Error processing game: %w", err)
 		}
-
-		boardState = gameState.createNextBoardState(boardState)
 
 		if gameState.ViewMap {
 			gameState.printMap(boardState)
 		} else {
 			gameState.printState(boardState)
+		}
+
+		if gameOver {
+			// Stop processing here - because game over is detected at the start of the pipeline, nothing will have changed.
+			break
 		}
 
 		if gameState.TurnDelay > 0 {
@@ -274,14 +292,13 @@ func (gameState *GameState) Run() {
 		if gameState.ViewInBrowser {
 			boardServer.SendEvent(gameState.buildFrameEvent(boardState))
 		}
-	}
 
-	// Export final turn
-	if exportGame {
-		for _, snakeState := range gameState.snakeStates {
-			snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
-			gameExporter.AddSnakeRequest(snakeRequest)
-			break
+		if exportGame {
+			for _, snakeState := range gameState.snakeStates {
+				snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
+				gameExporter.AddSnakeRequest(snakeRequest)
+				break
+			}
 		}
 	}
 
@@ -320,24 +337,26 @@ func (gameState *GameState) Run() {
 	if exportGame {
 		lines, err := gameExporter.FlushToFile(gameState.outputFile)
 		if err != nil {
-			log.ERROR.Fatalf("Unable to export game. Reason: %v", err)
+			return fmt.Errorf("Unable to export game: %w", err)
 		}
 		log.INFO.Printf("Wrote %d lines to output file: %s", lines, gameState.OutputPath)
 	}
+
+	return nil
 }
 
-func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
+func (gameState *GameState) initializeBoardFromArgs() (bool, *rules.BoardState, error) {
 	snakeIds := []string{}
 	for _, snakeState := range gameState.snakeStates {
 		snakeIds = append(snakeIds, snakeState.ID)
 	}
 	boardState, err := maps.SetupBoard(gameState.gameMap.ID(), gameState.ruleset.Settings(), gameState.Width, gameState.Height, snakeIds)
 	if err != nil {
-		log.ERROR.Fatalf("Error Initializing Board State: %v", err)
+		return false, nil, fmt.Errorf("Error initializing BoardState with map: %w", err)
 	}
-	boardState, err = gameState.ruleset.ModifyInitialBoardState(boardState)
+	gameOver, boardState, err := gameState.ruleset.Execute(boardState, gameState.ruleset.Settings(), nil)
 	if err != nil {
-		log.ERROR.Fatalf("Error Initializing Board State: %v", err)
+		return false, nil, fmt.Errorf("Error initializing BoardState with ruleset: %w", err)
 	}
 
 	for _, snakeState := range gameState.snakeStates {
@@ -351,10 +370,10 @@ func (gameState *GameState) initializeBoardFromArgs() *rules.BoardState {
 			log.WARN.Printf("Request to %v failed", u.String())
 		}
 	}
-	return boardState
+	return gameOver, boardState, nil
 }
 
-func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *rules.BoardState {
+func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (bool, *rules.BoardState, error) {
 	stateUpdates := make(chan SnakeState, len(gameState.snakeStates))
 
 	if gameState.Sequential {
@@ -393,19 +412,19 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
 
-	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
+	gameOver, boardState, err := gameState.ruleset.Execute(boardState, gameState.ruleset.Settings(), moves)
 	if err != nil {
-		log.ERROR.Fatalf("Error producing next board state: %v", err)
+		return false, boardState, fmt.Errorf("Error producing next board state: %w", err)
 	}
 
 	boardState, err = maps.UpdateBoard(gameState.gameMap.ID(), boardState, gameState.ruleset.Settings())
 	if err != nil {
-		log.ERROR.Fatalf("Error updating board with game map: %v", err)
+		return false, boardState, fmt.Errorf("Error updating board with game map: %w", err)
 	}
 
 	boardState.Turn += 1
 
-	return boardState
+	return gameOver, boardState, nil
 }
 
 func (gameState *GameState) getSnakeUpdate(boardState *rules.BoardState, snakeState SnakeState) SnakeState {
@@ -528,7 +547,7 @@ func (gameState *GameState) createClientGame() client.Game {
 	}
 }
 
-func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
+func (gameState *GameState) buildSnakesFromOptions() (map[string]SnakeState, error) {
 	bodyChars := []rune{'■', '⌀', '●', '☻', '◘', '☺', '□', '⍟'}
 	var numSnakes int
 	snakes := map[string]SnakeState{}
@@ -560,11 +579,11 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		if i < numURLs {
 			u, err := url.ParseRequestURI(gameState.URLs[i])
 			if err != nil {
-				log.ERROR.Fatalf("URL %v is not valid: %v", gameState.URLs[i], err)
+				return nil, fmt.Errorf("URL %v is not valid: %w", gameState.URLs[i], err)
 			}
 			snakeURL = u.String()
 		} else {
-			log.ERROR.Fatalf("URL for name %v is missing", gameState.Names[i])
+			return nil, fmt.Errorf("URL for name %v is missing", gameState.Names[i])
 		}
 
 		snakeState := SnakeState{
@@ -573,25 +592,25 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		var snakeErr error
 		res, _, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
-			log.ERROR.Fatalf("Snake metadata request to %v failed: %v", snakeURL, err)
+			return nil, fmt.Errorf("Snake metadata request to %v failed: %w", snakeURL, err)
 		}
 
 		snakeState.StatusCode = res.StatusCode
 
 		if res.Body == nil {
-			log.ERROR.Fatalf("Empty response body from snake metadata URL: %v", snakeURL)
+			return nil, fmt.Errorf("Empty response body from snake metadata URL: %v", snakeURL)
 		}
 
 		defer res.Body.Close()
 		body, readErr := ioutil.ReadAll(res.Body)
 		if readErr != nil {
-			log.ERROR.Fatalf("Error reading from snake metadata URL %v: %v", snakeURL, readErr)
+			return nil, fmt.Errorf("Error reading from snake metadata URL %v: %w", snakeURL, readErr)
 		}
 
 		pingResponse := client.SnakeMetadataResponse{}
 		jsonErr := json.Unmarshal(body, &pingResponse)
 		if jsonErr != nil {
-			log.ERROR.Fatalf("Failed to parse response from %v: %v", snakeURL, jsonErr)
+			return nil, fmt.Errorf("Failed to parse response from %v: %w", snakeURL, jsonErr)
 		}
 
 		snakeState.Head = pingResponse.Head
@@ -608,7 +627,7 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 
 		log.INFO.Printf("Snake ID: %v URL: %v, Name: \"%v\"", snakeState.ID, snakeURL, snakeState.Name)
 	}
-	return snakes
+	return snakes, nil
 }
 
 func (gameState *GameState) printState(boardState *rules.BoardState) {
@@ -762,7 +781,8 @@ func (gameState *GameState) buildFrameEvent(boardState *rules.BoardState) board.
 func serialiseSnakeRequest(snakeRequest client.SnakeRequest) []byte {
 	requestJSON, err := json.Marshal(snakeRequest)
 	if err != nil {
-		log.ERROR.Fatalf("Error marshalling JSON from State: %v", err)
+		// This is likely to be a programming error like a unsupported type or cyclical reference
+		log.ERROR.Panicf("Error marshalling JSON from State: %v", err)
 	}
 	return requestJSON
 }

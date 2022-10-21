@@ -14,26 +14,6 @@ var royaleRulesetStages = []string{
 	StageSpawnHazardsShrinkMap,
 }
 
-type RoyaleRuleset struct {
-	StandardRuleset
-
-	ShrinkEveryNTurns int
-}
-
-func (r *RoyaleRuleset) Name() string { return GameTypeRoyale }
-
-func (r RoyaleRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
-	return NewPipeline(royaleRulesetStages...).Execute(bs, s, sm)
-}
-
-func (r *RoyaleRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	if r.StandardRuleset.HazardDamagePerTurn < 1 {
-		return nil, errors.New("royale damage per turn must be greater than zero")
-	}
-	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
-	return nextState, err
-}
-
 func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
 	if IsInitialization(b, settings, moves) {
 		return false, nil
@@ -78,16 +58,4 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	}
 
 	return false, nil
-}
-
-func (r *RoyaleRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return GameOverStandard(b, r.Settings(), nil)
-}
-
-func (r RoyaleRuleset) Settings() Settings {
-	s := r.StandardRuleset.Settings()
-	s.RoyaleSettings = RoyaleSettings{
-		ShrinkEveryNTurns: r.ShrinkEveryNTurns,
-	}
-	return s
 }

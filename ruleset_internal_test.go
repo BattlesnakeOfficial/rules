@@ -42,10 +42,10 @@ func TestRulesetError(t *testing.T) {
 
 func TestRulesetBuilderInternals(t *testing.T) {
 	// test Royale with seed
-	rsb := NewRulesetBuilder().WithSeed(3).WithParams(map[string]string{ParamGameType: GameTypeRoyale})
+	rsb := NewRulesetBuilder().WithSeed(3)
 	require.Equal(t, int64(3), rsb.seed)
-	require.Equal(t, GameTypeRoyale, rsb.Ruleset().Name())
-	require.Equal(t, int64(3), rsb.Ruleset().Settings().Seed())
+	require.Equal(t, GameTypeRoyale, rsb.NamedRuleset(GameTypeRoyale).Name())
+	require.Equal(t, int64(3), rsb.NamedRuleset(GameTypeRoyale).Settings().Seed())
 
 	// test parameter merging
 	rsb = NewRulesetBuilder().

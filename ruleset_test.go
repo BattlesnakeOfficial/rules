@@ -5,102 +5,13 @@ import (
 	"testing"
 
 	"github.com/BattlesnakeOfficial/rules"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestStandardRulesetSettings(t *testing.T) {
-	ruleset := rules.StandardRuleset{
-		MinimumFood:         5,
-		FoodSpawnChance:     10,
-		HazardDamagePerTurn: 10,
-		HazardMap:           "hz_spiral",
-		HazardMapAuthor:     "altersaddle",
-	}
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
-func TestWrappedRulesetSettings(t *testing.T) {
-	ruleset := rules.WrappedRuleset{
-		StandardRuleset: rules.StandardRuleset{
-			MinimumFood:         5,
-			FoodSpawnChance:     10,
-			HazardDamagePerTurn: 10,
-			HazardMap:           "hz_spiral",
-			HazardMapAuthor:     "altersaddle",
-		},
-	}
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
-func TestSoloRulesetSettings(t *testing.T) {
-	ruleset := rules.SoloRuleset{
-		StandardRuleset: rules.StandardRuleset{
-			MinimumFood:         5,
-			FoodSpawnChance:     10,
-			HazardDamagePerTurn: 10,
-			HazardMap:           "hz_spiral",
-			HazardMapAuthor:     "altersaddle",
-		},
-	}
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
-func TestRoyaleRulesetSettings(t *testing.T) {
-	ruleset := rules.RoyaleRuleset{
-		ShrinkEveryNTurns: 12,
-		StandardRuleset: rules.StandardRuleset{
-			MinimumFood:         5,
-			FoodSpawnChance:     10,
-			HazardDamagePerTurn: 10,
-			HazardMap:           "hz_spiral",
-			HazardMapAuthor:     "altersaddle",
-		},
-	}
-	assert.Equal(t, ruleset.ShrinkEveryNTurns, ruleset.Settings().RoyaleSettings.ShrinkEveryNTurns)
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
-func TestConstrictorRulesetSettings(t *testing.T) {
-	ruleset := rules.ConstrictorRuleset{
-		StandardRuleset: rules.StandardRuleset{
-			MinimumFood:         5,
-			FoodSpawnChance:     10,
-			HazardDamagePerTurn: 10,
-			HazardMap:           "hz_spiral",
-			HazardMapAuthor:     "altersaddle",
-		},
-	}
-	assert.Equal(t, ruleset.MinimumFood, ruleset.Settings().MinimumFood)
-	assert.Equal(t, ruleset.FoodSpawnChance, ruleset.Settings().FoodSpawnChance)
-	assert.Equal(t, ruleset.HazardDamagePerTurn, ruleset.Settings().HazardDamagePerTurn)
-	assert.Equal(t, ruleset.HazardMap, ruleset.Settings().HazardMap)
-	assert.Equal(t, ruleset.HazardMapAuthor, ruleset.Settings().HazardMapAuthor)
-}
-
 func TestRulesetBuilder(t *testing.T) {
 	// Test that a fresh instance can produce a Ruleset
-	require.NotNil(t, rules.NewRulesetBuilder().Ruleset())
-	require.Equal(t, rules.GameTypeStandard, rules.NewRulesetBuilder().Ruleset().Name(), "should default to standard game")
-
-	// test nil safety / defaults
-	require.NotNil(t, rules.NewRulesetBuilder().Ruleset())
+	require.NotNil(t, rules.NewRulesetBuilder().NamedRuleset(""))
+	require.Equal(t, rules.GameTypeStandard, rules.NewRulesetBuilder().NamedRuleset("").Name(), "should default to standard game")
 
 	// make sure it works okay for lots of game types
 	expectedResults := []struct {
@@ -120,7 +31,6 @@ func TestRulesetBuilder(t *testing.T) {
 
 			rsb.WithParams(map[string]string{
 				// apply the standard rule params
-				rules.ParamGameType:            expected.GameType,
 				rules.ParamFoodSpawnChance:     "10",
 				rules.ParamMinimumFood:         "5",
 				rules.ParamHazardDamagePerTurn: "12",
@@ -128,14 +38,14 @@ func TestRulesetBuilder(t *testing.T) {
 				rules.ParamHazardMapAuthor:     "tester",
 			})
 
-			require.NotNil(t, rsb.Ruleset())
-			require.Equal(t, expected.GameType, rsb.Ruleset().Name())
+			require.NotNil(t, rsb.NamedRuleset(expected.GameType))
+			require.Equal(t, expected.GameType, rsb.NamedRuleset(expected.GameType).Name())
 			// All the standard settings should always be copied over
-			require.Equal(t, 10, rsb.Ruleset().Settings().FoodSpawnChance)
-			require.Equal(t, 12, rsb.Ruleset().Settings().HazardDamagePerTurn)
-			require.Equal(t, 5, rsb.Ruleset().Settings().MinimumFood)
-			require.Equal(t, "test", rsb.Ruleset().Settings().HazardMap)
-			require.Equal(t, "tester", rsb.Ruleset().Settings().HazardMapAuthor)
+			require.Equal(t, 10, rsb.NamedRuleset(expected.GameType).Settings().FoodSpawnChance)
+			require.Equal(t, 12, rsb.NamedRuleset(expected.GameType).Settings().HazardDamagePerTurn)
+			require.Equal(t, 5, rsb.NamedRuleset(expected.GameType).Settings().MinimumFood)
+			require.Equal(t, "test", rsb.NamedRuleset(expected.GameType).Settings().HazardMap)
+			require.Equal(t, "tester", rsb.NamedRuleset(expected.GameType).Settings().HazardMapAuthor)
 		})
 	}
 }
@@ -214,11 +124,9 @@ func TestRulesetBuilderGameOver(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%v_%v", test.gameType, test.solo), func(t *testing.T) {
-			rsb := rules.NewRulesetBuilder().WithParams(map[string]string{
-				rules.ParamGameType: test.gameType,
-			}).WithSolo(test.solo)
+			rsb := rules.NewRulesetBuilder().WithSolo(test.solo)
 
-			ruleset := rsb.Ruleset()
+			ruleset := rsb.NamedRuleset(test.gameType)
 
 			gameOver, _, err := ruleset.Execute(boardState, settings, moves)
 
@@ -234,7 +142,7 @@ func TestStageFuncContract(t *testing.T) {
 	stage = func(bs *rules.BoardState, s rules.Settings, sm []rules.SnakeMove) (bool, error) {
 		return true, nil
 	}
-	ended, err := stage(nil, rules.NewRulesetBuilder().Ruleset().Settings(), nil)
+	ended, err := stage(nil, rules.NewRulesetBuilder().NamedRuleset("").Settings(), nil)
 	require.NoError(t, err)
 	require.True(t, ended)
 }

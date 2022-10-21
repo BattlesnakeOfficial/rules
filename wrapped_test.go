@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func getWrappedRuleset(settings Settings) Ruleset {
+	return NewRulesetBuilder().WithSettings(settings).NamedRuleset(GameTypeWrapped)
+}
+
 func TestLeft(t *testing.T) {
 	boardState := &BoardState{
 		Width:  11,
@@ -26,10 +30,11 @@ func TestLeft(t *testing.T) {
 		{ID: "topRight", Move: "left"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -65,10 +70,11 @@ func TestRight(t *testing.T) {
 		{ID: "topRight", Move: "right"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -104,10 +110,11 @@ func TestUp(t *testing.T) {
 		{ID: "topRight", Move: "up"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -143,10 +150,11 @@ func TestDown(t *testing.T) {
 		{ID: "topRight", Move: "down"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -185,10 +193,11 @@ func TestEdgeCrossingCollision(t *testing.T) {
 		{ID: "rightEdge", Move: "down"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -228,10 +237,11 @@ func TestEdgeCrossingEating(t *testing.T) {
 		{ID: "other", Move: "left"},
 	}
 
-	r := WrappedRuleset{}
+	r := getWrappedRuleset(Settings{})
 
-	nextBoardState, err := r.CreateNextBoardState(boardState, snakeMoves)
+	gameOver, nextBoardState, err := r.Execute(boardState, r.Settings(), snakeMoves)
 	require.NoError(t, err)
+	require.False(t, gameOver)
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
@@ -330,14 +340,10 @@ func TestWrappedCreateNextBoardState(t *testing.T) {
 		standardMoveAndCollideMAD,
 		wrappedCaseMoveAndWrap,
 	}
-	r := WrappedRuleset{}
-	rb := NewRulesetBuilder().WithParams(map[string]string{
-		ParamGameType: GameTypeWrapped,
-	})
+	r := getWrappedRuleset(Settings{})
 	for _, gc := range cases {
-		gc.requireValidNextState(t, &r)
-		// also test a RulesBuilder constructed instance
-		gc.requireValidNextState(t, rb.Ruleset())
+		// test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, r)
 		// also test a pipeline with the same settings
 		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeWrapped, NewPipeline(wrappedRulesetStages...)))
 	}
