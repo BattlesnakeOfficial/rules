@@ -23,17 +23,18 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := b.Turn + 1
 
-	if settings.RoyaleSettings.ShrinkEveryNTurns < 1 {
+	shrinkEveryNTurns := settings.Int(ParamShrinkEveryNTurns, 0)
+	if shrinkEveryNTurns < 1 {
 		return false, errors.New("royale game can't shrink more frequently than every turn")
 	}
 
-	if turn < settings.RoyaleSettings.ShrinkEveryNTurns {
+	if turn < shrinkEveryNTurns {
 		return false, nil
 	}
 
 	randGenerator := settings.GetRand(0)
 
-	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
+	numShrinks := turn / shrinkEveryNTurns
 	minX, maxX := 0, b.Width-1
 	minY, maxY := 0, b.Height-1
 	for i := 0; i < numShrinks; i++ {

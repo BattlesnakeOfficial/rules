@@ -34,28 +34,20 @@ func TestRulesetBuilder(t *testing.T) {
 				rules.ParamFoodSpawnChance:     "10",
 				rules.ParamMinimumFood:         "5",
 				rules.ParamHazardDamagePerTurn: "12",
-				rules.ParamHazardMap:           "test",
-				rules.ParamHazardMapAuthor:     "tester",
 			})
 
 			require.NotNil(t, rsb.NamedRuleset(expected.GameType))
 			require.Equal(t, expected.GameType, rsb.NamedRuleset(expected.GameType).Name())
 			// All the standard settings should always be copied over
-			require.Equal(t, 10, rsb.NamedRuleset(expected.GameType).Settings().FoodSpawnChance)
-			require.Equal(t, 12, rsb.NamedRuleset(expected.GameType).Settings().HazardDamagePerTurn)
-			require.Equal(t, 5, rsb.NamedRuleset(expected.GameType).Settings().MinimumFood)
-			require.Equal(t, "test", rsb.NamedRuleset(expected.GameType).Settings().HazardMap)
-			require.Equal(t, "tester", rsb.NamedRuleset(expected.GameType).Settings().HazardMapAuthor)
+			require.Equal(t, 10, rsb.NamedRuleset(expected.GameType).Settings().Int(rules.ParamFoodSpawnChance, 0))
+			require.Equal(t, 12, rsb.NamedRuleset(expected.GameType).Settings().Int(rules.ParamHazardDamagePerTurn, 0))
+			require.Equal(t, 5, rsb.NamedRuleset(expected.GameType).Settings().Int(rules.ParamMinimumFood, 0))
 		})
 	}
 }
 
 func TestRulesetBuilderGameOver(t *testing.T) {
-	settings := rules.Settings{
-		RoyaleSettings: rules.RoyaleSettings{
-			ShrinkEveryNTurns: 12,
-		},
-	}
+	settings := rules.NewSettingsWithParams(rules.ParamShrinkEveryNTurns, "12")
 	moves := []rules.SnakeMove{
 		{ID: "1", Move: "up"},
 	}

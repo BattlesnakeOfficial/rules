@@ -8,16 +8,16 @@
         "foodSpawnChance": 10,
         "minimumFood": 20,
         "hazardDamagePerTurn": 30,
-        "hazardMap": "hz_spiral",
-        "hazardMapAuthor": "altersaddle",
+        "hazardMap": "",
+        "hazardMapAuthor": "",
         "royale": {
           "shrinkEveryNTurns": 40
         },
         "squad": {
-          "allowBodyCollisions": true,
-          "sharedElimination": true,
-          "sharedHealth": true,
-          "sharedLength": true
+          "allowBodyCollisions": false,
+          "sharedElimination": false,
+          "sharedHealth": false,
+          "sharedLength": false
         }
       }
     },

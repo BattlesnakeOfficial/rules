@@ -131,6 +131,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
+	hazardDamage := settings.Int(ParamHazardDamagePerTurn, 0)
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
@@ -151,7 +152,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 				}
 
 				// Snake is in a hazard, reduce health
-				snake.Health = snake.Health - settings.HazardDamagePerTurn
+				snake.Health = snake.Health - hazardDamage
 				if snake.Health < 0 {
 					snake.Health = 0
 				}
@@ -368,11 +369,13 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
+	minimumFood := settings.Int(ParamMinimumFood, 0)
+	foodSpawnChance := settings.Int(ParamFoodSpawnChance, 0)
 	numCurrentFood := int(len(b.Food))
-	if numCurrentFood < settings.MinimumFood {
-		return false, PlaceFoodRandomly(GlobalRand, b, settings.MinimumFood-numCurrentFood)
+	if numCurrentFood < minimumFood {
+		return false, PlaceFoodRandomly(GlobalRand, b, minimumFood-numCurrentFood)
 	}
-	if settings.FoodSpawnChance > 0 && int(rand.Intn(100)) < settings.FoodSpawnChance {
+	if foodSpawnChance > 0 && int(rand.Intn(100)) < foodSpawnChance {
 		return false, PlaceFoodRandomly(GlobalRand, b, 1)
 	}
 	return false, nil

@@ -1,9 +1,5 @@
 package rules
 
-import (
-	"strconv"
-)
-
 type Ruleset interface {
 	// Returns the name of the ruleset, if applicable.
 	Name() string
@@ -36,7 +32,7 @@ func NewRulesetBuilder() *rulesetBuilder {
 	}
 }
 
-// WithParams accepts a map of game parameters for customizing games.
+// WithParams accepts a map of string parameters for customizing games.
 //
 // Parameters are copied. If called multiple times, parameters are merged such that:
 //   - existing keys in both maps get overwritten by the new ones
@@ -114,47 +110,13 @@ func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) Ruleset {
 	if rb.settings != nil {
 		settings = *rb.settings
 	} else {
-		settings = Settings{
-			FoodSpawnChance:     paramsInt(rb.params, ParamFoodSpawnChance, 0),
-			MinimumFood:         paramsInt(rb.params, ParamMinimumFood, 0),
-			HazardDamagePerTurn: paramsInt(rb.params, ParamHazardDamagePerTurn, 0),
-			HazardMap:           rb.params[ParamHazardMap],
-			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
-			RoyaleSettings: RoyaleSettings{
-				ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
-			},
-			rand: rb.rand,
-			seed: rb.seed,
-		}
+		settings = NewSettings(rb.params).WithRand(rb.rand).WithSeed(rb.seed)
 	}
 	return &pipelineRuleset{
 		name:     name,
 		pipeline: p,
 		settings: settings,
 	}
-}
-
-// paramsBool returns the boolean value for the specified parameter.
-// If the parameter doesn't exist, the default value will be returned.
-// If the parameter does exist, but is not "true", false will be returned.
-func paramsBool(params map[string]string, paramName string, defaultValue bool) bool {
-	if val, ok := params[paramName]; ok {
-		return val == "true"
-	}
-	return defaultValue
-}
-
-// paramsInt returns the int value for the specified parameter.
-// If the parameter doesn't exist, the default value will be returned.
-// If the parameter does exist, but is not a valid int, the default value will be returned.
-func paramsInt(params map[string]string, paramName string, defaultValue int) int {
-	if val, ok := params[paramName]; ok {
-		i, err := strconv.Atoi(val)
-		if err == nil {
-			return i
-		}
-	}
-	return defaultValue
 }
 
 type pipelineRuleset struct {

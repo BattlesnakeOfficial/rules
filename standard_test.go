@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"testing"
@@ -1328,7 +1329,7 @@ func TestMaybeDamageHazards(t *testing.T) {
 
 	for _, test := range tests {
 		b := &BoardState{Turn: 41, Snakes: test.Snakes, Hazards: test.Hazards, Food: test.Food}
-		r := NewRulesetBuilder().WithSettings(Settings{HazardDamagePerTurn: 100}).NamedRuleset(GameTypeStandard)
+		r := getStandardRuleset(NewSettingsWithParams(ParamHazardDamagePerTurn, "100"))
 		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 
@@ -1372,7 +1373,7 @@ func TestHazardDamagePerTurn(t *testing.T) {
 		if test.Food {
 			b.Food = []Point{{0, 0}}
 		}
-		r := getStandardRuleset(Settings{HazardDamagePerTurn: test.HazardDamagePerTurn})
+		r := getStandardRuleset(NewSettingsWithParams(ParamHazardDamagePerTurn, fmt.Sprint(test.HazardDamagePerTurn)))
 
 		_, err := DamageHazardsStandard(b, r.Settings(), mockSnakeMoves())
 		require.Equal(t, test.Error, err)
@@ -1479,7 +1480,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r := getStandardRuleset(Settings{MinimumFood: test.MinimumFood})
+		r := getStandardRuleset(NewSettingsWithParams(ParamMinimumFood, fmt.Sprint(test.MinimumFood)))
 		b := &BoardState{
 			Height: 11,
 			Width:  11,
@@ -1497,7 +1498,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 }
 
 func TestMaybeSpawnFoodZeroChance(t *testing.T) {
-	r := getStandardRuleset(Settings{FoodSpawnChance: 0})
+	r := getStandardRuleset(NewSettingsWithParams(ParamFoodSpawnChance, "0"))
 	b := &BoardState{
 		Height: 11,
 		Width:  11,
@@ -1515,7 +1516,7 @@ func TestMaybeSpawnFoodZeroChance(t *testing.T) {
 }
 
 func TestMaybeSpawnFoodHundredChance(t *testing.T) {
-	r := getStandardRuleset(Settings{FoodSpawnChance: 100})
+	r := getStandardRuleset(NewSettingsWithParams(ParamFoodSpawnChance, "100"))
 	b := &BoardState{
 		Height: 11,
 		Width:  11,
@@ -1547,7 +1548,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		{165, []Point{{4, 4}}, 2},
 	}
 
-	r := getStandardRuleset(Settings{FoodSpawnChance: 50})
+	r := getStandardRuleset(NewSettingsWithParams(ParamFoodSpawnChance, "50"))
 	for _, test := range tests {
 		b := &BoardState{
 			Height: 4,

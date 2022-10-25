@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"testing"
 
@@ -9,12 +10,10 @@ import (
 )
 
 func getRoyaleRuleset(hazardDamagePerTurn, shrinkEveryNTurns int) Ruleset {
-	settings := Settings{
-		HazardDamagePerTurn: hazardDamagePerTurn,
-		RoyaleSettings: RoyaleSettings{
-			ShrinkEveryNTurns: shrinkEveryNTurns,
-		},
-	}
+	settings := NewSettingsWithParams(
+		ParamHazardDamagePerTurn, fmt.Sprint(hazardDamagePerTurn),
+		ParamShrinkEveryNTurns, fmt.Sprint(shrinkEveryNTurns),
+	)
 	return NewRulesetBuilder().WithSettings(settings).NamedRuleset(GameTypeRoyale)
 }
 
@@ -100,12 +99,10 @@ func TestRoyaleHazards(t *testing.T) {
 			Width:  test.Width,
 			Height: test.Height,
 		}
-		settings := Settings{
-			HazardDamagePerTurn: 1,
-			RoyaleSettings: RoyaleSettings{
-				ShrinkEveryNTurns: test.ShrinkEveryNTurns,
-			},
-		}.WithSeed(seed)
+		settings := NewSettingsWithParams(
+			ParamHazardDamagePerTurn, "1",
+			ParamShrinkEveryNTurns, fmt.Sprint(test.ShrinkEveryNTurns),
+		).WithSeed(seed)
 
 		_, err := PopulateHazardsRoyale(b, settings, mockSnakeMoves())
 		require.Equal(t, test.Error, err)

@@ -42,11 +42,12 @@ func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := lastBoardState.Turn + 1
 
-	if settings.RoyaleSettings.ShrinkEveryNTurns < 1 {
+	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 0)
+	if shrinkEveryNTurns < 1 {
 		return errors.New("royale game can't shrink more frequently than every turn")
 	}
 
-	if turn < settings.RoyaleSettings.ShrinkEveryNTurns {
+	if turn < shrinkEveryNTurns {
 		return nil
 	}
 
@@ -56,7 +57,7 @@ func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings
 	// Get random generator for turn zero, because we're regenerating all hazards every time.
 	randGenerator := settings.GetRand(0)
 
-	numShrinks := turn / settings.RoyaleSettings.ShrinkEveryNTurns
+	numShrinks := turn / shrinkEveryNTurns
 	minX, maxX := 0, lastBoardState.Width-1
 	minY, maxY := 0, lastBoardState.Height-1
 	for i := 0; i < numShrinks; i++ {

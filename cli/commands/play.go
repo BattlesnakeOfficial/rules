@@ -541,7 +541,7 @@ func (gameState *GameState) createClientGame() client.Game {
 		Ruleset: client.Ruleset{
 			Name:     gameState.ruleset.Name(),
 			Version:  "cli", // TODO: Use GitHub Release Version
-			Settings: gameState.ruleset.Settings(),
+			Settings: client.ConvertRulesetSettings(gameState.ruleset.Settings()),
 		},
 		Map: gameState.gameMap.ID(),
 	}

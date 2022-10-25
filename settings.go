@@ -1,18 +1,40 @@
 package rules
 
+import "strconv"
+
 // Settings contains all settings relevant to a game.
-// It is used by game logic to take a previous game state and produce a next game state.
+// The settings are stored as raw string values, which should not be accessed
+// directly. Calling code should instead use the Int/Bool methods to parse them.
 type Settings struct {
-	FoodSpawnChance     int            `json:"foodSpawnChance"`
-	MinimumFood         int            `json:"minimumFood"`
-	HazardDamagePerTurn int            `json:"hazardDamagePerTurn"`
-	HazardMap           string         `json:"hazardMap"`
-	HazardMapAuthor     string         `json:"hazardMapAuthor"`
-	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"` // Deprecated, provided with default fields for API compatibility
+	rawValues map[string]string
 
 	rand Rand
 	seed int64
+}
+
+func NewSettings(params map[string]string) Settings {
+	rawValues := make(map[string]string, len(params))
+
+	// Copy incoming params into a new map
+	for key, value := range params {
+		rawValues[key] = value
+	}
+
+	return Settings{
+		rawValues: rawValues,
+	}
+}
+
+func NewSettingsWithParams(params ...string) Settings {
+	rawValues := map[string]string{}
+
+	for index := 1; index < len(params); index += 2 {
+		rawValues[params[index-1]] = params[index]
+	}
+
+	return Settings{
+		rawValues: rawValues,
+	}
 }
 
 // Get a random number generator initialized based on the seed and current turn.
@@ -44,15 +66,25 @@ func (settings Settings) WithSeed(seed int64) Settings {
 	return settings
 }
 
-// RoyaleSettings contains settings that are specific to the "royale" game mode
-type RoyaleSettings struct {
-	ShrinkEveryNTurns int `json:"shrinkEveryNTurns"`
+// Bool returns the boolean value for the specified parameter.
+// If the parameter doesn't exist, the default value will be returned.
+// If the parameter does exist, but is not "true", false will be returned.
+func (settings Settings) Bool(paramName string, defaultValue bool) bool {
+	if val, ok := settings.rawValues[paramName]; ok {
+		return val == "true"
+	}
+	return defaultValue
 }
 
-// SquadSettings contains settings that are specific to the "squad" game mode
-type SquadSettings struct {
-	AllowBodyCollisions bool `json:"allowBodyCollisions"`
-	SharedElimination   bool `json:"sharedElimination"`
-	SharedHealth        bool `json:"sharedHealth"`
-	SharedLength        bool `json:"sharedLength"`
+// Int returns the int value for the specified parameter.
+// If the parameter doesn't exist, the default value will be returned.
+// If the parameter does exist, but is not a valid int, the default value will be returned.
+func (settings Settings) Int(paramName string, defaultValue int) int {
+	if val, ok := settings.rawValues[paramName]; ok {
+		i, err := strconv.Atoi(val)
+		if err == nil {
+			return i
+		}
+	}
+	return defaultValue
 }

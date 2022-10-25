@@ -597,14 +597,13 @@ func TestOutputFile(t *testing.T) {
 
 	gameState.ruleset = StubRuleset{
 		maxTurns: 1,
-		settings: rules.Settings{
-			FoodSpawnChance:     1,
-			MinimumFood:         2,
-			HazardDamagePerTurn: 3,
-			RoyaleSettings: rules.RoyaleSettings{
-				ShrinkEveryNTurns: 4,
-			},
-		}}
+		settings: rules.NewSettings(map[string]string{
+			rules.ParamFoodSpawnChance:     "1",
+			rules.ParamMinimumFood:         "2",
+			rules.ParamHazardDamagePerTurn: "3",
+			rules.ParamShrinkEveryNTurns:   "4",
+		}),
+	}
 
 	err = gameState.Run()
 	require.NoError(t, err)
