@@ -69,8 +69,8 @@ func (m StandardMap) UpdateBoard(lastBoardState *rules.BoardState, settings rule
 }
 
 func checkFoodNeedingPlacement(rand rules.Rand, settings rules.Settings, state *rules.BoardState) int {
-	minFood := int(settings.MinimumFood)
-	foodSpawnChance := int(settings.FoodSpawnChance)
+	minFood := settings.Int(rules.ParamMinimumFood, 0)
+	foodSpawnChance := settings.Int(rules.ParamFoodSpawnChance, 0)
 	numCurrentFood := len(state.Food)
 
 	if numCurrentFood < minFood {

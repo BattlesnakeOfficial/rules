@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-func TestConstrictorRulesetInterface(t *testing.T) {
-	var _ Ruleset = (*ConstrictorRuleset)(nil)
-}
-
 // Test that two equal snakes collide and both get eliminated
 // also checks:
 //	- food removed
@@ -70,15 +66,11 @@ func TestConstrictorCreateNextBoardState(t *testing.T) {
 		standardCaseErrZeroLengthSnake,
 		constrictorMoveAndCollideMAD,
 	}
-	rb := NewRulesetBuilder().WithParams(map[string]string{
-		ParamGameType: GameTypeConstrictor,
-	})
-	r := ConstrictorRuleset{}
+	r := NewRulesetBuilder().NamedRuleset(GameTypeConstrictor)
 	for _, gc := range cases {
-		gc.requireValidNextState(t, &r)
-		// also test a RulesBuilder constructed instance
-		gc.requireValidNextState(t, rb.Ruleset())
+		// test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, r)
 		// also test a pipeline with the same settings
-		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeConstrictor, NewPipeline(constrictorRulesetStages...)))
+		gc.requireValidNextState(t, NewRulesetBuilder().PipelineRuleset(GameTypeConstrictor, NewPipeline(constrictorRulesetStages...)))
 	}
 }

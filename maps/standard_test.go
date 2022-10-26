@@ -172,10 +172,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		{
 			"empty no food",
 			rules.NewBoardState(2, 2),
-			rules.Settings{
-				FoodSpawnChance: 0,
-				MinimumFood:     0,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "0", rules.ParamMinimumFood, "0"),
 			rules.MinRand,
 			&rules.BoardState{
 				Width:   2,
@@ -188,10 +185,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		{
 			"empty MinimumFood",
 			rules.NewBoardState(2, 2),
-			rules.Settings{
-				FoodSpawnChance: 0,
-				MinimumFood:     2,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "0", rules.ParamMinimumFood, "2"),
 			rules.MinRand,
 			&rules.BoardState{
 				Width:   2,
@@ -210,10 +204,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 				Food:    []rules.Point{{X: 0, Y: 1}},
 				Hazards: []rules.Point{},
 			},
-			rules.Settings{
-				FoodSpawnChance: 0,
-				MinimumFood:     2,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "0", rules.ParamMinimumFood, "2"),
 			rules.MinRand,
 			&rules.BoardState{
 				Width:   2,
@@ -226,10 +217,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		{
 			"empty FoodSpawnChance inactive",
 			rules.NewBoardState(2, 2),
-			rules.Settings{
-				FoodSpawnChance: 50,
-				MinimumFood:     0,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50", rules.ParamMinimumFood, "0"),
 			rules.MinRand,
 			&rules.BoardState{
 				Width:   2,
@@ -242,10 +230,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		{
 			"empty FoodSpawnChance active",
 			rules.NewBoardState(2, 2),
-			rules.Settings{
-				FoodSpawnChance: 50,
-				MinimumFood:     0,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50", rules.ParamMinimumFood, "0"),
 			rules.MaxRand,
 			&rules.BoardState{
 				Width:   2,
@@ -264,10 +249,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 				Food:    []rules.Point{{X: 0, Y: 0}},
 				Hazards: []rules.Point{},
 			},
-			rules.Settings{
-				FoodSpawnChance: 50,
-				MinimumFood:     0,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50", rules.ParamMinimumFood, "0"),
 			rules.MaxRand,
 			&rules.BoardState{
 				Width:   2,
@@ -286,10 +268,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 				Food:    []rules.Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 1, Y: 0}, {X: 1, Y: 1}},
 				Hazards: []rules.Point{},
 			},
-			rules.Settings{
-				FoodSpawnChance: 50,
-				MinimumFood:     0,
-			},
+			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50", rules.ParamMinimumFood, "0"),
 			rules.MaxRand,
 			&rules.BoardState{
 				Width:   2,

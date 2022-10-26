@@ -549,7 +549,9 @@ func TestCreateNextBoardState(t *testing.T) {
 			gameState.snakeStates = map[string]SnakeState{s1.ID: snakeState}
 			gameState.httpClient = stubHTTPClient{nil, 200, func(_ string) string { return `{"move": "right"}` }, 54 * time.Millisecond}
 
-			nextBoardState := gameState.createNextBoardState(boardState)
+			gameOver, nextBoardState, err := gameState.createNextBoardState(boardState)
+			require.NoError(t, err)
+			require.False(t, gameOver)
 			snakeState = gameState.snakeStates[s1.ID]
 
 			require.NotNil(t, nextBoardState)
@@ -593,16 +595,18 @@ func TestOutputFile(t *testing.T) {
 	outputFile := new(closableBuffer)
 	gameState.outputFile = outputFile
 
-	gameState.ruleset = StubRuleset{maxTurns: 1, settings: rules.Settings{
-		FoodSpawnChance:     1,
-		MinimumFood:         2,
-		HazardDamagePerTurn: 3,
-		RoyaleSettings: rules.RoyaleSettings{
-			ShrinkEveryNTurns: 4,
-		},
-	}}
+	gameState.ruleset = StubRuleset{
+		maxTurns: 1,
+		settings: rules.NewSettings(map[string]string{
+			rules.ParamFoodSpawnChance:     "1",
+			rules.ParamMinimumFood:         "2",
+			rules.ParamHazardDamagePerTurn: "3",
+			rules.ParamShrinkEveryNTurns:   "4",
+		}),
+	}
 
-	gameState.Run()
+	err = gameState.Run()
+	require.NoError(t, err)
 
 	lines := strings.Split(outputFile.String(), "\n")
 	require.Len(t, lines, 5)
@@ -626,14 +630,8 @@ type StubRuleset struct {
 
 func (ruleset StubRuleset) Name() string             { return "standard" }
 func (ruleset StubRuleset) Settings() rules.Settings { return ruleset.settings }
-func (ruleset StubRuleset) ModifyInitialBoardState(initialState *rules.BoardState) (*rules.BoardState, error) {
-	return initialState, nil
-}
-func (ruleset StubRuleset) CreateNextBoardState(prevState *rules.BoardState, moves []rules.SnakeMove) (*rules.BoardState, error) {
-	return prevState, nil
-}
-func (ruleset StubRuleset) IsGameOver(state *rules.BoardState) (bool, error) {
-	return state.Turn >= ruleset.maxTurns, nil
+func (ruleset StubRuleset) Execute(prevState *rules.BoardState, moves []rules.SnakeMove) (bool, *rules.BoardState, error) {
+	return prevState.Turn >= ruleset.maxTurns, prevState, nil
 }
 
 type stubHTTPClient struct {

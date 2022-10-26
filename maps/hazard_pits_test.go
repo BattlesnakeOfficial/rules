@@ -38,7 +38,7 @@ func TestHazardPitsMap(t *testing.T) {
 
 	state = rules.NewBoardState(int(11), int(11))
 	m = maps.HazardPitsMap{}
-	settings.RoyaleSettings.ShrinkEveryNTurns = 1
+	settings = rules.NewSettingsWithParams(rules.ParamShrinkEveryNTurns, "1")
 	editor = maps.NewBoardStateEditor(state)
 	require.Empty(t, state.Hazards)
 	err = m.SetupBoard(state, settings, editor)

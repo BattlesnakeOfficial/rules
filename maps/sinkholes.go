@@ -42,8 +42,9 @@ func (m SinkholesMap) UpdateBoard(lastBoardState *rules.BoardState, settings rul
 	currentTurn := lastBoardState.Turn
 	startTurn := 1
 	spawnEveryNTurns := 10
-	if settings.RoyaleSettings.ShrinkEveryNTurns > 0 {
-		spawnEveryNTurns = settings.RoyaleSettings.ShrinkEveryNTurns
+	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 0)
+	if shrinkEveryNTurns > 0 {
+		spawnEveryNTurns = shrinkEveryNTurns
 	}
 	maxRings := 5
 	if lastBoardState.Width == 7 {

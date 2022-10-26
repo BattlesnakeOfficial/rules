@@ -2,14 +2,19 @@ package rules
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestRoyaleRulesetInterface(t *testing.T) {
-	var _ Ruleset = (*RoyaleRuleset)(nil)
+func getRoyaleRuleset(hazardDamagePerTurn, shrinkEveryNTurns int) Ruleset {
+	settings := NewSettingsWithParams(
+		ParamHazardDamagePerTurn, fmt.Sprint(hazardDamagePerTurn),
+		ParamShrinkEveryNTurns, fmt.Sprint(shrinkEveryNTurns),
+	)
+	return NewRulesetBuilder().WithSettings(settings).NamedRuleset(GameTypeRoyale)
 }
 
 func TestRoyaleDefaultSanity(t *testing.T) {
@@ -19,24 +24,19 @@ func TestRoyaleDefaultSanity(t *testing.T) {
 			{ID: "2", Body: []Point{{X: 0, Y: 1}}},
 		},
 	}
-	r := RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 1}, ShrinkEveryNTurns: 0}
-	_, err := r.CreateNextBoardState(boardState, []SnakeMove{{"1", "right"}, {"2", "right"}})
+	r := getRoyaleRuleset(1, 0)
+	_, _, err := r.Execute(boardState, []SnakeMove{{"1", "right"}, {"2", "right"}})
 	require.Error(t, err)
 	require.Equal(t, errors.New("royale game can't shrink more frequently than every turn"), err)
 
-	r = RoyaleRuleset{ShrinkEveryNTurns: 1}
-	_, err = r.CreateNextBoardState(boardState, []SnakeMove{})
-	require.Error(t, err)
-	require.Equal(t, errors.New("royale damage per turn must be greater than zero"), err)
-
-	r = RoyaleRuleset{StandardRuleset: StandardRuleset{HazardDamagePerTurn: 1}, ShrinkEveryNTurns: 1}
-	boardState, err = r.CreateNextBoardState(boardState, []SnakeMove{})
+	r = getRoyaleRuleset(1, 1)
+	_, boardState, err = r.Execute(boardState, []SnakeMove{})
 	require.NoError(t, err)
 	require.Len(t, boardState.Hazards, 0)
 }
 
 func TestRoyaleName(t *testing.T) {
-	r := RoyaleRuleset{}
+	r := getRoyaleRuleset(0, 0)
 	require.Equal(t, "royale", r.Name())
 }
 
@@ -99,12 +99,10 @@ func TestRoyaleHazards(t *testing.T) {
 			Width:  test.Width,
 			Height: test.Height,
 		}
-		settings := Settings{
-			HazardDamagePerTurn: 1,
-			RoyaleSettings: RoyaleSettings{
-				ShrinkEveryNTurns: test.ShrinkEveryNTurns,
-			},
-		}.WithSeed(seed)
+		settings := NewSettingsWithParams(
+			ParamHazardDamagePerTurn, "1",
+			ParamShrinkEveryNTurns, fmt.Sprint(test.ShrinkEveryNTurns),
+		).WithSeed(seed)
 
 		_, err := PopulateHazardsRoyale(b, settings, mockSnakeMoves())
 		require.Equal(t, test.Error, err)
@@ -204,22 +202,14 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		*s2,
 		royaleCaseHazardsPlaced,
 	}
-	r := RoyaleRuleset{
-		StandardRuleset: StandardRuleset{
-			HazardDamagePerTurn: 1,
-		},
-		ShrinkEveryNTurns: 1,
-	}
 	rb := NewRulesetBuilder().WithParams(map[string]string{
-		ParamGameType:            GameTypeRoyale,
 		ParamHazardDamagePerTurn: "1",
 		ParamShrinkEveryNTurns:   "1",
 	}).WithSeed(1234)
 	for _, gc := range cases {
 		rand.Seed(1234)
-		gc.requireValidNextState(t, &r)
-		// also test a RulesBuilder constructed instance
-		gc.requireValidNextState(t, rb.Ruleset())
+		// test a RulesBuilder constructed instance
+		gc.requireValidNextState(t, rb.NamedRuleset(GameTypeRoyale))
 		// also test a pipeline with the same settings
 		gc.requireValidNextState(t, rb.PipelineRuleset(GameTypeRoyale, NewPipeline(royaleRulesetStages...)))
 	}

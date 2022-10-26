@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/BattlesnakeOfficial/rules"
 	"github.com/BattlesnakeOfficial/rules/test"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +18,7 @@ func TestBuildSnakeRequestJSON(t *testing.T) {
 
 func TestBuildSnakeRequestJSONEmptyRulesetSettings(t *testing.T) {
 	snakeRequest := exampleSnakeRequest()
-	snakeRequest.Game.Ruleset.Settings = rules.Settings{}
+	snakeRequest.Game.Ruleset.Settings = RulesetSettings{}
 	data, err := json.MarshalIndent(snakeRequest, "", "  ")
 	require.NoError(t, err)
 

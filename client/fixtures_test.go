@@ -9,7 +9,7 @@ func exampleSnakeRequest() SnakeRequest {
 			Ruleset: Ruleset{
 				Name:     "test-ruleset-name",
 				Version:  "cli",
-				Settings: exampleRulesetSettings,
+				Settings: ConvertRulesetSettings(exampleRulesetSettings),
 			},
 			Timeout: 33,
 			Source:  "league",
@@ -75,21 +75,9 @@ func exampleSnakeRequest() SnakeRequest {
 	}
 }
 
-var exampleRulesetSettings = rules.Settings{
-	FoodSpawnChance:     10,
-	MinimumFood:         20,
-	HazardDamagePerTurn: 30,
-	HazardMap:           "hz_spiral",
-	HazardMapAuthor:     "altersaddle",
-
-	RoyaleSettings: rules.RoyaleSettings{
-		ShrinkEveryNTurns: 40,
-	},
-
-	SquadSettings: rules.SquadSettings{
-		AllowBodyCollisions: true,
-		SharedElimination:   true,
-		SharedHealth:        true,
-		SharedLength:        true,
-	},
-}
+var exampleRulesetSettings = rules.NewSettings(map[string]string{
+	rules.ParamFoodSpawnChance:     "10",
+	rules.ParamMinimumFood:         "20",
+	rules.ParamHazardDamagePerTurn: "30",
+	rules.ParamShrinkEveryNTurns:   "40",
+})
