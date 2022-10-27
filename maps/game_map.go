@@ -24,19 +24,20 @@ type GameMap interface {
 	// Called to generate a new board. The map is responsible for placing all snakes, food, and hazards.
 	SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 
-	// Called every turn to optionally update the board.
-	// This is called before the board is sent to snakes to get their moves, so changes made here
-	// will be seen by snakes before before making their moves, but users in the browser will see
-	// the changes at the same time as the snakes' moves.
+	// Called every turn to optionally update the board before the board is sent to snakes to get their moves.
+	// Changes made here will be seen by snakes before before making their moves, but users in the
+	// browser will see the changes at the same time as the snakes' moves.
 	//
-	// Disclaimer: Unless you have a specific usecase like moving hazards, PostUpdateBoard is probably the
-	// better function to use.
+	// State that is stored in the map by this method will be visible to the PostUpdateBoard method
+	// later in the same turn, but will not nessecarily be available when processing later turns.
+	//
+	// Disclaimer: Unless you have a specific usecase like moving hazards or storing intermediate state,
+	// PostUpdateBoard is probably the better function to use.
 	PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 
-	// Called every turn to optionally update the board.
-	// This is called after snakes have made their moves and all rules have been applied.
-	// That means that both snakes, as well as users in the browser will see the changes made here
-	// before the snakes make their next moves.
+	// Called every turn to optionally update the board after all other rules have been applied.
+	// Changes made here will be seen by both snakes and users in the browser, before before snakes
+	// make their next moves.
 	PostUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
