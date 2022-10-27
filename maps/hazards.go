@@ -54,8 +54,12 @@ func (m InnerBorderHazardsMap) SetupBoard(lastBoardState *rules.BoardState, sett
 	return nil
 }
 
-func (m InnerBorderHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m InnerBorderHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m InnerBorderHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 }
 
 type ConcentricRingsHazardsMap struct{}
@@ -96,8 +100,12 @@ func (m ConcentricRingsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, 
 	return nil
 }
 
-func (m ConcentricRingsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m ConcentricRingsHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m ConcentricRingsHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 }
 
 type ColumnsHazardsMap struct{}
@@ -135,8 +143,12 @@ func (m ColumnsHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings
 	return nil
 }
 
-func (m ColumnsHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	return StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m ColumnsHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m ColumnsHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 }
 
 type SpiralHazardsMap struct{}
@@ -163,8 +175,12 @@ func (m SpiralHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings 
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m SpiralHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m SpiralHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m SpiralHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -256,8 +272,12 @@ func (m ScatterFillMap) SetupBoard(lastBoardState *rules.BoardState, settings ru
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m ScatterFillMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m ScatterFillMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m ScatterFillMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -308,8 +328,12 @@ func (m DirectionalExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState,
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m DirectionalExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m DirectionalExpandingBoxMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m DirectionalExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -423,8 +447,12 @@ func (m ExpandingBoxMap) SetupBoard(lastBoardState *rules.BoardState, settings r
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m ExpandingBoxMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m ExpandingBoxMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m ExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -499,8 +527,12 @@ func (m ExpandingScatterMap) SetupBoard(lastBoardState *rules.BoardState, settin
 	return (StandardMap{}).SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m ExpandingScatterMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m ExpandingScatterMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return (StandardMap{}).PreUpdateBoard(lastBoardState, settings, editor)
+}
+
+func (m ExpandingScatterMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}

@@ -59,7 +59,7 @@ func TestHealingPoolsMap(t *testing.T) {
 			totalTurns := settings.RoyaleSettings.ShrinkEveryNTurns*tc.expectedHazards + 1
 			for i := 0; i < totalTurns; i++ {
 				state.Turn = i
-				err = m.UpdateBoard(state, settings, editor)
+				err = m.PostUpdateBoard(state, settings, editor)
 				require.NoError(t, err)
 			}
 

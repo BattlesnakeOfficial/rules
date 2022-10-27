@@ -152,7 +152,7 @@ func TestEmptyMapUpdateBoard(t *testing.T) {
 	}.WithRand(rules.MaxRand)
 	nextBoardState := initialBoardState.Clone()
 
-	err := m.UpdateBoard(initialBoardState.Clone(), settings, maps.NewBoardStateEditor(nextBoardState))
+	err := m.PostUpdateBoard(initialBoardState.Clone(), settings, maps.NewBoardStateEditor(nextBoardState))
 
 	require.NoError(t, err)
 	require.Equal(t, &rules.BoardState{

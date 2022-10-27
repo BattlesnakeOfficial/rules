@@ -50,8 +50,12 @@ func (m HealingPoolsMap) SetupBoard(initialBoardState *rules.BoardState, setting
 	return nil
 }
 
-func (m HealingPoolsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if err := (StandardMap{}).UpdateBoard(lastBoardState, settings, editor); err != nil {
+func (m HealingPoolsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m HealingPoolsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := (StandardMap{}).PostUpdateBoard(lastBoardState, settings, editor); err != nil {
 		return err
 	}
 

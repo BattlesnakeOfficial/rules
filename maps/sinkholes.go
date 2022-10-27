@@ -33,8 +33,12 @@ func (m SinkholesMap) SetupBoard(initialBoardState *rules.BoardState, settings r
 	return (StandardMap{}).SetupBoard(initialBoardState, settings, editor)
 }
 
-func (m SinkholesMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m SinkholesMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m SinkholesMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}

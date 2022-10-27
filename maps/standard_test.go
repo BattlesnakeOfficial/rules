@@ -306,7 +306,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 			settings := test.settings.WithRand(test.rand)
 			editor := maps.NewBoardStateEditor(nextBoardState)
 
-			err := m.UpdateBoard(test.initialBoardState.Clone(), settings, editor)
+			err := m.PostUpdateBoard(test.initialBoardState.Clone(), settings, editor)
 
 			require.NoError(t, err)
 			require.Equal(t, test.expected, nextBoardState)

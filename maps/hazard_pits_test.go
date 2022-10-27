@@ -47,7 +47,7 @@ func TestHazardPitsMap(t *testing.T) {
 	// Verify the hazard progression through the turns
 	for i := 0; i < 16; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 		if i == 1 {
 			require.Len(t, state.Hazards, 21)

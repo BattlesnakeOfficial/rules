@@ -393,14 +393,19 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) *
 		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
 
-	boardState, err := gameState.ruleset.CreateNextBoardState(boardState, moves)
+	boardState, err := maps.PreUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
+	if err != nil {
+		log.ERROR.Fatalf("Error pre-updating board with game map: %v", err)
+	}
+
+	boardState, err = gameState.ruleset.CreateNextBoardState(boardState, moves)
 	if err != nil {
 		log.ERROR.Fatalf("Error producing next board state: %v", err)
 	}
 
-	boardState, err = maps.UpdateBoard(gameState.gameMap.ID(), boardState, gameState.ruleset.Settings())
+	boardState, err = maps.PostUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
 	if err != nil {
-		log.ERROR.Fatalf("Error updating board with game map: %v", err)
+		log.ERROR.Fatalf("Error post-updating board with game map: %v", err)
 	}
 
 	boardState.Turn += 1
