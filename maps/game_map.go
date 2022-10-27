@@ -166,6 +166,12 @@ type Editor interface {
 	// Note: the body values in the return value are a copy and modifying them won't affect the board.
 	SnakeBodies() map[string][]rules.Point
 
+	// Get an editable reference to the BoardState's GameState field
+	GameState() map[string]string
+
+	// Get an editable reference to the BoardState's PointState field
+	PointState() map[rules.Point]int
+
 	// Given a list of Snakes and a list of head coordinates, randomly place
 	// the snakes on those coordinates, or return an error if placement of all
 	// Snakes is impossible.
@@ -268,6 +274,16 @@ func (editor *BoardStateEditor) SnakeBodies() map[string][]rules.Point {
 	}
 
 	return result
+}
+
+// Get an editable reference to the BoardState's GameState field
+func (editor *BoardStateEditor) GameState() map[string]string {
+	return editor.boardState.GameState
+}
+
+// Get an editable reference to the BoardState's PointState field
+func (editor *BoardStateEditor) PointState() map[rules.Point]int {
+	return editor.boardState.PointState
 }
 
 // Given a list of Snakes and a list of head coordinates, randomly place
