@@ -101,7 +101,7 @@ func TestEmptyMapUpdateBoard(t *testing.T) {
 	settings := rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50", rules.ParamMinimumFood, "2").WithRand(rules.MaxRand)
 	nextBoardState := initialBoardState.Clone()
 
-	err := m.UpdateBoard(initialBoardState.Clone(), settings, maps.NewBoardStateEditor(nextBoardState))
+	err := m.PostUpdateBoard(initialBoardState.Clone(), settings, maps.NewBoardStateEditor(nextBoardState))
 
 	require.NoError(t, err)
 	expectedBoardState := rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 0}})

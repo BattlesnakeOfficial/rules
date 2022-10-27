@@ -374,8 +374,14 @@ func (gameState *GameState) initializeBoardFromArgs() (bool, *rules.BoardState, 
 }
 
 func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (bool, *rules.BoardState, error) {
-	stateUpdates := make(chan SnakeState, len(gameState.snakeStates))
+	// apply PreUpdateBoard before making requests to snakes
+	boardState, err := maps.PreUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
+	if err != nil {
+		return false, boardState, fmt.Errorf("Error pre-updating board with game map: %w", err)
+	}
 
+	// get moves from snakes
+	stateUpdates := make(chan SnakeState, len(gameState.snakeStates))
 	if gameState.Sequential {
 		for _, snakeState := range gameState.snakeStates {
 			for _, snake := range boardState.Snakes {
@@ -414,12 +420,13 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (
 
 	gameOver, boardState, err := gameState.ruleset.Execute(boardState, moves)
 	if err != nil {
-		return false, boardState, fmt.Errorf("Error producing next board state: %w", err)
+		return false, boardState, fmt.Errorf("Error updating board state from ruleset: %w", err)
 	}
 
-	boardState, err = maps.UpdateBoard(gameState.gameMap.ID(), boardState, gameState.ruleset.Settings())
+	// apply PostUpdateBoard after ruleset operates on snake moves
+	boardState, err = maps.PostUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
 	if err != nil {
-		return false, boardState, fmt.Errorf("Error updating board with game map: %w", err)
+		return false, boardState, fmt.Errorf("Error post-updating board with game map: %w", err)
 	}
 
 	boardState.Turn += 1

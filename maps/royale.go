@@ -33,9 +33,13 @@ func (m RoyaleHazardsMap) SetupBoard(lastBoardState *rules.BoardState, settings 
 	return StandardMap{}.SetupBoard(lastBoardState, settings, editor)
 }
 
-func (m RoyaleHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m RoyaleHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m RoyaleHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	// Use StandardMap to populate food
-	if err := (StandardMap{}).UpdateBoard(lastBoardState, settings, editor); err != nil {
+	if err := (StandardMap{}).PostUpdateBoard(lastBoardState, settings, editor); err != nil {
 		return err
 	}
 

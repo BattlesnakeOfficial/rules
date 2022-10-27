@@ -97,8 +97,12 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	return nil
 }
 
-func (m HazardPitsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m HazardPitsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m HazardPitsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}

@@ -102,7 +102,7 @@ func TestSpiralHazardsMap(t *testing.T) {
 
 	for i := 0; i < 1000; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, state.Hazards)
@@ -123,7 +123,7 @@ func TestScatterFillMap(t *testing.T) {
 	totalTurns := 11 * 11 * 2
 	for i := 0; i < totalTurns; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, state.Hazards)
@@ -144,7 +144,7 @@ func TestDirectionalExpandingBoxMap(t *testing.T) {
 	totalTurns := 1000
 	for i := 0; i < totalTurns; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, state.Hazards)
@@ -165,7 +165,7 @@ func TestExpandingBoxMap(t *testing.T) {
 	totalTurns := 1000
 	for i := 0; i < totalTurns; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, state.Hazards)
@@ -186,7 +186,7 @@ func TestExpandingScatterMap(t *testing.T) {
 	totalTurns := 1000
 	for i := 0; i < totalTurns; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, state.Hazards)

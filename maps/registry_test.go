@@ -94,7 +94,7 @@ func TestRegisteredMaps(t *testing.T) {
 
 			passedBoardState := previousBoardState.Clone()
 			tempBoardState := previousBoardState.Clone()
-			err := gameMap.UpdateBoard(passedBoardState, testSettings, NewBoardStateEditor(tempBoardState))
+			err := gameMap.PostUpdateBoard(passedBoardState, testSettings, NewBoardStateEditor(tempBoardState))
 			require.NoError(t, err, "GameMap.UpdateBoard returned an error")
 			require.Equal(t, previousBoardState, passedBoardState, "BoardState should not be modified directly by GameMap.UpdateBoard")
 		})

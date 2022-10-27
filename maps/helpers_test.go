@@ -97,7 +97,7 @@ func TestUpdateBoard(t *testing.T) {
 			},
 		})
 	maps.TestMap(testMap.ID(), testMap, func() {
-		boardState, err := maps.UpdateBoard(testMap.ID(), previousBoardState, rules.Settings{})
+		boardState, err := maps.PostUpdateBoard(testMap, previousBoardState, rules.Settings{})
 
 		require.NoError(t, err)
 
