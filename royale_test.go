@@ -57,39 +57,39 @@ func TestRoyaleHazards(t *testing.T) {
 		{Width: 3, Height: 3, Turn: 9, ShrinkEveryNTurns: 10, ExpectedHazards: []Point{}},
 		{
 			Width: 3, Height: 3, Turn: 10, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 11, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 19, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 20, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 2}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 2}, {X: 2, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 31, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 1}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 1}, {X: 2, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 42, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 53, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 64, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 2}},
 		},
 		{
 			Width: 3, Height: 3, Turn: 6987, ShrinkEveryNTurns: 10,
-			ExpectedHazards: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
+			ExpectedHazards: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 2}},
 		},
 	}
 
@@ -137,12 +137,12 @@ var royaleCaseHazardsPlaced = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {1, 2}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 4}, {3, 3}},
+				Body:   []Point{{X: 3, Y: 4}, {X: 3, Y: 3}},
 				Health: 100,
 			},
 			{
@@ -152,7 +152,7 @@ var royaleCaseHazardsPlaced = gameTestCase{
 				EliminatedCause: EliminatedByOutOfBounds,
 			},
 		},
-		Food:    []Point{{0, 0}, {1, 0}},
+		Food:    []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -167,12 +167,12 @@ var royaleCaseHazardsPlaced = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Body:   []Point{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 1}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 5}, {3, 4}},
+				Body:   []Point{{X: 3, Y: 5}, {X: 3, Y: 4}},
 				Health: 99,
 			},
 			{
@@ -182,7 +182,7 @@ var royaleCaseHazardsPlaced = gameTestCase{
 				EliminatedCause: EliminatedByOutOfBounds,
 			},
 		},
-		Food:    []Point{{0, 0}},
+		Food:    []Point{{X: 0, Y: 0}},
 		Hazards: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 4, Y: 0}, {X: 5, Y: 0}, {X: 6, Y: 0}, {X: 7, Y: 0}, {X: 8, Y: 0}, {X: 9, Y: 0}},
 	},
 }

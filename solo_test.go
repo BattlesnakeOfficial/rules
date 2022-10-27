@@ -70,11 +70,11 @@ var soloCaseNotOver = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {1, 2}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health: 100,
 			},
 		},
-		Food:    []Point{{0, 0}, {1, 0}},
+		Food:    []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -87,11 +87,11 @@ var soloCaseNotOver = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Body:   []Point{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 1}},
 				Health: 100,
 			},
 		},
-		Food:    []Point{{0, 0}},
+		Food:    []Point{{X: 0, Y: 0}},
 		Hazards: []Point{},
 	},
 }

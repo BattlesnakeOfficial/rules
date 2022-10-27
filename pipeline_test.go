@@ -21,17 +21,17 @@ func TestPipeline(t *testing.T) {
 	r.RegisterPipelineStage("astage", mockStageFn(false, nil))
 	p = rules.NewPipelineFromRegistry(r)
 	require.Equal(t, rules.ErrorNoStages, p.Err())
-	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	_, _, err = p.Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.Equal(t, rules.ErrorNoStages, err)
 
 	// test that an unregistered stage name errors
 	p = rules.NewPipelineFromRegistry(r, "doesntexist")
-	_, _, err = p.Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	_, _, err = p.Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.Equal(t, rules.ErrorStageNotFound, p.Err())
 	require.Equal(t, rules.ErrorStageNotFound, err)
 
 	// simplest case - one stage
-	ended, next, err := rules.NewPipelineFromRegistry(r, "astage").Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	ended, next, err := rules.NewPipelineFromRegistry(r, "astage").Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.NoError(t, err)
 	require.NoError(t, err)
 	require.NotNil(t, next)
@@ -39,20 +39,20 @@ func TestPipeline(t *testing.T) {
 
 	// test that the pipeline short-circuits for a stage that errors
 	r.RegisterPipelineStage("errors", mockStageFn(false, errors.New("")))
-	ended, next, err = rules.NewPipelineFromRegistry(r, "errors", "astage").Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	ended, next, err = rules.NewPipelineFromRegistry(r, "errors", "astage").Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.Error(t, err)
 	require.NotNil(t, next)
 	require.False(t, ended)
 
 	// test that the pipeline short-circuits for a stage that ends
 	r.RegisterPipelineStage("ends", mockStageFn(true, nil))
-	ended, next, err = rules.NewPipelineFromRegistry(r, "ends", "astage").Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	ended, next, err = rules.NewPipelineFromRegistry(r, "ends", "astage").Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.NoError(t, err)
 	require.NotNil(t, next)
 	require.True(t, ended)
 
 	// test that the pipeline runs normally for multiple stages
-	ended, next, err = rules.NewPipelineFromRegistry(r, "astage", "ends").Execute(&rules.BoardState{}, rules.Settings{}, nil)
+	ended, next, err = rules.NewPipelineFromRegistry(r, "astage", "ends").Execute(rules.NewBoardState(0, 0), rules.Settings{}, nil)
 	require.NoError(t, err)
 	require.NotNil(t, next)
 	require.True(t, ended)

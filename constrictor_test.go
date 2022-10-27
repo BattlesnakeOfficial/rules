@@ -17,16 +17,16 @@ var constrictorMoveAndCollideMAD = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {2, 1}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 2, Y: 1}},
 				Health: 99,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{1, 2}, {2, 2}},
+				Body:   []Point{{X: 1, Y: 2}, {X: 2, Y: 2}},
 				Health: 99,
 			},
 		},
-		Food:    []Point{{10, 10}, {9, 9}, {8, 8}},
+		Food:    []Point{{X: 10, Y: 10}, {X: 9, Y: 9}, {X: 8, Y: 8}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -40,7 +40,7 @@ var constrictorMoveAndCollideMAD = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:               "one",
-				Body:             []Point{{1, 2}, {1, 1}, {1, 1}},
+				Body:             []Point{{X: 1, Y: 2}, {X: 1, Y: 1}, {X: 1, Y: 1}},
 				Health:           100,
 				EliminatedCause:  EliminatedByCollision,
 				EliminatedBy:     "two",
@@ -48,7 +48,7 @@ var constrictorMoveAndCollideMAD = gameTestCase{
 			},
 			{
 				ID:               "two",
-				Body:             []Point{{1, 1}, {1, 2}, {1, 2}},
+				Body:             []Point{{X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 2}},
 				Health:           100,
 				EliminatedCause:  EliminatedByCollision,
 				EliminatedBy:     "one",

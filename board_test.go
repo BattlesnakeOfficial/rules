@@ -8,6 +8,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestBoardStateClone(t *testing.T) {
+	empty := &BoardState{}
+	require.Equal(t, NewBoardState(0, 0), empty.Clone())
+
+	full := NewBoardState(11, 11).
+		WithTurn(99).
+		WithFood([]Point{{X: 1, Y: 2, TTL: 10, Value: 100}}).
+		WithHazards([]Point{{X: 3, Y: 4, TTL: 5, Value: 50}}).
+		WithSnakes([]Snake{
+			{
+				ID:               "1",
+				Body:             []Point{{X: 1, Y: 2}},
+				Health:           99,
+				EliminatedCause:  EliminatedByCollision,
+				EliminatedOnTurn: 45,
+				EliminatedBy:     "2",
+			},
+		}).
+		WithGameState(map[string]string{"example": "game data"}).
+		WithPointState(map[Point]int{{X: 1, Y: 1}: 42})
+
+	require.Equal(t, full, full.Clone())
+}
+
 func TestDev1235(t *testing.T) {
 	// Small boards should no longer error and only get 1 food when num snakes > 4
 	state, err := CreateDefaultBoardState(MaxRand, BoardSizeSmall, BoardSizeSmall, []string{
@@ -346,23 +370,23 @@ func TestPlaceSnake(t *testing.T) {
 	boardState := NewBoardState(BoardSizeSmall, BoardSizeSmall)
 	require.Empty(t, boardState.Snakes)
 
-	_ = PlaceSnake(boardState, "a", []Point{{0, 0}, {1, 0}, {1, 1}})
+	_ = PlaceSnake(boardState, "a", []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}})
 
 	require.Len(t, boardState.Snakes, 1)
 	require.Equal(t, Snake{
 		ID:              "a",
-		Body:            []Point{{0, 0}, {1, 0}, {1, 1}},
+		Body:            []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}},
 		Health:          SnakeMaxHealth,
 		EliminatedCause: NotEliminated,
 		EliminatedBy:    "",
 	}, boardState.Snakes[0])
 
-	_ = PlaceSnake(boardState, "b", []Point{{0, 2}, {1, 2}, {3, 2}})
+	_ = PlaceSnake(boardState, "b", []Point{{X: 0, Y: 2}, {X: 1, Y: 2}, {X: 3, Y: 2}})
 
 	require.Len(t, boardState.Snakes, 2)
 	require.Equal(t, Snake{
 		ID:              "b",
-		Body:            []Point{{0, 2}, {1, 2}, {3, 2}},
+		Body:            []Point{{X: 0, Y: 2}, {X: 1, Y: 2}, {X: 3, Y: 2}},
 		Health:          SnakeMaxHealth,
 		EliminatedCause: NotEliminated,
 		EliminatedBy:    "",
@@ -411,9 +435,9 @@ func TestPlaceFood(t *testing.T) {
 				Width:  BoardSizeSmall,
 				Height: BoardSizeSmall,
 				Snakes: []Snake{
-					{Body: []Point{{5, 1}}},
-					{Body: []Point{{5, 3}}},
-					{Body: []Point{{5, 5}}},
+					{Body: []Point{{X: 5, Y: 1}}},
+					{Body: []Point{{X: 5, Y: 3}}},
+					{Body: []Point{{X: 5, Y: 5}}},
 				},
 			},
 			4, // +1 because of fixed spawn locations
@@ -423,14 +447,14 @@ func TestPlaceFood(t *testing.T) {
 				Width:  BoardSizeMedium,
 				Height: BoardSizeMedium,
 				Snakes: []Snake{
-					{Body: []Point{{1, 1}}},
-					{Body: []Point{{1, 5}}},
-					{Body: []Point{{1, 9}}},
-					{Body: []Point{{5, 1}}},
-					{Body: []Point{{5, 9}}},
-					{Body: []Point{{9, 1}}},
-					{Body: []Point{{9, 5}}},
-					{Body: []Point{{9, 9}}},
+					{Body: []Point{{X: 1, Y: 1}}},
+					{Body: []Point{{X: 1, Y: 5}}},
+					{Body: []Point{{X: 1, Y: 9}}},
+					{Body: []Point{{X: 5, Y: 1}}},
+					{Body: []Point{{X: 5, Y: 9}}},
+					{Body: []Point{{X: 9, Y: 1}}},
+					{Body: []Point{{X: 9, Y: 5}}},
+					{Body: []Point{{X: 9, Y: 9}}},
 				},
 			},
 			9, // +1 because of fixed spawn locations
@@ -440,12 +464,12 @@ func TestPlaceFood(t *testing.T) {
 				Width:  BoardSizeLarge,
 				Height: BoardSizeLarge,
 				Snakes: []Snake{
-					{Body: []Point{{1, 1}}},
-					{Body: []Point{{1, 9}}},
-					{Body: []Point{{1, 17}}},
-					{Body: []Point{{17, 1}}},
-					{Body: []Point{{17, 9}}},
-					{Body: []Point{{17, 17}}},
+					{Body: []Point{{X: 1, Y: 1}}},
+					{Body: []Point{{X: 1, Y: 9}}},
+					{Body: []Point{{X: 1, Y: 17}}},
+					{Body: []Point{{X: 17, Y: 1}}},
+					{Body: []Point{{X: 17, Y: 9}}},
+					{Body: []Point{{X: 17, Y: 17}}},
 				},
 			},
 			7, // +1 because of fixed spawn locations
@@ -478,7 +502,7 @@ func TestPlaceFoodFixed(t *testing.T) {
 				Width:  BoardSizeSmall,
 				Height: BoardSizeSmall,
 				Snakes: []Snake{
-					{Body: []Point{{1, 3}}},
+					{Body: []Point{{X: 1, Y: 3}}},
 				},
 			},
 		},
@@ -487,10 +511,10 @@ func TestPlaceFoodFixed(t *testing.T) {
 				Width:  BoardSizeMedium,
 				Height: BoardSizeMedium,
 				Snakes: []Snake{
-					{Body: []Point{{1, 1}}},
-					{Body: []Point{{1, 5}}},
-					{Body: []Point{{9, 5}}},
-					{Body: []Point{{9, 9}}},
+					{Body: []Point{{X: 1, Y: 1}}},
+					{Body: []Point{{X: 1, Y: 5}}},
+					{Body: []Point{{X: 9, Y: 5}}},
+					{Body: []Point{{X: 9, Y: 9}}},
 				},
 			},
 		},
@@ -499,14 +523,14 @@ func TestPlaceFoodFixed(t *testing.T) {
 				Width:  BoardSizeLarge,
 				Height: BoardSizeLarge,
 				Snakes: []Snake{
-					{Body: []Point{{1, 1}}},
-					{Body: []Point{{1, 9}}},
-					{Body: []Point{{1, 17}}},
-					{Body: []Point{{9, 1}}},
-					{Body: []Point{{9, 17}}},
-					{Body: []Point{{17, 1}}},
-					{Body: []Point{{17, 9}}},
-					{Body: []Point{{17, 17}}},
+					{Body: []Point{{X: 1, Y: 1}}},
+					{Body: []Point{{X: 1, Y: 9}}},
+					{Body: []Point{{X: 1, Y: 17}}},
+					{Body: []Point{{X: 9, Y: 1}}},
+					{Body: []Point{{X: 9, Y: 17}}},
+					{Body: []Point{{X: 17, Y: 1}}},
+					{Body: []Point{{X: 17, Y: 9}}},
+					{Body: []Point{{X: 17, Y: 17}}},
 				},
 			},
 		},
@@ -519,16 +543,16 @@ func TestPlaceFoodFixed(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, len(test.BoardState.Snakes)+1, len(test.BoardState.Food))
 
-		midPoint := Point{(test.BoardState.Width - 1) / 2, (test.BoardState.Height - 1) / 2}
+		midPoint := Point{X: (test.BoardState.Width - 1) / 2, Y: (test.BoardState.Height - 1) / 2}
 
 		// Make sure every snake has food within 2 moves of it
 		for _, snake := range test.BoardState.Snakes {
 			head := snake.Body[0]
 
-			bottomLeft := Point{head.X - 1, head.Y - 1}
-			topLeft := Point{head.X - 1, head.Y + 1}
-			bottomRight := Point{head.X + 1, head.Y - 1}
-			topRight := Point{head.X + 1, head.Y + 1}
+			bottomLeft := Point{X: head.X - 1, Y: head.Y - 1}
+			topLeft := Point{X: head.X - 1, Y: head.Y + 1}
+			bottomRight := Point{X: head.X + 1, Y: head.Y - 1}
+			topRight := Point{X: head.X + 1, Y: head.Y + 1}
 
 			foundFoodInTwoMoves := false
 			for _, food := range test.BoardState.Food {
@@ -559,7 +583,7 @@ func TestPlaceFoodFixedNoRoom(t *testing.T) {
 		Width:  3,
 		Height: 3,
 		Snakes: []Snake{
-			{Body: []Point{{1, 1}}},
+			{Body: []Point{{X: 1, Y: 1}}},
 		},
 		Food: []Point{},
 	}
@@ -572,10 +596,10 @@ func TestPlaceFoodFixedNoRoom_Corners(t *testing.T) {
 		Width:  7,
 		Height: 7,
 		Snakes: []Snake{
-			{Body: []Point{{1, 1}}},
-			{Body: []Point{{1, 5}}},
-			{Body: []Point{{5, 1}}},
-			{Body: []Point{{5, 5}}},
+			{Body: []Point{{X: 1, Y: 1}}},
+			{Body: []Point{{X: 1, Y: 5}}},
+			{Body: []Point{{X: 5, Y: 1}}},
+			{Body: []Point{{X: 5, Y: 5}}},
 		},
 		Food: []Point{},
 	}
@@ -597,10 +621,10 @@ func TestPlaceFoodFixedNoRoom_Corners(t *testing.T) {
 	require.Error(t, err)
 
 	expectedFood := []Point{
-		{0, 2}, {2, 0}, // Snake @ {1, 1}
-		{0, 4}, {2, 6}, // Snake @ {1, 5}
-		{4, 0}, {6, 2}, // Snake @ {5, 1}
-		{4, 6}, {6, 4}, // Snake @ {5, 5}
+		{X: 0, Y: 2}, {X: 2, Y: 0}, // Snake @ {X: 1, Y: 1}
+		{X: 0, Y: 4}, {X: 2, Y: 6}, // Snake @ {X: 1, Y: 5}
+		{X: 4, Y: 0}, {X: 6, Y: 2}, // Snake @ {X: 5, Y: 1}
+		{X: 4, Y: 6}, {X: 6, Y: 4}, // Snake @ {X: 5, Y: 5}
 	}
 	sortPoints(expectedFood)
 	sortPoints(boardState.Food)
@@ -612,10 +636,10 @@ func TestPlaceFoodFixedNoRoom_Cardinal(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{Body: []Point{{1, 5}}},
-			{Body: []Point{{5, 1}}},
-			{Body: []Point{{5, 9}}},
-			{Body: []Point{{9, 5}}},
+			{Body: []Point{{X: 1, Y: 5}}},
+			{Body: []Point{{X: 5, Y: 1}}},
+			{Body: []Point{{X: 5, Y: 9}}},
+			{Body: []Point{{X: 9, Y: 5}}},
 		},
 		Food: []Point{},
 	}
@@ -637,10 +661,10 @@ func TestPlaceFoodFixedNoRoom_Cardinal(t *testing.T) {
 	require.Error(t, err)
 
 	expectedFood := []Point{
-		{0, 4}, {0, 6}, // Snake @ {1, 5}
-		{4, 0}, {6, 0}, // Snake @ {5, 1}
-		{4, 10}, {6, 10}, // Snake @ {5, 9}
-		{10, 4}, {10, 6}, // Snake @ {9, 5}
+		{X: 0, Y: 4}, {X: 0, Y: 6}, // Snake @ {X: 1, Y: 5}
+		{X: 4, Y: 0}, {X: 6, Y: 0}, // Snake @ {X: 5, Y: 1}
+		{X: 4, Y: 10}, {X: 6, Y: 10}, // Snake @ {X: 5, Y: 9}
+		{X: 10, Y: 4}, {X: 10, Y: 6}, // Snake @ {X: 9, Y: 5}
 	}
 	sortPoints(expectedFood)
 	sortPoints(boardState.Food)
@@ -653,15 +677,15 @@ func TestGetDistanceBetweenPoints(t *testing.T) {
 		B        Point
 		Expected int
 	}{
-		{Point{0, 0}, Point{0, 0}, 0},
-		{Point{0, 0}, Point{1, 0}, 1},
-		{Point{0, 0}, Point{0, 1}, 1},
-		{Point{0, 0}, Point{1, 1}, 2},
-		{Point{0, 0}, Point{4, 4}, 8},
-		{Point{0, 0}, Point{4, 6}, 10},
-		{Point{8, 0}, Point{8, 0}, 0},
-		{Point{8, 0}, Point{8, 8}, 8},
-		{Point{8, 0}, Point{0, 8}, 16},
+		{Point{X: 0, Y: 0}, Point{X: 0, Y: 0}, 0},
+		{Point{X: 0, Y: 0}, Point{X: 1, Y: 0}, 1},
+		{Point{X: 0, Y: 0}, Point{X: 0, Y: 1}, 1},
+		{Point{X: 0, Y: 0}, Point{X: 1, Y: 1}, 2},
+		{Point{X: 0, Y: 0}, Point{X: 4, Y: 4}, 8},
+		{Point{X: 0, Y: 0}, Point{X: 4, Y: 6}, 10},
+		{Point{X: 8, Y: 0}, Point{X: 8, Y: 0}, 0},
+		{Point{X: 8, Y: 0}, Point{X: 8, Y: 8}, 8},
+		{Point{X: 8, Y: 0}, Point{X: 0, Y: 8}, 16},
 	}
 
 	for _, test := range tests {
@@ -704,20 +728,20 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 				Height: 1,
 				Width:  1,
 			},
-			[]Point{{0, 0}},
+			[]Point{{X: 0, Y: 0}},
 		},
 		{
 			&BoardState{
 				Height: 1,
 				Width:  2,
 			},
-			[]Point{{0, 0}, {1, 0}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		},
 		{
 			&BoardState{
 				Height: 1,
 				Width:  1,
-				Food:   []Point{{0, 0}, {101, 202}, {-4, -5}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 101, Y: 202}, {X: -4, Y: -5}},
 			},
 			[]Point{},
 		},
@@ -725,15 +749,15 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 			&BoardState{
 				Height: 2,
 				Width:  2,
-				Food:   []Point{{0, 0}, {1, 0}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 			},
-			[]Point{{0, 1}, {1, 1}},
+			[]Point{{X: 0, Y: 1}, {X: 1, Y: 1}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  2,
-				Food:   []Point{{0, 0}, {0, 1}, {1, 0}, {1, 1}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 1, Y: 0}, {X: 1, Y: 1}},
 			},
 			[]Point{},
 		},
@@ -742,38 +766,38 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 				Height: 4,
 				Width:  1,
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}}},
+					{Body: []Point{{X: 0, Y: 0}}},
 				},
 			},
-			[]Point{{0, 1}, {0, 2}, {0, 3}},
+			[]Point{{X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}},
 				},
 			},
-			[]Point{{0, 1}, {2, 0}, {2, 1}},
+			[]Point{{X: 0, Y: 1}, {X: 2, Y: 0}, {X: 2, Y: 1}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
-				Food:   []Point{{0, 0}, {1, 0}, {1, 1}, {2, 0}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 2, Y: 0}},
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
-					{Body: []Point{{0, 1}}},
+					{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}},
+					{Body: []Point{{X: 0, Y: 1}}},
 				},
 			},
-			[]Point{{2, 1}},
+			[]Point{{X: 2, Y: 1}},
 		},
 		{
 			&BoardState{
 				Height:  1,
 				Width:   1,
-				Hazards: []Point{{0, 0}},
+				Hazards: []Point{{X: 0, Y: 0}},
 			},
 			[]Point{},
 		},
@@ -781,22 +805,22 @@ func TestGetUnoccupiedPoints(t *testing.T) {
 			&BoardState{
 				Height:  2,
 				Width:   2,
-				Hazards: []Point{{1, 1}},
+				Hazards: []Point{{X: 1, Y: 1}},
 			},
-			[]Point{{0, 0}, {0, 1}, {1, 0}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 1, Y: 0}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
-				Food:   []Point{{1, 1}, {2, 0}},
+				Food:   []Point{{X: 1, Y: 1}, {X: 2, Y: 0}},
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
-					{Body: []Point{{0, 1}}},
+					{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}},
+					{Body: []Point{{X: 0, Y: 1}}},
 				},
-				Hazards: []Point{{0, 0}, {1, 0}},
+				Hazards: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 			},
-			[]Point{{2, 1}},
+			[]Point{{X: 2, Y: 1}},
 		},
 	}
 
@@ -819,20 +843,20 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 				Height: 1,
 				Width:  1,
 			},
-			[]Point{{0, 0}},
+			[]Point{{X: 0, Y: 0}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  2,
 			},
-			[]Point{{0, 0}, {1, 1}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 1}},
 		},
 		{
 			&BoardState{
 				Height: 1,
 				Width:  1,
-				Food:   []Point{{0, 0}, {101, 202}, {-4, -5}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 101, Y: 202}, {X: -4, Y: -5}},
 			},
 			[]Point{},
 		},
@@ -840,15 +864,15 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 			&BoardState{
 				Height: 2,
 				Width:  2,
-				Food:   []Point{{0, 0}, {1, 0}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 			},
-			[]Point{{1, 1}},
+			[]Point{{X: 1, Y: 1}},
 		},
 		{
 			&BoardState{
 				Height: 4,
 				Width:  4,
-				Food:   []Point{{0, 0}, {0, 2}, {1, 1}, {1, 3}, {2, 0}, {2, 2}, {3, 1}, {3, 3}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 0, Y: 2}, {X: 1, Y: 1}, {X: 1, Y: 3}, {X: 2, Y: 0}, {X: 2, Y: 2}, {X: 3, Y: 1}, {X: 3, Y: 3}},
 			},
 			[]Point{},
 		},
@@ -857,32 +881,32 @@ func TestGetEvenUnoccupiedPoints(t *testing.T) {
 				Height: 4,
 				Width:  1,
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}}},
+					{Body: []Point{{X: 0, Y: 0}}},
 				},
 			},
-			[]Point{{0, 2}},
+			[]Point{{X: 0, Y: 2}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
+					{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}},
 				},
 			},
-			[]Point{{2, 0}},
+			[]Point{{X: 2, Y: 0}},
 		},
 		{
 			&BoardState{
 				Height: 2,
 				Width:  3,
-				Food:   []Point{{0, 0}, {1, 0}, {1, 1}, {2, 1}},
+				Food:   []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 2, Y: 1}},
 				Snakes: []Snake{
-					{Body: []Point{{0, 0}, {1, 0}, {1, 1}}},
-					{Body: []Point{{0, 1}}},
+					{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}},
+					{Body: []Point{{X: 0, Y: 1}}},
 				},
 			},
-			[]Point{{2, 0}},
+			[]Point{{X: 2, Y: 0}},
 		},
 	}
 
@@ -902,7 +926,7 @@ func TestPlaceFoodRandomly(t *testing.T) {
 		Height: 1,
 		Width:  3,
 		Snakes: []Snake{
-			{Body: []Point{{1, 0}}},
+			{Body: []Point{{X: 1, Y: 0}}},
 		},
 	}
 	// Food should never spawn, no room

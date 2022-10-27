@@ -16,10 +16,10 @@ func TestLeft(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "bottomLeft", Health: 10, Body: []Point{{0, 0}}},
-			{ID: "bottomRight", Health: 10, Body: []Point{{10, 0}}},
-			{ID: "topLeft", Health: 10, Body: []Point{{0, 10}}},
-			{ID: "topRight", Health: 10, Body: []Point{{10, 10}}},
+			{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+			{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 0}}},
+			{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 10}}},
+			{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 10}}},
 		},
 	}
 
@@ -38,10 +38,10 @@ func TestLeft(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "bottomLeft", Health: 10, Body: []Point{{10, 0}}},
-		{ID: "bottomRight", Health: 10, Body: []Point{{9, 0}}},
-		{ID: "topLeft", Health: 10, Body: []Point{{10, 10}}},
-		{ID: "topRight", Health: 10, Body: []Point{{9, 10}}},
+		{ID: "bottomLeft", Health: 10, Body: []Point{{X: 10, Y: 0}}},
+		{ID: "bottomRight", Health: 10, Body: []Point{{X: 9, Y: 0}}},
+		{ID: "topLeft", Health: 10, Body: []Point{{X: 10, Y: 10}}},
+		{ID: "topRight", Health: 10, Body: []Point{{X: 9, Y: 10}}},
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
@@ -56,10 +56,10 @@ func TestRight(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "bottomLeft", Health: 10, Body: []Point{{0, 0}}},
-			{ID: "bottomRight", Health: 10, Body: []Point{{10, 0}}},
-			{ID: "topLeft", Health: 10, Body: []Point{{0, 10}}},
-			{ID: "topRight", Health: 10, Body: []Point{{10, 10}}},
+			{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+			{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 0}}},
+			{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 10}}},
+			{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 10}}},
 		},
 	}
 
@@ -78,10 +78,10 @@ func TestRight(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "bottomLeft", Health: 10, Body: []Point{{1, 0}}},
-		{ID: "bottomRight", Health: 10, Body: []Point{{0, 0}}},
-		{ID: "topLeft", Health: 10, Body: []Point{{1, 10}}},
-		{ID: "topRight", Health: 10, Body: []Point{{0, 10}}},
+		{ID: "bottomLeft", Health: 10, Body: []Point{{X: 1, Y: 0}}},
+		{ID: "bottomRight", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+		{ID: "topLeft", Health: 10, Body: []Point{{X: 1, Y: 10}}},
+		{ID: "topRight", Health: 10, Body: []Point{{X: 0, Y: 10}}},
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
@@ -96,10 +96,10 @@ func TestUp(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "bottomLeft", Health: 10, Body: []Point{{0, 0}}},
-			{ID: "bottomRight", Health: 10, Body: []Point{{10, 0}}},
-			{ID: "topLeft", Health: 10, Body: []Point{{0, 10}}},
-			{ID: "topRight", Health: 10, Body: []Point{{10, 10}}},
+			{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+			{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 0}}},
+			{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 10}}},
+			{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 10}}},
 		},
 	}
 
@@ -118,10 +118,10 @@ func TestUp(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "bottomLeft", Health: 10, Body: []Point{{0, 1}}},
-		{ID: "bottomRight", Health: 10, Body: []Point{{10, 1}}},
-		{ID: "topLeft", Health: 10, Body: []Point{{0, 0}}},
-		{ID: "topRight", Health: 10, Body: []Point{{10, 0}}},
+		{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 1}}},
+		{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 1}}},
+		{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+		{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 0}}},
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
@@ -136,10 +136,10 @@ func TestDown(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "bottomLeft", Health: 10, Body: []Point{{0, 0}}},
-			{ID: "bottomRight", Health: 10, Body: []Point{{10, 0}}},
-			{ID: "topLeft", Health: 10, Body: []Point{{0, 10}}},
-			{ID: "topRight", Health: 10, Body: []Point{{10, 10}}},
+			{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 0}}},
+			{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 0}}},
+			{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 10}}},
+			{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 10}}},
 		},
 	}
 
@@ -158,10 +158,10 @@ func TestDown(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "bottomLeft", Health: 10, Body: []Point{{0, 10}}},
-		{ID: "bottomRight", Health: 10, Body: []Point{{10, 10}}},
-		{ID: "topLeft", Health: 10, Body: []Point{{0, 9}}},
-		{ID: "topRight", Health: 10, Body: []Point{{10, 9}}},
+		{ID: "bottomLeft", Health: 10, Body: []Point{{X: 0, Y: 10}}},
+		{ID: "bottomRight", Health: 10, Body: []Point{{X: 10, Y: 10}}},
+		{ID: "topLeft", Health: 10, Body: []Point{{X: 0, Y: 9}}},
+		{ID: "topRight", Health: 10, Body: []Point{{X: 10, Y: 9}}},
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
@@ -176,14 +176,14 @@ func TestEdgeCrossingCollision(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "left", Health: 10, Body: []Point{{0, 5}}},
+			{ID: "left", Health: 10, Body: []Point{{X: 0, Y: 5}}},
 			{ID: "rightEdge", Health: 10, Body: []Point{
-				{10, 1},
-				{10, 2},
-				{10, 3},
-				{10, 4},
-				{10, 5},
-				{10, 6},
+				{X: 10, Y: 1},
+				{X: 10, Y: 2},
+				{X: 10, Y: 3},
+				{X: 10, Y: 4},
+				{X: 10, Y: 5},
+				{X: 10, Y: 6},
 			}},
 		},
 	}
@@ -201,14 +201,14 @@ func TestEdgeCrossingCollision(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "left", Health: 0, Body: []Point{{10, 5}}, EliminatedCause: EliminatedByCollision, EliminatedBy: "rightEdge"},
+		{ID: "left", Health: 0, Body: []Point{{X: 10, Y: 5}}, EliminatedCause: EliminatedByCollision, EliminatedBy: "rightEdge"},
 		{ID: "rightEdge", Health: 10, Body: []Point{
-			{10, 0},
-			{10, 1},
-			{10, 2},
-			{10, 3},
-			{10, 4},
-			{10, 5},
+			{X: 10, Y: 0},
+			{X: 10, Y: 1},
+			{X: 10, Y: 2},
+			{X: 10, Y: 3},
+			{X: 10, Y: 4},
+			{X: 10, Y: 5},
 		}},
 	}
 	for i, snake := range nextBoardState.Snakes {
@@ -224,11 +224,11 @@ func TestEdgeCrossingEating(t *testing.T) {
 		Width:  11,
 		Height: 11,
 		Snakes: []Snake{
-			{ID: "left", Health: 10, Body: []Point{{0, 5}, {1, 5}}},
-			{ID: "other", Health: 10, Body: []Point{{5, 5}}},
+			{ID: "left", Health: 10, Body: []Point{{X: 0, Y: 5}, {X: 1, Y: 5}}},
+			{ID: "other", Health: 10, Body: []Point{{X: 5, Y: 5}}},
 		},
 		Food: []Point{
-			{10, 5},
+			{X: 10, Y: 5},
 		},
 	}
 
@@ -245,8 +245,8 @@ func TestEdgeCrossingEating(t *testing.T) {
 	require.Equal(t, len(boardState.Snakes), len(nextBoardState.Snakes))
 
 	expectedSnakes := []Snake{
-		{ID: "left", Health: 100, Body: []Point{{10, 5}, {0, 5}, {0, 5}}},
-		{ID: "other", Health: 9, Body: []Point{{4, 5}}},
+		{ID: "left", Health: 100, Body: []Point{{X: 10, Y: 5}, {X: 0, Y: 5}, {X: 0, Y: 5}}},
+		{ID: "other", Health: 9, Body: []Point{{X: 4, Y: 5}}},
 	}
 	for i, snake := range nextBoardState.Snakes {
 		require.Equal(t, expectedSnakes[i].ID, snake.ID, snake.ID)
@@ -281,12 +281,12 @@ var wrappedCaseMoveAndWrap = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{0, 0}, {1, 0}},
+				Body:   []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 4}, {3, 3}},
+				Body:   []Point{{X: 3, Y: 4}, {X: 3, Y: 3}},
 				Health: 100,
 			},
 			{
@@ -311,12 +311,12 @@ var wrappedCaseMoveAndWrap = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{9, 0}, {0, 0}},
+				Body:   []Point{{X: 9, Y: 0}, {X: 0, Y: 0}},
 				Health: 99,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 5}, {3, 4}},
+				Body:   []Point{{X: 3, Y: 5}, {X: 3, Y: 4}},
 				Health: 99,
 			},
 			{
