@@ -53,7 +53,7 @@ func PopulateHazardsRoyale(b *BoardState, settings Settings, moves []SnakeMove) 
 	for x := 0; x < b.Width; x++ {
 		for y := 0; y < b.Height; y++ {
 			if x < minX || x > maxX || y < minY || y > maxY {
-				b.Hazards = append(b.Hazards, Point{x, y})
+				b.Hazards = append(b.Hazards, Point{X: x, Y: y})
 			}
 		}
 	}

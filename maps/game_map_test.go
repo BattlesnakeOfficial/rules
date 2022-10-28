@@ -135,18 +135,16 @@ func TestBoardStateEditor(t *testing.T) {
 	editor.PlaceSnake("existing_snake", []rules.Point{{X: 5, Y: 2}, {X: 5, Y: 1}, {X: 5, Y: 0}}, 99)
 	editor.PlaceSnake("new_snake", []rules.Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}}, 98)
 
-	require.Equal(t, &rules.BoardState{
-		Width:  11,
-		Height: 11,
-		Food: []rules.Point{
+	expected := rules.NewBoardState(11, 11).
+		WithFood([]rules.Point{
 			{X: 1, Y: 3},
 			{X: 3, Y: 7},
-		},
-		Hazards: []rules.Point{
+		}).
+		WithHazards([]rules.Point{
 			{X: 1, Y: 3},
 			{X: 3, Y: 7},
-		},
-		Snakes: []rules.Snake{
+		}).
+		WithSnakes([]rules.Snake{
 			{
 				ID:     "existing_snake",
 				Health: 99,
@@ -157,8 +155,8 @@ func TestBoardStateEditor(t *testing.T) {
 				Health: 98,
 				Body:   []rules.Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}},
 			},
-		},
-	}, boardState)
+		})
+	require.Equal(t, expected, boardState)
 
 	require.Equal(t, []rules.Point{
 		{X: 1, Y: 3},

@@ -82,11 +82,10 @@ func TestUpdateBoard(t *testing.T) {
 		},
 	}
 
-	previousBoardState := &rules.BoardState{
-		Turn:    0,
-		Food:    []rules.Point{{X: 0, Y: 1}},
-		Hazards: []rules.Point{{X: 3, Y: 4}},
-		Snakes: []rules.Snake{
+	previousBoardState := rules.NewBoardState(5, 5).
+		WithFood([]rules.Point{{X: 0, Y: 1}}).
+		WithHazards([]rules.Point{{X: 3, Y: 4}}).
+		WithSnakes([]rules.Snake{
 			{
 				ID:     "1",
 				Health: 100,
@@ -96,9 +95,7 @@ func TestUpdateBoard(t *testing.T) {
 					{X: 6, Y: 2},
 				},
 			},
-		},
-	}
-
+		})
 	maps.TestMap(testMap.ID(), testMap, func() {
 		boardState, err := maps.UpdateBoard(testMap.ID(), previousBoardState, rules.Settings{})
 

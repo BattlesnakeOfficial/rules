@@ -44,16 +44,16 @@ var standardCaseErrNoMoveFound = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {1, 2}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 4}, {3, 3}},
+				Body:   []Point{{X: 3, Y: 4}, {X: 3, Y: 3}},
 				Health: 100,
 			},
 		},
-		Food:    []Point{{0, 0}, {1, 0}},
+		Food:    []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -72,7 +72,7 @@ var standardCaseErrZeroLengthSnake = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {1, 2}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health: 100,
 			},
 			{
@@ -81,7 +81,7 @@ var standardCaseErrZeroLengthSnake = gameTestCase{
 				Health: 100,
 			},
 		},
-		Food:    []Point{{0, 0}, {1, 0}},
+		Food:    []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -101,12 +101,12 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {1, 2}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 4}, {3, 3}},
+				Body:   []Point{{X: 3, Y: 4}, {X: 3, Y: 3}},
 				Health: 100,
 			},
 			{
@@ -116,7 +116,7 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 				EliminatedCause: EliminatedByOutOfBounds,
 			},
 		},
-		Food:    []Point{{0, 0}, {1, 0}},
+		Food:    []Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
 		Hazards: []Point{},
 	},
 	[]SnakeMove{
@@ -131,12 +131,12 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 0}, {1, 1}, {1, 1}},
+				Body:   []Point{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 1}},
 				Health: 100,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{3, 5}, {3, 4}},
+				Body:   []Point{{X: 3, Y: 5}, {X: 3, Y: 4}},
 				Health: 99,
 			},
 			{
@@ -146,7 +146,7 @@ var standardCaseMoveEatAndGrow = gameTestCase{
 				EliminatedCause: EliminatedByOutOfBounds,
 			},
 		},
-		Food:    []Point{{0, 0}},
+		Food:    []Point{{X: 0, Y: 0}},
 		Hazards: []Point{},
 	},
 }
@@ -162,12 +162,12 @@ var standardMoveAndCollideMAD = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{1, 1}, {2, 1}},
+				Body:   []Point{{X: 1, Y: 1}, {X: 2, Y: 1}},
 				Health: 99,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{1, 2}, {2, 2}},
+				Body:   []Point{{X: 1, Y: 2}, {X: 2, Y: 2}},
 				Health: 99,
 			},
 		},
@@ -185,7 +185,7 @@ var standardMoveAndCollideMAD = gameTestCase{
 		Snakes: []Snake{
 			{
 				ID:               "one",
-				Body:             []Point{{1, 2}, {1, 1}},
+				Body:             []Point{{X: 1, Y: 2}, {X: 1, Y: 1}},
 				Health:           98,
 				EliminatedCause:  EliminatedByCollision,
 				EliminatedBy:     "two",
@@ -193,7 +193,7 @@ var standardMoveAndCollideMAD = gameTestCase{
 			},
 			{
 				ID:               "two",
-				Body:             []Point{{1, 1}, {1, 2}},
+				Body:             []Point{{X: 1, Y: 1}, {X: 1, Y: 2}},
 				Health:           98,
 				EliminatedCause:  EliminatedByCollision,
 				EliminatedBy:     "one",
@@ -240,16 +240,16 @@ func TestEatingOnLastMove(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Body:   []Point{{X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 0}},
 						Health: 1,
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{3, 2}, {3, 3}, {3, 4}},
+						Body:   []Point{{X: 3, Y: 2}, {X: 3, Y: 3}, {X: 3, Y: 4}},
 						Health: 1,
 					},
 				},
-				Food: []Point{{0, 3}, {9, 9}},
+				Food: []Point{{X: 0, Y: 3}, {X: 9, Y: 9}},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
@@ -262,18 +262,18 @@ func TestEatingOnLastMove(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Body:   []Point{{X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 1}},
 						Health: 100,
 					},
 					{
 						ID:               "two",
-						Body:             []Point{{3, 1}, {3, 2}, {3, 3}},
+						Body:             []Point{{X: 3, Y: 1}, {X: 3, Y: 2}, {X: 3, Y: 3}},
 						Health:           0,
 						EliminatedCause:  EliminatedByOutOfHealth,
 						EliminatedOnTurn: 1,
 					},
 				},
-				Food: []Point{{9, 9}},
+				Food: []Point{{X: 9, Y: 9}},
 			},
 		},
 	}
@@ -313,16 +313,16 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Body:   []Point{{X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 0}},
 						Health: 10,
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{0, 4}, {0, 5}, {0, 6}},
+						Body:   []Point{{X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}},
 						Health: 10,
 					},
 				},
-				Food: []Point{{0, 3}, {9, 9}},
+				Food: []Point{{X: 0, Y: 3}, {X: 9, Y: 9}},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
@@ -335,7 +335,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:               "one",
-						Body:             []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Body:             []Point{{X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 1}},
 						Health:           100,
 						EliminatedCause:  EliminatedByHeadToHeadCollision,
 						EliminatedBy:     "two",
@@ -343,14 +343,14 @@ func TestHeadToHeadOnFood(t *testing.T) {
 					},
 					{
 						ID:               "two",
-						Body:             []Point{{0, 3}, {0, 4}, {0, 5}, {0, 5}},
+						Body:             []Point{{X: 0, Y: 3}, {X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 5}},
 						Health:           100,
 						EliminatedCause:  EliminatedByHeadToHeadCollision,
 						EliminatedBy:     "one",
 						EliminatedOnTurn: 42,
 					},
 				},
-				Food: []Point{{9, 9}},
+				Food: []Point{{X: 9, Y: 9}},
 			},
 		},
 		{
@@ -361,16 +361,16 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Body:   []Point{{X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 0}},
 						Health: 10,
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{0, 4}, {0, 5}, {0, 6}, {0, 7}},
+						Body:   []Point{{X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}, {X: 0, Y: 7}},
 						Health: 10,
 					},
 				},
-				Food: []Point{{0, 3}, {9, 9}},
+				Food: []Point{{X: 0, Y: 3}, {X: 9, Y: 9}},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
@@ -383,7 +383,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:               "one",
-						Body:             []Point{{0, 3}, {0, 2}, {0, 1}, {0, 1}},
+						Body:             []Point{{X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 1}},
 						Health:           100,
 						EliminatedCause:  EliminatedByHeadToHeadCollision,
 						EliminatedBy:     "two",
@@ -391,11 +391,11 @@ func TestHeadToHeadOnFood(t *testing.T) {
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 6}},
+						Body:   []Point{{X: 0, Y: 3}, {X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}, {X: 0, Y: 6}},
 						Health: 100,
 					},
 				},
-				Food: []Point{{9, 9}},
+				Food: []Point{{X: 9, Y: 9}},
 			},
 		},
 	}
@@ -429,22 +429,22 @@ func TestRegressionIssue19(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 2}, {0, 1}, {0, 0}},
+						Body:   []Point{{X: 0, Y: 2}, {X: 0, Y: 1}, {X: 0, Y: 0}},
 						Health: 100,
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{0, 5}, {0, 6}, {0, 7}},
+						Body:   []Point{{X: 0, Y: 5}, {X: 0, Y: 6}, {X: 0, Y: 7}},
 						Health: 100,
 					},
 					{
 						ID:              "eliminated",
-						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
+						Body:            []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}, {X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}},
 						Health:          0,
 						EliminatedCause: EliminatedByOutOfHealth,
 					},
 				},
-				Food: []Point{{9, 9}},
+				Food: []Point{{X: 9, Y: 9}},
 			},
 			[]SnakeMove{
 				{ID: "one", Move: MoveUp},
@@ -457,22 +457,22 @@ func TestRegressionIssue19(t *testing.T) {
 				Snakes: []Snake{
 					{
 						ID:     "one",
-						Body:   []Point{{0, 3}, {0, 2}, {0, 1}},
+						Body:   []Point{{X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}},
 						Health: 99,
 					},
 					{
 						ID:     "two",
-						Body:   []Point{{0, 4}, {0, 5}, {0, 6}},
+						Body:   []Point{{X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}},
 						Health: 99,
 					},
 					{
 						ID:              "eliminated",
-						Body:            []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}},
+						Body:            []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}, {X: 0, Y: 4}, {X: 0, Y: 5}, {X: 0, Y: 6}},
 						Health:          0,
 						EliminatedCause: EliminatedByOutOfHealth,
 					},
 				},
-				Food: []Point{{9, 9}},
+				Food: []Point{{X: 9, Y: 9}},
 			},
 		},
 	}
@@ -497,17 +497,17 @@ func TestMoveSnakes(t *testing.T) {
 		Snakes: []Snake{
 			{
 				ID:     "one",
-				Body:   []Point{{10, 110}, {11, 110}},
+				Body:   []Point{{X: 10, Y: 110}, {X: 11, Y: 110}},
 				Health: 111111,
 			},
 			{
 				ID:     "two",
-				Body:   []Point{{23, 220}, {22, 220}, {21, 220}, {20, 220}},
+				Body:   []Point{{X: 23, Y: 220}, {X: 22, Y: 220}, {X: 21, Y: 220}, {X: 20, Y: 220}},
 				Health: 222222,
 			},
 			{
 				ID:              "three",
-				Body:            []Point{{0, 0}},
+				Body:            []Point{{X: 0, Y: 0}},
 				Health:          1,
 				EliminatedCause: EliminatedByOutOfBounds,
 			},
@@ -523,29 +523,29 @@ func TestMoveSnakes(t *testing.T) {
 		ExpectedThree []Point
 	}{
 		{
-			MoveDown, []Point{{10, 109}, {10, 110}},
-			MoveUp, []Point{{23, 221}, {23, 220}, {22, 220}, {21, 220}},
-			MoveDown, []Point{{0, 0}},
+			MoveDown, []Point{{X: 10, Y: 109}, {X: 10, Y: 110}},
+			MoveUp, []Point{{X: 23, Y: 221}, {X: 23, Y: 220}, {X: 22, Y: 220}, {X: 21, Y: 220}},
+			MoveDown, []Point{{X: 0, Y: 0}},
 		},
 		{
-			MoveRight, []Point{{11, 109}, {10, 109}},
-			MoveLeft, []Point{{22, 221}, {23, 221}, {23, 220}, {22, 220}},
-			MoveDown, []Point{{0, 0}},
+			MoveRight, []Point{{X: 11, Y: 109}, {X: 10, Y: 109}},
+			MoveLeft, []Point{{X: 22, Y: 221}, {X: 23, Y: 221}, {X: 23, Y: 220}, {X: 22, Y: 220}},
+			MoveDown, []Point{{X: 0, Y: 0}},
 		},
 		{
-			MoveRight, []Point{{12, 109}, {11, 109}},
-			MoveLeft, []Point{{21, 221}, {22, 221}, {23, 221}, {23, 220}},
-			MoveDown, []Point{{0, 0}},
+			MoveRight, []Point{{X: 12, Y: 109}, {X: 11, Y: 109}},
+			MoveLeft, []Point{{X: 21, Y: 221}, {X: 22, Y: 221}, {X: 23, Y: 221}, {X: 23, Y: 220}},
+			MoveDown, []Point{{X: 0, Y: 0}},
 		},
 		{
-			MoveRight, []Point{{13, 109}, {12, 109}},
-			MoveLeft, []Point{{20, 221}, {21, 221}, {22, 221}, {23, 221}},
-			MoveDown, []Point{{0, 0}},
+			MoveRight, []Point{{X: 13, Y: 109}, {X: 12, Y: 109}},
+			MoveLeft, []Point{{X: 20, Y: 221}, {X: 21, Y: 221}, {X: 22, Y: 221}, {X: 23, Y: 221}},
+			MoveDown, []Point{{X: 0, Y: 0}},
 		},
 		{
-			MoveDown, []Point{{13, 108}, {13, 109}},
-			MoveUp, []Point{{20, 222}, {20, 221}, {21, 221}, {22, 221}},
-			MoveDown, []Point{{0, 0}},
+			MoveDown, []Point{{X: 13, Y: 108}, {X: 13, Y: 109}},
+			MoveUp, []Point{{X: 20, Y: 222}, {X: 20, Y: 221}, {X: 21, Y: 221}, {X: 22, Y: 221}},
+			MoveDown, []Point{{X: 0, Y: 0}},
 		},
 	}
 
@@ -589,7 +589,7 @@ func TestMoveSnakesWrongID(t *testing.T) {
 		Snakes: []Snake{
 			{
 				ID:   "one",
-				Body: []Point{{1, 1}},
+				Body: []Point{{X: 1, Y: 1}},
 			},
 		},
 	}
@@ -610,11 +610,11 @@ func TestMoveSnakesNotEnoughMoves(t *testing.T) {
 		Snakes: []Snake{
 			{
 				ID:   "one",
-				Body: []Point{{1, 1}},
+				Body: []Point{{X: 1, Y: 1}},
 			},
 			{
 				ID:   "two",
-				Body: []Point{{2, 2}},
+				Body: []Point{{X: 2, Y: 2}},
 			},
 		},
 	}
@@ -635,7 +635,7 @@ func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 		Snakes: []Snake{
 			{
 				ID:   "one",
-				Body: []Point{{1, 1}},
+				Body: []Point{{X: 1, Y: 1}},
 			},
 		},
 	}
@@ -653,7 +653,7 @@ func TestMoveSnakesExtraMovesIgnored(t *testing.T) {
 	r := getStandardRuleset(Settings{})
 	_, err := MoveSnakesStandard(b, r.Settings(), moves)
 	require.NoError(t, err)
-	require.Equal(t, []Point{{1, 0}}, b.Snakes[0].Body)
+	require.Equal(t, []Point{{X: 1, Y: 0}}, b.Snakes[0].Body)
 }
 
 func TestMoveSnakesDefault(t *testing.T) {
@@ -663,34 +663,34 @@ func TestMoveSnakesDefault(t *testing.T) {
 		Expected []Point
 	}{
 		{
-			Body:     []Point{{0, 0}},
+			Body:     []Point{{X: 0, Y: 0}},
 			Move:     "invalid",
-			Expected: []Point{{0, 1}},
+			Expected: []Point{{X: 0, Y: 1}},
 		},
 		{
-			Body:     []Point{{5, 5}, {5, 5}},
+			Body:     []Point{{X: 5, Y: 5}, {X: 5, Y: 5}},
 			Move:     "",
-			Expected: []Point{{5, 6}, {5, 5}},
+			Expected: []Point{{X: 5, Y: 6}, {X: 5, Y: 5}},
 		},
 		{
-			Body:     []Point{{5, 5}, {5, 4}},
-			Expected: []Point{{5, 6}, {5, 5}},
+			Body:     []Point{{X: 5, Y: 5}, {X: 5, Y: 4}},
+			Expected: []Point{{X: 5, Y: 6}, {X: 5, Y: 5}},
 		},
 		{
-			Body:     []Point{{5, 4}, {5, 5}},
-			Expected: []Point{{5, 3}, {5, 4}},
+			Body:     []Point{{X: 5, Y: 4}, {X: 5, Y: 5}},
+			Expected: []Point{{X: 5, Y: 3}, {X: 5, Y: 4}},
 		},
 		{
-			Body:     []Point{{5, 4}, {5, 5}},
-			Expected: []Point{{5, 3}, {5, 4}},
+			Body:     []Point{{X: 5, Y: 4}, {X: 5, Y: 5}},
+			Expected: []Point{{X: 5, Y: 3}, {X: 5, Y: 4}},
 		},
 		{
-			Body:     []Point{{4, 5}, {5, 5}},
-			Expected: []Point{{3, 5}, {4, 5}},
+			Body:     []Point{{X: 4, Y: 5}, {X: 5, Y: 5}},
+			Expected: []Point{{X: 3, Y: 5}, {X: 4, Y: 5}},
 		},
 		{
-			Body:     []Point{{5, 5}, {4, 5}},
-			Expected: []Point{{6, 5}, {5, 5}},
+			Body:     []Point{{X: 5, Y: 5}, {X: 4, Y: 5}},
+			Expected: []Point{{X: 6, Y: 5}, {X: 5, Y: 5}},
 		},
 	}
 
@@ -725,50 +725,50 @@ func TestGetDefaultMove(t *testing.T) {
 			ExpectedMove: MoveUp,
 		},
 		{
-			SnakeBody:    []Point{{0, 0}},
+			SnakeBody:    []Point{{X: 0, Y: 0}},
 			ExpectedMove: MoveUp,
 		},
 		{
-			SnakeBody:    []Point{{-1, -1}},
+			SnakeBody:    []Point{{X: -1, Y: -1}},
 			ExpectedMove: MoveUp,
 		},
 		// Stacked (fallback to default)
 		{
-			SnakeBody:    []Point{{2, 2}, {2, 2}},
+			SnakeBody:    []Point{{X: 2, Y: 2}, {X: 2, Y: 2}},
 			ExpectedMove: MoveUp,
 		},
 		// Neck next to head
 		{
-			SnakeBody:    []Point{{2, 2}, {2, 1}},
+			SnakeBody:    []Point{{X: 2, Y: 2}, {X: 2, Y: 1}},
 			ExpectedMove: MoveUp,
 		},
 		{
-			SnakeBody:    []Point{{2, 2}, {2, 3}},
+			SnakeBody:    []Point{{X: 2, Y: 2}, {X: 2, Y: 3}},
 			ExpectedMove: MoveDown,
 		},
 		{
-			SnakeBody:    []Point{{2, 2}, {1, 2}},
+			SnakeBody:    []Point{{X: 2, Y: 2}, {X: 1, Y: 2}},
 			ExpectedMove: MoveRight,
 		},
 		{
-			SnakeBody:    []Point{{2, 2}, {3, 2}},
+			SnakeBody:    []Point{{X: 2, Y: 2}, {X: 3, Y: 2}},
 			ExpectedMove: MoveLeft,
 		},
 		// Board wrap cases
 		{
-			SnakeBody:    []Point{{0, 0}, {0, 2}},
+			SnakeBody:    []Point{{X: 0, Y: 0}, {X: 0, Y: 2}},
 			ExpectedMove: MoveUp,
 		},
 		{
-			SnakeBody:    []Point{{0, 0}, {2, 0}},
+			SnakeBody:    []Point{{X: 0, Y: 0}, {X: 2, Y: 0}},
 			ExpectedMove: MoveRight,
 		},
 		{
-			SnakeBody:    []Point{{0, 2}, {0, 0}},
+			SnakeBody:    []Point{{X: 0, Y: 2}, {X: 0, Y: 0}},
 			ExpectedMove: MoveDown,
 		},
 		{
-			SnakeBody:    []Point{{2, 0}, {0, 0}},
+			SnakeBody:    []Point{{X: 2, Y: 0}, {X: 0, Y: 0}},
 			ExpectedMove: MoveLeft,
 		},
 	}
@@ -783,15 +783,15 @@ func TestReduceSnakeHealth(t *testing.T) {
 	b := &BoardState{
 		Snakes: []Snake{
 			{
-				Body:   []Point{{0, 0}, {0, 1}},
+				Body:   []Point{{X: 0, Y: 0}, {X: 0, Y: 1}},
 				Health: 99,
 			},
 			{
-				Body:   []Point{{5, 8}, {6, 8}, {7, 8}},
+				Body:   []Point{{X: 5, Y: 8}, {X: 6, Y: 8}, {X: 7, Y: 8}},
 				Health: 2,
 			},
 			{
-				Body:            []Point{{0, 0}, {0, 1}},
+				Body:            []Point{{X: 0, Y: 0}, {X: 0, Y: 1}},
 				Health:          50,
 				EliminatedCause: EliminatedByCollision,
 			},
@@ -886,7 +886,7 @@ func TestSnakeIsOutOfBounds(t *testing.T) {
 		s := Snake{Body: []Point{test.Point}}
 		require.Equal(t, test.Expected, snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Head%+v", test.Point)
 		// Test with point as body
-		s = Snake{Body: []Point{{0, 0}, {0, 0}, test.Point}}
+		s = Snake{Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 0}, test.Point}}
 		require.Equal(t, test.Expected, snakeIsOutOfBounds(&s, boardWidth, boardHeight), "Body%+v", test.Point)
 	}
 }
@@ -896,26 +896,26 @@ func TestSnakeHasBodyCollidedSelf(t *testing.T) {
 		Body     []Point
 		Expected bool
 	}{
-		{[]Point{{1, 1}}, false},
+		{[]Point{{X: 1, Y: 1}}, false},
 		// Self stacks should self collide
 		// (we rely on snakes moving before we check self-collision on turn one)
-		{[]Point{{2, 2}, {2, 2}}, true},
-		{[]Point{{3, 3}, {3, 3}, {3, 3}}, true},
-		{[]Point{{5, 5}, {5, 5}, {5, 5}, {5, 5}, {5, 5}}, true},
+		{[]Point{{X: 2, Y: 2}, {X: 2, Y: 2}}, true},
+		{[]Point{{X: 3, Y: 3}, {X: 3, Y: 3}, {X: 3, Y: 3}}, true},
+		{[]Point{{X: 5, Y: 5}, {X: 5, Y: 5}, {X: 5, Y: 5}, {X: 5, Y: 5}, {X: 5, Y: 5}}, true},
 		// Non-collision cases
-		{[]Point{{0, 0}, {1, 0}, {1, 0}}, false},
-		{[]Point{{0, 0}, {1, 0}, {2, 0}}, false},
-		{[]Point{{0, 0}, {1, 0}, {2, 0}, {2, 0}, {2, 0}}, false},
-		{[]Point{{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}}, false},
-		{[]Point{{0, 0}, {0, 1}, {0, 2}}, false},
-		{[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 2}, {0, 2}}, false},
-		{[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 0}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 0}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 0}, {X: 4, Y: 0}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 2}, {X: 0, Y: 2}}, false},
+		{[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}, {X: 0, Y: 4}}, false},
 		// Collision cases
-		{[]Point{{0, 0}, {1, 0}, {0, 0}}, true},
-		{[]Point{{0, 0}, {0, 0}, {1, 0}}, true},
-		{[]Point{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}, true},
-		{[]Point{{4, 4}, {3, 4}, {3, 3}, {4, 4}, {4, 4}}, true},
-		{[]Point{{3, 3}, {3, 4}, {3, 3}, {4, 4}, {4, 5}}, true},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 0, Y: 0}}, true},
+		{[]Point{{X: 0, Y: 0}, {X: 0, Y: 0}, {X: 1, Y: 0}}, true},
+		{[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}, {X: 0, Y: 0}}, true},
+		{[]Point{{X: 4, Y: 4}, {X: 3, Y: 4}, {X: 3, Y: 3}, {X: 4, Y: 4}, {X: 4, Y: 4}}, true},
+		{[]Point{{X: 3, Y: 3}, {X: 3, Y: 4}, {X: 3, Y: 3}, {X: 4, Y: 4}, {X: 4, Y: 5}}, true},
 	}
 
 	for _, test := range tests {
@@ -932,38 +932,38 @@ func TestSnakeHasBodyCollidedOther(t *testing.T) {
 	}{
 		{
 			// Just heads
-			[]Point{{0, 0}},
-			[]Point{{1, 1}},
+			[]Point{{X: 0, Y: 0}},
+			[]Point{{X: 1, Y: 1}},
 			false,
 		},
 		{
 			// Head-to-heads are not considered in body collisions
-			[]Point{{0, 0}},
-			[]Point{{0, 0}},
+			[]Point{{X: 0, Y: 0}},
+			[]Point{{X: 0, Y: 0}},
 			false,
 		},
 		{
 			// Stacked bodies
-			[]Point{{0, 0}},
-			[]Point{{0, 0}, {0, 0}},
+			[]Point{{X: 0, Y: 0}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 0}},
 			true,
 		},
 		{
 			// Separate stacked bodies
-			[]Point{{0, 0}, {0, 0}, {0, 0}},
-			[]Point{{1, 1}, {1, 1}, {1, 1}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 0}, {X: 0, Y: 0}},
+			[]Point{{X: 1, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 1}},
 			false,
 		},
 		{
 			// Stacked bodies, separated heads
-			[]Point{{0, 0}, {1, 0}, {1, 0}},
-			[]Point{{2, 0}, {1, 0}, {1, 0}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 0}},
+			[]Point{{X: 2, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 0}},
 			false,
 		},
 		{
 			// Mid-snake collision
-			[]Point{{1, 1}},
-			[]Point{{0, 1}, {1, 1}, {2, 1}},
+			[]Point{{X: 1, Y: 1}},
+			[]Point{{X: 0, Y: 1}, {X: 1, Y: 1}, {X: 2, Y: 1}},
 			true,
 		},
 	}
@@ -984,50 +984,50 @@ func TestSnakeHasLostHeadToHead(t *testing.T) {
 	}{
 		{
 			// Just heads
-			[]Point{{0, 0}},
-			[]Point{{1, 1}},
+			[]Point{{X: 0, Y: 0}},
+			[]Point{{X: 1, Y: 1}},
 			false, false,
 		},
 		{
 			// Just heads colliding
-			[]Point{{0, 0}},
-			[]Point{{0, 0}},
+			[]Point{{X: 0, Y: 0}},
+			[]Point{{X: 0, Y: 0}},
 			true, true,
 		},
 		{
 			// One snake larger
-			[]Point{{0, 0}, {1, 0}, {2, 0}},
-			[]Point{{0, 0}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}},
+			[]Point{{X: 0, Y: 0}},
 			false, true,
 		},
 		{
 			// Other snake equal
-			[]Point{{0, 0}, {1, 0}, {2, 0}},
-			[]Point{{0, 0}, {0, 1}, {0, 2}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}},
 			true, true,
 		},
 		{
 			// Other snake longer
-			[]Point{{0, 0}, {1, 0}, {2, 0}},
-			[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}},
 			true, false,
 		},
 		{
 			// Body collision
-			[]Point{{0, 1}, {1, 1}, {2, 1}},
-			[]Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
+			[]Point{{X: 0, Y: 1}, {X: 1, Y: 1}, {X: 2, Y: 1}},
+			[]Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}},
 			false, false,
 		},
 		{
 			// Separate stacked bodies, head collision
-			[]Point{{3, 10}, {2, 10}, {2, 10}},
-			[]Point{{3, 10}, {4, 10}, {4, 10}},
+			[]Point{{X: 3, Y: 10}, {X: 2, Y: 10}, {X: 2, Y: 10}},
+			[]Point{{X: 3, Y: 10}, {X: 4, Y: 10}, {X: 4, Y: 10}},
 			true, true,
 		},
 		{
 			// Separate stacked bodies, head collision
-			[]Point{{10, 3}, {10, 2}, {10, 1}, {10, 0}},
-			[]Point{{10, 3}, {10, 4}, {10, 5}},
+			[]Point{{X: 10, Y: 3}, {X: 10, Y: 2}, {X: 10, Y: 1}, {X: 10, Y: 0}},
+			[]Point{{X: 10, Y: 3}, {X: 10, Y: 4}, {X: 10, Y: 5}},
 			false, true,
 		},
 	}
@@ -1068,7 +1068,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Single Starvation",
 			[]Snake{
-				{ID: "1", Body: []Point{{1, 1}}},
+				{ID: "1", Body: []Point{{X: 1, Y: 1}}},
 			},
 			[]string{EliminatedByOutOfHealth},
 			[]string{""},
@@ -1077,7 +1077,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Not Eliminated",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 1, Y: 1}}},
 			},
 			[]string{NotEliminated},
 			[]string{""},
@@ -1086,7 +1086,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Out of Bounds",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{-1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{X: -1, Y: 1}}},
 			},
 			[]string{EliminatedByOutOfBounds},
 			[]string{""},
@@ -1095,7 +1095,7 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Self Collision",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 0}}},
 			},
 			[]string{EliminatedBySelfCollision},
 			[]string{"1"},
@@ -1104,8 +1104,8 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Multiple Separate Deaths",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 0}}},
-				{ID: "2", Health: 1, Body: []Point{{-1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 0}}},
+				{ID: "2", Health: 1, Body: []Point{{X: -1, Y: 1}}},
 			},
 			[]string{
 				EliminatedBySelfCollision,
@@ -1116,8 +1116,8 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"Other Collision",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{0, 2}, {0, 3}, {0, 4}}},
-				{ID: "2", Health: 1, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 0, Y: 2}, {X: 0, Y: 3}, {X: 0, Y: 4}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
 			[]string{
 				EliminatedByCollision,
@@ -1128,9 +1128,9 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Eliminated Head 2 Head",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{1, 1}}},
-				{ID: "2", Health: 1, Body: []Point{{1, 1}}},
-				{ID: "3", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 1, Y: 1}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 1, Y: 1}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 1, Y: 1}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1143,9 +1143,9 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"One Snake wins Head 2 Head",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{1, 1}, {0, 1}}},
-				{ID: "2", Health: 1, Body: []Point{{1, 1}, {1, 2}, {1, 3}}},
-				{ID: "3", Health: 1, Body: []Point{{1, 1}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 1, Y: 1}, {X: 0, Y: 1}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 1, Y: 1}, {X: 1, Y: 2}, {X: 1, Y: 3}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 1, Y: 1}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1158,11 +1158,11 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Snakes Body Eliminated",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{4, 4}, {3, 3}}},
-				{ID: "2", Health: 1, Body: []Point{{3, 3}, {2, 2}}},
-				{ID: "3", Health: 1, Body: []Point{{2, 2}, {1, 1}}},
-				{ID: "4", Health: 1, Body: []Point{{1, 1}, {4, 4}}},
-				{ID: "5", Health: 1, Body: []Point{{4, 4}}}, // Body collision takes priority
+				{ID: "1", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 3, Y: 3}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 3, Y: 3}, {X: 2, Y: 2}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 2, Y: 2}, {X: 1, Y: 1}}},
+				{ID: "4", Health: 1, Body: []Point{{X: 1, Y: 1}, {X: 4, Y: 4}}},
+				{ID: "5", Health: 1, Body: []Point{{X: 4, Y: 4}}}, // Body collision takes priority
 			},
 			[]string{
 				EliminatedByCollision,
@@ -1177,10 +1177,10 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"All Snakes Eliminated Head 2 Head",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
-				{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
-				{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}}},
-				{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 4, Y: 5}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 4, Y: 3}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 5, Y: 4}}},
+				{ID: "4", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 3, Y: 4}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1194,10 +1194,10 @@ func TestMaybeEliminateSnakes(t *testing.T) {
 		{
 			"4 Snakes Head 2 Head",
 			[]Snake{
-				{ID: "1", Health: 1, Body: []Point{{4, 4}, {4, 5}}},
-				{ID: "2", Health: 1, Body: []Point{{4, 4}, {4, 3}}},
-				{ID: "3", Health: 1, Body: []Point{{4, 4}, {5, 4}, {6, 4}}},
-				{ID: "4", Health: 1, Body: []Point{{4, 4}, {3, 4}}},
+				{ID: "1", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 4, Y: 5}}},
+				{ID: "2", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 4, Y: 3}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 5, Y: 4}, {X: 6, Y: 4}}},
+				{ID: "4", Health: 1, Body: []Point{{X: 4, Y: 4}, {X: 3, Y: 4}}},
 			},
 			[]string{
 				EliminatedByHeadToHeadCollision,
@@ -1235,12 +1235,12 @@ func TestMaybeEliminateSnakesPriority(t *testing.T) {
 	}{
 		{
 			[]Snake{
-				{ID: "1", Health: 0, Body: []Point{{-1, 0}, {0, 0}, {1, 0}}},
-				{ID: "2", Health: 1, Body: []Point{{-1, 0}, {0, 0}, {1, 0}}},
-				{ID: "3", Health: 1, Body: []Point{{1, 0}, {0, 0}, {1, 0}}},
-				{ID: "4", Health: 1, Body: []Point{{1, 0}, {1, 1}, {1, 2}}},
-				{ID: "5", Health: 1, Body: []Point{{2, 2}, {2, 1}, {2, 0}}},
-				{ID: "6", Health: 1, Body: []Point{{2, 2}, {2, 3}, {2, 4}, {2, 5}}},
+				{ID: "1", Health: 0, Body: []Point{{X: -1, Y: 0}, {X: 0, Y: 0}, {X: 1, Y: 0}}},
+				{ID: "2", Health: 1, Body: []Point{{X: -1, Y: 0}, {X: 0, Y: 0}, {X: 1, Y: 0}}},
+				{ID: "3", Health: 1, Body: []Point{{X: 1, Y: 0}, {X: 0, Y: 0}, {X: 1, Y: 0}}},
+				{ID: "4", Health: 1, Body: []Point{{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 1, Y: 2}}},
+				{ID: "5", Health: 1, Body: []Point{{X: 2, Y: 2}, {X: 2, Y: 1}, {X: 2, Y: 0}}},
+				{ID: "6", Health: 1, Body: []Point{{X: 2, Y: 2}, {X: 2, Y: 3}, {X: 2, Y: 4}, {X: 2, Y: 5}}},
 			},
 			[]string{
 				EliminatedByOutOfHealth,
@@ -1277,50 +1277,50 @@ func TestMaybeDamageHazards(t *testing.T) {
 	}{
 		{},
 		{
-			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
+			Snakes:                    []Snake{{Body: []Point{{X: 0, Y: 0}}}},
 			Hazards:                   []Point{},
 			ExpectedEliminatedCauses:  []string{NotEliminated},
 			ExpectedEliminatedByIDs:   []string{""},
 			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
-			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
-			Hazards:                   []Point{{0, 0}},
+			Snakes:                    []Snake{{Body: []Point{{X: 0, Y: 0}}}},
+			Hazards:                   []Point{{X: 0, Y: 0}},
 			ExpectedEliminatedCauses:  []string{EliminatedByHazard},
 			ExpectedEliminatedByIDs:   []string{""},
 			ExpectedEliminatedOnTurns: []int{42},
 		},
 		{
-			Snakes:                    []Snake{{Body: []Point{{0, 0}}}},
-			Hazards:                   []Point{{0, 0}},
-			Food:                      []Point{{0, 0}},
+			Snakes:                    []Snake{{Body: []Point{{X: 0, Y: 0}}}},
+			Hazards:                   []Point{{X: 0, Y: 0}},
+			Food:                      []Point{{X: 0, Y: 0}},
 			ExpectedEliminatedCauses:  []string{NotEliminated},
 			ExpectedEliminatedByIDs:   []string{""},
 			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
-			Snakes:                    []Snake{{Body: []Point{{0, 0}, {1, 0}, {2, 0}}}},
-			Hazards:                   []Point{{1, 0}, {2, 0}},
+			Snakes:                    []Snake{{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}}}},
+			Hazards:                   []Point{{X: 1, Y: 0}, {X: 2, Y: 0}},
 			ExpectedEliminatedCauses:  []string{NotEliminated},
 			ExpectedEliminatedByIDs:   []string{""},
 			ExpectedEliminatedOnTurns: []int{0},
 		},
 		{
 			Snakes: []Snake{
-				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
-				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
+				{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}}},
+				{Body: []Point{{X: 3, Y: 3}, {X: 3, Y: 4}, {X: 3, Y: 5}, {X: 3, Y: 6}}},
 			},
-			Hazards:                   []Point{{1, 0}, {2, 0}, {3, 4}, {3, 5}, {3, 6}},
+			Hazards:                   []Point{{X: 1, Y: 0}, {X: 2, Y: 0}, {X: 3, Y: 4}, {X: 3, Y: 5}, {X: 3, Y: 6}},
 			ExpectedEliminatedCauses:  []string{NotEliminated, NotEliminated},
 			ExpectedEliminatedByIDs:   []string{"", ""},
 			ExpectedEliminatedOnTurns: []int{0, 0},
 		},
 		{
 			Snakes: []Snake{
-				{Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
-				{Body: []Point{{3, 3}, {3, 4}, {3, 5}, {3, 6}}},
+				{Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}}},
+				{Body: []Point{{X: 3, Y: 3}, {X: 3, Y: 4}, {X: 3, Y: 5}, {X: 3, Y: 6}}},
 			},
-			Hazards:                   []Point{{3, 3}},
+			Hazards:                   []Point{{X: 3, Y: 3}},
 			ExpectedEliminatedCauses:  []string{NotEliminated, EliminatedByHazard},
 			ExpectedEliminatedByIDs:   []string{"", ""},
 			ExpectedEliminatedOnTurns: []int{0, 42},
@@ -1369,9 +1369,9 @@ func TestHazardDamagePerTurn(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		b := &BoardState{Snakes: []Snake{{Health: test.Health, Body: []Point{{0, 0}}}}, Hazards: []Point{{0, 0}}}
+		b := &BoardState{Snakes: []Snake{{Health: test.Health, Body: []Point{{X: 0, Y: 0}}}}, Hazards: []Point{{X: 0, Y: 0}}}
 		if test.Food {
-			b.Food = []Point{{0, 0}}
+			b.Food = []Point{{X: 0, Y: 0}}
 		}
 		r := getStandardRuleset(NewSettingsWithParams(ParamHazardDamagePerTurn, fmt.Sprint(test.HazardDamagePerTurn)))
 
@@ -1393,59 +1393,59 @@ func TestMaybeFeedSnakes(t *testing.T) {
 		{
 			Name: "snake not on food",
 			Snakes: []Snake{
-				{Health: 5, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{Health: 5, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
-			Food: []Point{{3, 3}},
+			Food: []Point{{X: 3, Y: 3}},
 			ExpectedSnakes: []Snake{
-				{Health: 5, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{Health: 5, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
-			ExpectedFood: []Point{{3, 3}},
+			ExpectedFood: []Point{{X: 3, Y: 3}},
 		},
 		{
 			Name: "snake on food",
 			Snakes: []Snake{
-				{Health: SnakeMaxHealth - 1, Body: []Point{{2, 1}, {1, 1}, {1, 2}, {2, 2}}},
+				{Health: SnakeMaxHealth - 1, Body: []Point{{X: 2, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 2}}},
 			},
-			Food: []Point{{2, 1}},
+			Food: []Point{{X: 2, Y: 1}},
 			ExpectedSnakes: []Snake{
-				{Health: SnakeMaxHealth, Body: []Point{{2, 1}, {1, 1}, {1, 2}, {2, 2}, {2, 2}}},
+				{Health: SnakeMaxHealth, Body: []Point{{X: 2, Y: 1}, {X: 1, Y: 1}, {X: 1, Y: 2}, {X: 2, Y: 2}, {X: 2, Y: 2}}},
 			},
 			ExpectedFood: []Point{},
 		},
 		{
 			Name: "food under body",
 			Snakes: []Snake{
-				{Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
-			Food: []Point{{0, 1}},
+			Food: []Point{{X: 0, Y: 1}},
 			ExpectedSnakes: []Snake{
-				{Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
-			ExpectedFood: []Point{{0, 1}},
+			ExpectedFood: []Point{{X: 0, Y: 1}},
 		},
 		{
 			Name: "snake on food but already eliminated",
 			Snakes: []Snake{
-				{Body: []Point{{0, 0}, {0, 1}, {0, 2}}, EliminatedCause: "EliminatedByOutOfBounds"},
+				{Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}, EliminatedCause: "EliminatedByOutOfBounds"},
 			},
-			Food: []Point{{0, 0}},
+			Food: []Point{{X: 0, Y: 0}},
 			ExpectedSnakes: []Snake{
-				{Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
+				{Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
 			},
-			ExpectedFood: []Point{{0, 0}},
+			ExpectedFood: []Point{{X: 0, Y: 0}},
 		},
 		{
 			Name: "multiple snakes on same food",
 			Snakes: []Snake{
-				{Health: SnakeMaxHealth, Body: []Point{{0, 0}, {0, 1}, {0, 2}}},
-				{Health: SnakeMaxHealth - 9, Body: []Point{{0, 0}, {1, 0}, {2, 0}}},
+				{Health: SnakeMaxHealth, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}}},
+				{Health: SnakeMaxHealth - 9, Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}}},
 			},
-			Food: []Point{{0, 0}, {4, 4}},
+			Food: []Point{{X: 0, Y: 0}, {X: 4, Y: 4}},
 			ExpectedSnakes: []Snake{
-				{Health: SnakeMaxHealth, Body: []Point{{0, 0}, {0, 1}, {0, 2}, {0, 2}}},
-				{Health: SnakeMaxHealth, Body: []Point{{0, 0}, {1, 0}, {2, 0}, {2, 0}}},
+				{Health: SnakeMaxHealth, Body: []Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 2}}},
+				{Health: SnakeMaxHealth, Body: []Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 0}}},
 			},
-			ExpectedFood: []Point{{4, 4}},
+			ExpectedFood: []Point{{X: 4, Y: 4}},
 		},
 	}
 
@@ -1476,7 +1476,7 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 		{0, []Point{}, 0},
 		{1, []Point{}, 1},
 		{9, []Point{}, 9},
-		{7, []Point{{4, 5}, {4, 4}, {4, 1}}, 7},
+		{7, []Point{{X: 4, Y: 5}, {X: 4, Y: 4}, {X: 4, Y: 1}}, 7},
 	}
 
 	for _, test := range tests {
@@ -1485,8 +1485,8 @@ func TestMaybeSpawnFoodMinimum(t *testing.T) {
 			Height: 11,
 			Width:  11,
 			Snakes: []Snake{
-				{Body: []Point{{1, 0}, {1, 1}}},
-				{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+				{Body: []Point{{X: 1, Y: 0}, {X: 1, Y: 1}}},
+				{Body: []Point{{X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}}},
 			},
 			Food: test.Food,
 		}
@@ -1503,8 +1503,8 @@ func TestMaybeSpawnFoodZeroChance(t *testing.T) {
 		Height: 11,
 		Width:  11,
 		Snakes: []Snake{
-			{Body: []Point{{1, 0}, {1, 1}}},
-			{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+			{Body: []Point{{X: 1, Y: 0}, {X: 1, Y: 1}}},
+			{Body: []Point{{X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}}},
 		},
 		Food: []Point{},
 	}
@@ -1521,8 +1521,8 @@ func TestMaybeSpawnFoodHundredChance(t *testing.T) {
 		Height: 11,
 		Width:  11,
 		Snakes: []Snake{
-			{Body: []Point{{1, 0}, {1, 1}}},
-			{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+			{Body: []Point{{X: 1, Y: 0}, {X: 1, Y: 1}}},
+			{Body: []Point{{X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}}},
 		},
 		Food: []Point{},
 	}
@@ -1542,10 +1542,10 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 		// Use pre-tested seeds and results
 		{123, []Point{}, 1},
 		{12345, []Point{}, 0},
-		{456, []Point{{4, 4}}, 1},
-		{789, []Point{{4, 4}}, 2},
-		{511, []Point{{4, 4}}, 1},
-		{165, []Point{{4, 4}}, 2},
+		{456, []Point{{X: 4, Y: 4}}, 1},
+		{789, []Point{{X: 4, Y: 4}}, 2},
+		{511, []Point{{X: 4, Y: 4}}, 1},
+		{165, []Point{{X: 4, Y: 4}}, 2},
 	}
 
 	r := getStandardRuleset(NewSettingsWithParams(ParamFoodSpawnChance, "50"))
@@ -1554,8 +1554,8 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 			Height: 4,
 			Width:  5,
 			Snakes: []Snake{
-				{Body: []Point{{1, 0}, {1, 1}}},
-				{Body: []Point{{0, 1}, {0, 2}, {0, 3}}},
+				{Body: []Point{{X: 1, Y: 0}, {X: 1, Y: 1}}},
+				{Body: []Point{{X: 0, Y: 1}, {X: 0, Y: 2}, {X: 0, Y: 3}}},
 			},
 			Food: test.Food,
 		}
