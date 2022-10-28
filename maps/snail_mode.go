@@ -59,23 +59,6 @@ func (m *SnailModeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	return nil
 }
 
-// storeTailLocation returns an offboard point that corresponds to the given point.
-// This is useful for storing state that can be accessed next turn.
-func storeTailLocation(point rules.Point, height int) rules.Point {
-	return rules.Point{X: point.X, Y: point.Y + height}
-}
-
-// getPrevTailLocation returns the onboard point that corresponds to an offboard point.
-// This is useful for restoring state that was stored last turn.
-func getPrevTailLocation(point rules.Point, height int) rules.Point {
-	return rules.Point{X: point.X, Y: point.Y - height}
-}
-
-// outOfBounds determines if the given point is out of bounds for the current board size
-func outOfBounds(p rules.Point, w, h int) bool {
-	return p.X < 0 || p.Y < 0 || p.X >= w || p.Y >= h
-}
-
 // doubleTail determine if the snake has a double stacked tail currently
 func doubleTail(snake *rules.Snake) bool {
 	almostTail := snake.Body[len(snake.Body)-2]
