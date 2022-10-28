@@ -4,7 +4,7 @@ import (
 	"github.com/BattlesnakeOfficial/rules"
 )
 
-type SnailModeMap struct{
+type SnailModeMap struct {
 	lastTailPositions map[rules.Point]int // local state is preserved during the turn
 }
 
@@ -147,7 +147,7 @@ NewHazardLoop:
 				continue NewHazardLoop
 			}
 		}
-		for i := 0; i < count; i++  {
+		for i := 0; i < count; i++ {
 			editor.AddHazard(location)
 		}
 	}
