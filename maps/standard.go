@@ -57,7 +57,11 @@ func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings ru
 	return nil
 }
 
-func (m StandardMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m StandardMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
 
 	foodNeeded := checkFoodNeedingPlacement(rand, settings, lastBoardState)
@@ -69,8 +73,8 @@ func (m StandardMap) UpdateBoard(lastBoardState *rules.BoardState, settings rule
 }
 
 func checkFoodNeedingPlacement(rand rules.Rand, settings rules.Settings, state *rules.BoardState) int {
-	minFood := int(settings.MinimumFood)
-	foodSpawnChance := int(settings.FoodSpawnChance)
+	minFood := settings.Int(rules.ParamMinimumFood, 0)
+	foodSpawnChance := settings.Int(rules.ParamFoodSpawnChance, 0)
 	numCurrentFood := len(state.Food)
 
 	if numCurrentFood < minFood {

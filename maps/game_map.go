@@ -24,8 +24,21 @@ type GameMap interface {
 	// Called to generate a new board. The map is responsible for placing all snakes, food, and hazards.
 	SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 
-	// Called every turn to optionally update the board.
-	UpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+	// Called every turn to optionally update the board before the board is sent to snakes to get their moves.
+	// Changes made here will be seen by snakes before before making their moves, but users in the
+	// browser will see the changes at the same time as the snakes' moves.
+	//
+	// State that is stored in the map by this method will be visible to the PostUpdateBoard method
+	// later in the same turn, but will not nessecarily be available when processing later turns.
+	//
+	// Disclaimer: Unless you have a specific usecase like moving hazards or storing intermediate state,
+	// PostUpdateBoard is probably the better function to use.
+	PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+
+	// Called every turn to optionally update the board after all other rules have been applied.
+	// Changes made here will be seen by both snakes and users in the browser, before before snakes
+	// make their next moves.
+	PostUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
 }
 
 type Metadata struct {
@@ -166,6 +179,12 @@ type Editor interface {
 	// Note: the body values in the return value are a copy and modifying them won't affect the board.
 	SnakeBodies() map[string][]rules.Point
 
+	// Get an editable reference to the BoardState's GameState field
+	GameState() map[string]string
+
+	// Get an editable reference to the BoardState's PointState field
+	PointState() map[rules.Point]int
+
 	// Given a list of Snakes and a list of head coordinates, randomly place
 	// the snakes on those coordinates, or return an error if placement of all
 	// Snakes is impossible.
@@ -268,6 +287,16 @@ func (editor *BoardStateEditor) SnakeBodies() map[string][]rules.Point {
 	}
 
 	return result
+}
+
+// Get an editable reference to the BoardState's GameState field
+func (editor *BoardStateEditor) GameState() map[string]string {
+	return editor.boardState.GameState
+}
+
+// Get an editable reference to the BoardState's PointState field
+func (editor *BoardStateEditor) PointState() map[rules.Point]int {
+	return editor.boardState.PointState
 }
 
 // Given a list of Snakes and a list of head coordinates, randomly place

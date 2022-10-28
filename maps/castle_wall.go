@@ -136,7 +136,11 @@ func (m CastleWallMediumHazardsMap) SetupBoard(initialBoardState *rules.BoardSta
 	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallMediumHazards, initialBoardState, settings, editor)
 }
 
-func (m CastleWallMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m CastleWallMediumHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m CastleWallMediumHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 2
 	return updateCastleWallBoard(maxFood, castleWallMediumFood, lastBoardState, settings, editor)
 }
@@ -228,7 +232,11 @@ func (m CastleWallLargeHazardsMap) SetupBoard(initialBoardState *rules.BoardStat
 	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallLargeHazards, initialBoardState, settings, editor)
 }
 
-func (m CastleWallLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m CastleWallLargeHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m CastleWallLargeHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 2
 	return updateCastleWallBoard(maxFood, castleWallLargeFood, lastBoardState, settings, editor)
 }
@@ -420,7 +428,11 @@ func (m CastleWallExtraLargeHazardsMap) SetupBoard(initialBoardState *rules.Boar
 	return setupCastleWallBoard(m.Meta().MaxPlayers, startPositions, castleWallExtraLargeHazards, initialBoardState, settings, editor)
 }
 
-func (m CastleWallExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m CastleWallExtraLargeHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m CastleWallExtraLargeHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	maxFood := 4
 	return updateCastleWallBoard(maxFood, castleWallExtraLargeFood, lastBoardState, settings, editor)
 }

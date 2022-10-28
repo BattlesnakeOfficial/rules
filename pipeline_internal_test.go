@@ -27,7 +27,7 @@ func TestPipelineRuleset(t *testing.T) {
 		name:     "test",
 		pipeline: p,
 	}
-	ended, err := pr.IsGameOver(&BoardState{})
+	ended, _, err := pr.Execute(&BoardState{}, nil)
 	require.NoError(t, err)
 	require.True(t, ended)
 
@@ -37,7 +37,7 @@ func TestPipelineRuleset(t *testing.T) {
 		name:     "test",
 		pipeline: p,
 	}
-	ended, err = pr.IsGameOver(&BoardState{})
+	ended, _, err = pr.Execute(&BoardState{}, nil)
 	require.NoError(t, err)
 	require.False(t, ended)
 
@@ -56,10 +56,10 @@ func TestPipelineRuleset(t *testing.T) {
 		pipeline: p,
 	}
 	require.Empty(t, b.Food)
-	b, err = pr.ModifyInitialBoardState(b)
+	_, b, err = pr.Execute(b, nil)
 	require.NoError(t, err)
 	require.Empty(t, b.Food, "food should not be added on initialisation phase")
-	b, err = pr.CreateNextBoardState(b, mockSnakeMoves())
+	_, b, err = pr.Execute(b, mockSnakeMoves())
 	require.NoError(t, err)
 	require.NotEmpty(t, b.Food, "fodo should be added now")
 }

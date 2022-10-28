@@ -10,14 +10,12 @@ import (
 
 const maxBoardWidth, maxBoardHeight = 25, 25
 
-var testSettings rules.Settings = rules.Settings{
-	FoodSpawnChance:     25,
-	MinimumFood:         1,
-	HazardDamagePerTurn: 14,
-	RoyaleSettings: rules.RoyaleSettings{
-		ShrinkEveryNTurns: 1,
-	},
-}
+var testSettings rules.Settings = rules.NewSettings(map[string]string{
+	rules.ParamFoodSpawnChance:     "25",
+	rules.ParamMinimumFood:         "1",
+	rules.ParamHazardDamagePerTurn: "14",
+	rules.ParamShrinkEveryNTurns:   "1",
+})
 
 func TestRegisteredMaps(t *testing.T) {
 	for mapName, gameMap := range globalRegistry {
@@ -96,7 +94,7 @@ func TestRegisteredMaps(t *testing.T) {
 
 			passedBoardState := previousBoardState.Clone()
 			tempBoardState := previousBoardState.Clone()
-			err := gameMap.UpdateBoard(passedBoardState, testSettings, NewBoardStateEditor(tempBoardState))
+			err := gameMap.PostUpdateBoard(passedBoardState, testSettings, NewBoardStateEditor(tempBoardState))
 			require.NoError(t, err, "GameMap.UpdateBoard returned an error")
 			require.Equal(t, previousBoardState, passedBoardState, "BoardState should not be modified directly by GameMap.UpdateBoard")
 		})

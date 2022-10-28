@@ -97,8 +97,12 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	return nil
 }
 
-func (m HazardPitsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	err := StandardMap{}.UpdateBoard(lastBoardState, settings, editor)
+func (m HazardPitsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m HazardPitsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	err := StandardMap{}.PostUpdateBoard(lastBoardState, settings, editor)
 	if err != nil {
 		return err
 	}
@@ -109,9 +113,10 @@ func (m HazardPitsMap) UpdateBoard(lastBoardState *rules.BoardState, settings ru
 	// Cycle 3 - 3 layers
 	// Cycle 4-6 - 4 layers of hazards
 
-	if lastBoardState.Turn%settings.RoyaleSettings.ShrinkEveryNTurns == 0 {
+	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 0)
+	if lastBoardState.Turn%shrinkEveryNTurns == 0 {
 		// Is it time to update the hazards
-		layers := (lastBoardState.Turn / settings.RoyaleSettings.ShrinkEveryNTurns) % 7
+		layers := (lastBoardState.Turn / shrinkEveryNTurns) % 7
 		if layers > 4 {
 			layers = 4
 		}

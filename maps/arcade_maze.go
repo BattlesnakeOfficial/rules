@@ -63,7 +63,7 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 		editor.AddHazard(hazard)
 	}
 
-	if settings.MinimumFood > 0 {
+	if settings.Int(rules.ParamMinimumFood, 0) > 0 {
 		// Add food in center
 		editor.AddFood(rules.Point{X: 9, Y: 11})
 	}
@@ -71,11 +71,16 @@ func (m ArcadeMazeMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 	return nil
 }
 
-func (m ArcadeMazeMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m ArcadeMazeMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m ArcadeMazeMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
 
 	// Respect FoodSpawnChance setting
-	if settings.FoodSpawnChance == 0 || rand.Intn(100) > settings.FoodSpawnChance {
+	foodSpawnChance := settings.Int(rules.ParamFoodSpawnChance, 0)
+	if foodSpawnChance == 0 || rand.Intn(100) > foodSpawnChance {
 		return nil
 	}
 

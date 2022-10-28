@@ -49,19 +49,47 @@ type Customizations struct {
 }
 
 type Ruleset struct {
-	Name     string         `json:"name"`
-	Version  string         `json:"version"`
-	Settings rules.Settings `json:"settings"`
+	Name     string          `json:"name"`
+	Version  string          `json:"version"`
+	Settings RulesetSettings `json:"settings"`
 }
 
-// RulesetSettings is deprecated: use rules.Settings instead
-type RulesetSettings rules.Settings
+// RulesetSettings contains a static collection of a few settings that are exposed through the API.
+type RulesetSettings struct {
+	FoodSpawnChance     int            `json:"foodSpawnChance"`
+	MinimumFood         int            `json:"minimumFood"`
+	HazardDamagePerTurn int            `json:"hazardDamagePerTurn"`
+	HazardMap           string         `json:"hazardMap"`       // Deprecated, replaced by Game.Map
+	HazardMapAuthor     string         `json:"hazardMapAuthor"` // Deprecated, no planned replacement
+	RoyaleSettings      RoyaleSettings `json:"royale"`
+	SquadSettings       SquadSettings  `json:"squad"` // Deprecated, provided with default fields for API compatibility
+}
 
-// RoyaleSettings is deprecated: use rules.RoyaleSettings instead
-type RoyaleSettings rules.RoyaleSettings
+// RoyaleSettings contains settings that are specific to the "royale" game mode
+type RoyaleSettings struct {
+	ShrinkEveryNTurns int `json:"shrinkEveryNTurns"`
+}
 
-// SquadSettings is deprecated: use rules.SquadSettings instead
-type SquadSettings rules.SquadSettings
+// SquadSettings contains settings that are specific to the "squad" game mode
+type SquadSettings struct {
+	AllowBodyCollisions bool `json:"allowBodyCollisions"`
+	SharedElimination   bool `json:"sharedElimination"`
+	SharedHealth        bool `json:"sharedHealth"`
+	SharedLength        bool `json:"sharedLength"`
+}
+
+// Converts a rules.Settings (which can contain arbitrary settings) into the static RulesetSettings used in the client API.
+func ConvertRulesetSettings(settings rules.Settings) RulesetSettings {
+	return RulesetSettings{
+		FoodSpawnChance:     settings.Int(rules.ParamFoodSpawnChance, 0),
+		MinimumFood:         settings.Int(rules.ParamMinimumFood, 0),
+		HazardDamagePerTurn: settings.Int(rules.ParamHazardDamagePerTurn, 0),
+		RoyaleSettings: RoyaleSettings{
+			ShrinkEveryNTurns: settings.Int(rules.ParamShrinkEveryNTurns, 0),
+		},
+		SquadSettings: SquadSettings{},
+	}
+}
 
 // Coord represents a point on the board
 type Coord struct {

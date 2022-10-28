@@ -38,7 +38,7 @@ func TestSinkholesMap(t *testing.T) {
 			totalTurns := 100
 			for i := 0; i < totalTurns; i++ {
 				state.Turn = i
-				err = m.UpdateBoard(state, settings, editor)
+				err = m.PostUpdateBoard(state, settings, editor)
 				require.NoError(t, err)
 			}
 			require.NotEmpty(t, state.Hazards)

@@ -5,14 +5,6 @@ import (
 	"sort"
 )
 
-type StandardRuleset struct {
-	FoodSpawnChance     int // [0, 100]
-	MinimumFood         int
-	HazardDamagePerTurn int
-	HazardMap           string // optional
-	HazardMapAuthor     string // optional
-}
-
 var standardRulesetStages = []string{
 	StageGameOverStandard,
 	StageMovementStandard,
@@ -20,23 +12,6 @@ var standardRulesetStages = []string{
 	StageHazardDamageStandard,
 	StageFeedSnakesStandard,
 	StageEliminationStandard,
-}
-
-func (r *StandardRuleset) Name() string { return GameTypeStandard }
-
-func (r *StandardRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
-	// No-op
-	return initialState, nil
-}
-
-// impl Pipeline
-func (r StandardRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
-	return NewPipeline(standardRulesetStages...).Execute(bs, s, sm)
-}
-
-func (r *StandardRuleset) CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error) {
-	_, nextState, err := r.Execute(prevState, r.Settings(), moves)
-	return nextState, err
 }
 
 func MoveSnakesStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -156,6 +131,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
+	hazardDamage := settings.Int(ParamHazardDamagePerTurn, 0)
 	for i := 0; i < len(b.Snakes); i++ {
 		snake := &b.Snakes[i]
 		if snake.EliminatedCause != NotEliminated {
@@ -176,7 +152,7 @@ func DamageHazardsStandard(b *BoardState, settings Settings, moves []SnakeMove) 
 				}
 
 				// Snake is in a hazard, reduce health
-				snake.Health = snake.Health - settings.HazardDamagePerTurn
+				snake.Health = snake.Health - hazardDamage
 				if snake.Health < 0 {
 					snake.Health = 0
 				}
@@ -393,18 +369,16 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	if IsInitialization(b, settings, moves) {
 		return false, nil
 	}
+	minimumFood := settings.Int(ParamMinimumFood, 0)
+	foodSpawnChance := settings.Int(ParamFoodSpawnChance, 0)
 	numCurrentFood := int(len(b.Food))
-	if numCurrentFood < settings.MinimumFood {
-		return false, PlaceFoodRandomly(GlobalRand, b, settings.MinimumFood-numCurrentFood)
+	if numCurrentFood < minimumFood {
+		return false, PlaceFoodRandomly(GlobalRand, b, minimumFood-numCurrentFood)
 	}
-	if settings.FoodSpawnChance > 0 && int(rand.Intn(100)) < settings.FoodSpawnChance {
+	if foodSpawnChance > 0 && int(rand.Intn(100)) < foodSpawnChance {
 		return false, PlaceFoodRandomly(GlobalRand, b, 1)
 	}
 	return false, nil
-}
-
-func (r *StandardRuleset) IsGameOver(b *BoardState) (bool, error) {
-	return GameOverStandard(b, r.Settings(), nil)
 }
 
 func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool, error) {
@@ -415,26 +389,4 @@ func GameOverStandard(b *BoardState, settings Settings, moves []SnakeMove) (bool
 		}
 	}
 	return numSnakesRemaining <= 1, nil
-}
-
-func (r StandardRuleset) Settings() Settings {
-	return Settings{
-		FoodSpawnChance:     r.FoodSpawnChance,
-		MinimumFood:         r.MinimumFood,
-		HazardDamagePerTurn: r.HazardDamagePerTurn,
-		HazardMap:           r.HazardMap,
-		HazardMapAuthor:     r.HazardMapAuthor,
-	}
-}
-
-// impl Pipeline
-func (r StandardRuleset) Err() error {
-	return nil
-}
-
-// IsInitialization checks whether the current state means the game is initialising.
-func IsInitialization(b *BoardState, settings Settings, moves []SnakeMove) bool {
-	// We can safely assume that the game state is in the initialisation phase when
-	// the turn hasn't advanced and the moves are empty
-	return b.Turn <= 0 && len(moves) == 0
 }

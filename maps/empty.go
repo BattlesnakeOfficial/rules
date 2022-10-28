@@ -53,6 +53,10 @@ func (m EmptyMap) SetupBoard(initialBoardState *rules.BoardState, settings rules
 	return nil
 }
 
-func (m EmptyMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m EmptyMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m EmptyMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return nil
 }

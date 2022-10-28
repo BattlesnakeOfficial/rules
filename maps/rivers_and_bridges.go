@@ -71,7 +71,11 @@ func (m RiverAndBridgesMediumHazardsMap) SetupBoard(initialBoardState *rules.Boa
 	return setupRiverAndBridgesBoard(riversAndBridgesMediumStartPositions, riversAndBridgesMediumHazards, initialBoardState, settings, editor)
 }
 
-func (m RiverAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m RiverAndBridgesMediumHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m RiverAndBridgesMediumHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
 }
 
@@ -142,7 +146,11 @@ func (m RiverAndBridgesLargeHazardsMap) SetupBoard(initialBoardState *rules.Boar
 	return setupRiverAndBridgesBoard(riversAndBridgesLargeStartPositions, riversAndBridgesLargeHazards, initialBoardState, settings, editor)
 }
 
-func (m RiverAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m RiverAndBridgesLargeHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m RiverAndBridgesLargeHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
 }
 
@@ -241,7 +249,11 @@ func (m RiverAndBridgesExtraLargeHazardsMap) SetupBoard(initialBoardState *rules
 	return setupRiverAndBridgesBoard(riversAndBridgesExtraLargeStartPositions, riversAndBridgesExtraLargeHazards, initialBoardState, settings, editor)
 }
 
-func (m RiverAndBridgesExtraLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m RiverAndBridgesExtraLargeHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m RiverAndBridgesExtraLargeHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
 }
 
@@ -355,7 +367,11 @@ func (m IslandsAndBridgesMediumHazardsMap) SetupBoard(initialBoardState *rules.B
 	return setupRiverAndBridgesBoard(islandsAndBridgesMediumStartPositions, islandsAndBridgesMediumHazards, initialBoardState, settings, editor)
 }
 
-func (m IslandsAndBridgesMediumHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m IslandsAndBridgesMediumHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m IslandsAndBridgesMediumHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
 }
 
@@ -441,7 +457,11 @@ func (m IslandsAndBridgesLargeHazardsMap) SetupBoard(initialBoardState *rules.Bo
 	return setupRiverAndBridgesBoard(islandsAndBridgesLargeStartPositions, islandsAndBridgesLargeHazards, initialBoardState, settings, editor)
 }
 
-func (m IslandsAndBridgesLargeHazardsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m IslandsAndBridgesLargeHazardsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m IslandsAndBridgesLargeHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
 	return placeRiverAndBridgesFood(lastBoardState, settings, editor)
 }
 

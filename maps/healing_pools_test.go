@@ -40,8 +40,8 @@ func TestHealingPoolsMap(t *testing.T) {
 		t.Run(fmt.Sprintf("%dx%d", tc.boardSize, tc.boardSize), func(t *testing.T) {
 			m := maps.HealingPoolsMap{}
 			state := rules.NewBoardState(tc.boardSize, tc.boardSize)
-			settings := rules.Settings{}
-			settings.RoyaleSettings.ShrinkEveryNTurns = 10
+			shrinkEveryNTurns := 10
+			settings := rules.NewSettingsWithParams(rules.ParamShrinkEveryNTurns, fmt.Sprint(shrinkEveryNTurns))
 
 			// ensure the hazards are added to the board at setup
 			editor := maps.NewBoardStateEditor(state)
@@ -56,10 +56,10 @@ func TestHealingPoolsMap(t *testing.T) {
 			}
 
 			// ensure the hazards are removed
-			totalTurns := settings.RoyaleSettings.ShrinkEveryNTurns*tc.expectedHazards + 1
+			totalTurns := shrinkEveryNTurns*tc.expectedHazards + 1
 			for i := 0; i < totalTurns; i++ {
 				state.Turn = i
-				err = m.UpdateBoard(state, settings, editor)
+				err = m.PostUpdateBoard(state, settings, editor)
 				require.NoError(t, err)
 			}
 

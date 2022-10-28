@@ -38,7 +38,7 @@ func TestHazardPitsMap(t *testing.T) {
 
 	state = rules.NewBoardState(int(11), int(11))
 	m = maps.HazardPitsMap{}
-	settings.RoyaleSettings.ShrinkEveryNTurns = 1
+	settings = rules.NewSettingsWithParams(rules.ParamShrinkEveryNTurns, "1")
 	editor = maps.NewBoardStateEditor(state)
 	require.Empty(t, state.Hazards)
 	err = m.SetupBoard(state, settings, editor)
@@ -47,7 +47,7 @@ func TestHazardPitsMap(t *testing.T) {
 	// Verify the hazard progression through the turns
 	for i := 0; i < 16; i++ {
 		state.Turn = i
-		err = m.UpdateBoard(state, settings, editor)
+		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
 		if i == 1 {
 			require.Len(t, state.Hazards, 21)

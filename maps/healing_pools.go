@@ -50,12 +50,17 @@ func (m HealingPoolsMap) SetupBoard(initialBoardState *rules.BoardState, setting
 	return nil
 }
 
-func (m HealingPoolsMap) UpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	if err := (StandardMap{}).UpdateBoard(lastBoardState, settings, editor); err != nil {
+func (m HealingPoolsMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	return nil
+}
+
+func (m HealingPoolsMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+	if err := (StandardMap{}).PostUpdateBoard(lastBoardState, settings, editor); err != nil {
 		return err
 	}
 
-	if lastBoardState.Turn > 0 && settings.RoyaleSettings.ShrinkEveryNTurns > 0 && len(lastBoardState.Hazards) > 0 && lastBoardState.Turn%settings.RoyaleSettings.ShrinkEveryNTurns == 0 {
+	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 0)
+	if lastBoardState.Turn > 0 && shrinkEveryNTurns > 0 && len(lastBoardState.Hazards) > 0 && lastBoardState.Turn%shrinkEveryNTurns == 0 {
 		// Attempt to remove a healing pool every ShrinkEveryNTurns until there are none remaining
 		i := rand.Intn(len(lastBoardState.Hazards))
 		editor.RemoveHazard(lastBoardState.Hazards[i])

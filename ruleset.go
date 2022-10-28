@@ -1,16 +1,15 @@
 package rules
 
-import (
-	"strconv"
-)
-
 type Ruleset interface {
+	// Returns the name of the ruleset, if applicable.
 	Name() string
-	ModifyInitialBoardState(initialState *BoardState) (*BoardState, error)
-	CreateNextBoardState(prevState *BoardState, moves []SnakeMove) (*BoardState, error)
-	IsGameOver(state *BoardState) (bool, error)
-	// Settings provides the game settings that are relevant to the ruleset.
+
+	// Returns the settings used by the ruleset.
 	Settings() Settings
+
+	// Processes the next turn of the ruleset, returning whether the game has ended, the next BoardState, or an error.
+	// For turn zero (initialization), moves will be left empty.
+	Execute(prevState *BoardState, moves []SnakeMove) (gameOver bool, nextState *BoardState, err error)
 }
 
 type SnakeMove struct {
@@ -18,68 +17,12 @@ type SnakeMove struct {
 	Move string
 }
 
-// Settings contains all settings relevant to a game.
-// It is used by game logic to take a previous game state and produce a next game state.
-type Settings struct {
-	FoodSpawnChance     int            `json:"foodSpawnChance"`
-	MinimumFood         int            `json:"minimumFood"`
-	HazardDamagePerTurn int            `json:"hazardDamagePerTurn"`
-	HazardMap           string         `json:"hazardMap"`
-	HazardMapAuthor     string         `json:"hazardMapAuthor"`
-	RoyaleSettings      RoyaleSettings `json:"royale"`
-	SquadSettings       SquadSettings  `json:"squad"` // Deprecated, provided with default fields for API compatibility
-
-	rand Rand
-	seed int64
-}
-
-// Get a random number generator initialized based on the seed and current turn.
-func (settings Settings) GetRand(turn int) Rand {
-	// Allow overriding the random generator for testing
-	if settings.rand != nil {
-		return settings.rand
-	}
-
-	if settings.seed != 0 {
-		return NewSeedRand(settings.seed + int64(turn))
-	}
-
-	// Default to global random number generator if neither seed or rand are set.
-	return GlobalRand
-}
-
-func (settings Settings) WithRand(rand Rand) Settings {
-	settings.rand = rand
-	return settings
-}
-
-func (settings Settings) Seed() int64 {
-	return settings.seed
-}
-
-func (settings Settings) WithSeed(seed int64) Settings {
-	settings.seed = seed
-	return settings
-}
-
-// RoyaleSettings contains settings that are specific to the "royale" game mode
-type RoyaleSettings struct {
-	ShrinkEveryNTurns int `json:"shrinkEveryNTurns"`
-}
-
-// SquadSettings contains settings that are specific to the "squad" game mode
-type SquadSettings struct {
-	AllowBodyCollisions bool `json:"allowBodyCollisions"`
-	SharedElimination   bool `json:"sharedElimination"`
-	SharedHealth        bool `json:"sharedHealth"`
-	SharedLength        bool `json:"sharedLength"`
-}
-
 type rulesetBuilder struct {
-	params map[string]string // game customisation parameters
-	seed   int64             // used for random events in games
-	rand   Rand              // used for random number generation
-	solo   bool              // if true, only 1 alive snake is required to keep the game from ending
+	params   map[string]string // game customisation parameters
+	seed     int64             // used for random events in games
+	rand     Rand              // used for random number generation
+	solo     bool              // if true, only 1 alive snake is required to keep the game from ending
+	settings *Settings         // used to set settings directly instead of via string params
 }
 
 // NewRulesetBuilder returns an instance of a builder for the Ruleset types.
@@ -89,7 +32,7 @@ func NewRulesetBuilder() *rulesetBuilder {
 	}
 }
 
-// WithParams accepts a map of game parameters for customizing games.
+// WithParams accepts a map of string parameters for customizing games.
 //
 // Parameters are copied. If called multiple times, parameters are merged such that:
 //   - existing keys in both maps get overwritten by the new ones
@@ -125,13 +68,14 @@ func (rb *rulesetBuilder) WithSolo(value bool) *rulesetBuilder {
 	return rb
 }
 
-// Ruleset constructs a customised ruleset using the parameters passed to the builder.
-func (rb rulesetBuilder) Ruleset() PipelineRuleset {
-	name, ok := rb.params[ParamGameType]
-	if !ok {
-		name = GameTypeStandard
-	}
+// WithSettings sets the settings object for the ruleset directly.
+func (rb *rulesetBuilder) WithSettings(settings Settings) *rulesetBuilder {
+	rb.settings = &settings
+	return rb
+}
 
+// NamedRuleset constructs a known ruleset by using name to look up a standard pipeline.
+func (rb rulesetBuilder) NamedRuleset(name string) Ruleset {
 	var stages []string
 	if rb.solo {
 		stages = append(stages, StageGameOverSoloSnake)
@@ -153,61 +97,26 @@ func (rb rulesetBuilder) Ruleset() PipelineRuleset {
 	case GameTypeWrapped:
 		stages = append(stages, wrappedRulesetStages[1:]...)
 	default:
+		name = GameTypeStandard
 		stages = append(stages, standardRulesetStages[1:]...)
 	}
 	return rb.PipelineRuleset(name, NewPipeline(stages...))
 }
 
-// PipelineRuleset provides an implementation of the Ruleset using a pipeline with a name.
-// It is intended to facilitate transitioning away from legacy Ruleset implementations to Pipeline
-// implementations.
-func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) PipelineRuleset {
+// PipelineRuleset constructs a ruleset with the given name and pipeline using the parameters passed to the builder.
+// This can be used to create custom rulesets.
+func (rb rulesetBuilder) PipelineRuleset(name string, p Pipeline) Ruleset {
+	var settings Settings
+	if rb.settings != nil {
+		settings = *rb.settings
+	} else {
+		settings = NewSettings(rb.params).WithRand(rb.rand).WithSeed(rb.seed)
+	}
 	return &pipelineRuleset{
 		name:     name,
 		pipeline: p,
-		settings: Settings{
-			FoodSpawnChance:     paramsInt(rb.params, ParamFoodSpawnChance, 0),
-			MinimumFood:         paramsInt(rb.params, ParamMinimumFood, 0),
-			HazardDamagePerTurn: paramsInt(rb.params, ParamHazardDamagePerTurn, 0),
-			HazardMap:           rb.params[ParamHazardMap],
-			HazardMapAuthor:     rb.params[ParamHazardMapAuthor],
-			RoyaleSettings: RoyaleSettings{
-				ShrinkEveryNTurns: paramsInt(rb.params, ParamShrinkEveryNTurns, 0),
-			},
-			rand: rb.rand,
-			seed: rb.seed,
-		},
+		settings: settings,
 	}
-}
-
-// paramsBool returns the boolean value for the specified parameter.
-// If the parameter doesn't exist, the default value will be returned.
-// If the parameter does exist, but is not "true", false will be returned.
-func paramsBool(params map[string]string, paramName string, defaultValue bool) bool {
-	if val, ok := params[paramName]; ok {
-		return val == "true"
-	}
-	return defaultValue
-}
-
-// paramsInt returns the int value for the specified parameter.
-// If the parameter doesn't exist, the default value will be returned.
-// If the parameter does exist, but is not a valid int, the default value will be returned.
-func paramsInt(params map[string]string, paramName string, defaultValue int) int {
-	if val, ok := params[paramName]; ok {
-		i, err := strconv.Atoi(val)
-		if err == nil {
-			return i
-		}
-	}
-	return defaultValue
-}
-
-// PipelineRuleset groups the Pipeline and Ruleset methods.
-// It is intended to facilitate a transition from Ruleset legacy code to Pipeline code.
-type PipelineRuleset interface {
-	Ruleset
-	Pipeline
 }
 
 type pipelineRuleset struct {
@@ -225,33 +134,10 @@ func (r pipelineRuleset) Settings() Settings {
 func (r pipelineRuleset) Name() string { return r.name }
 
 // impl Ruleset
-// IMPORTANT: this implementation of IsGameOver deviates from the previous Ruleset implementations
-// in that it checks if the *NEXT* state results in game over, not the previous state.
-// This is due to the design of pipelines / stage functions not having a distinction between
-// checking for game over and producing a next state.
-func (r *pipelineRuleset) IsGameOver(b *BoardState) (bool, error) {
-	gameover, _, err := r.Execute(b, r.Settings(), nil) // checks if next state is game over
-	return gameover, err
+func (r pipelineRuleset) Execute(bs *BoardState, sm []SnakeMove) (bool, *BoardState, error) {
+	return r.pipeline.Execute(bs, r.Settings(), sm)
 }
 
-// impl Ruleset
-func (r pipelineRuleset) ModifyInitialBoardState(initialState *BoardState) (*BoardState, error) {
-	_, nextState, err := r.Execute(initialState, r.Settings(), nil)
-	return nextState, err
-}
-
-// impl Pipeline
-func (r pipelineRuleset) Execute(bs *BoardState, s Settings, sm []SnakeMove) (bool, *BoardState, error) {
-	return r.pipeline.Execute(bs, s, sm)
-}
-
-// impl Ruleset
-func (r pipelineRuleset) CreateNextBoardState(bs *BoardState, sm []SnakeMove) (*BoardState, error) {
-	_, nextState, err := r.Execute(bs, r.Settings(), sm)
-	return nextState, err
-}
-
-// impl Pipeline
 func (r pipelineRuleset) Err() error {
 	return r.pipeline.Err()
 }

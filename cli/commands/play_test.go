@@ -45,11 +45,10 @@ func buildDefaultGameState() *GameState {
 func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
 	s2 := rules.Snake{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}}
-	state := &rules.BoardState{
-		Height: 11,
-		Width:  11,
-		Snakes: []rules.Snake{s1, s2},
-	}
+	state := rules.NewBoardState(11, 11).
+		WithSnakes(
+			[]rules.Snake{s1, s2},
+		)
 	s1State := SnakeState{
 		ID:    "one",
 		Name:  "ONE",
@@ -85,11 +84,8 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 func TestSettingsRequestSerialization(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
 	s2 := rules.Snake{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}}
-	state := &rules.BoardState{
-		Height: 11,
-		Width:  11,
-		Snakes: []rules.Snake{s1, s2},
-	}
+	state := rules.NewBoardState(11, 11).
+		WithSnakes([]rules.Snake{s1, s2})
 	s1State := SnakeState{
 		ID:    "one",
 		Name:  "ONE",
@@ -255,12 +251,11 @@ func TestBuildFrameEvent(t *testing.T) {
 		},
 		{
 			name: "snake fields",
-			boardState: &rules.BoardState{
-				Turn:   99,
-				Height: 19,
-				Width:  25,
-				Food:   []rules.Point{{X: 9, Y: 4}},
-				Snakes: []rules.Snake{
+			boardState: rules.NewBoardState(19, 25).
+				WithTurn(99).
+				WithFood([]rules.Point{{X: 9, Y: 4}}).
+				WithHazards([]rules.Point{{X: 8, Y: 6}}).
+				WithSnakes([]rules.Snake{
 					{
 						ID: "1",
 						Body: []rules.Point{
@@ -273,9 +268,7 @@ func TestBuildFrameEvent(t *testing.T) {
 						EliminatedOnTurn: 45,
 						EliminatedBy:     "1",
 					},
-				},
-				Hazards: []rules.Point{{X: 8, Y: 6}},
-			},
+				}),
 			snakeStates: map[string]SnakeState{
 				"1": {
 					URL:        "http://example.com",
@@ -326,18 +319,15 @@ func TestBuildFrameEvent(t *testing.T) {
 		},
 		{
 			name: "snake errors",
-			boardState: &rules.BoardState{
-				Height: 19,
-				Width:  25,
-				Snakes: []rules.Snake{
+			boardState: rules.NewBoardState(19, 25).
+				WithSnakes([]rules.Snake{
 					{
 						ID: "bad_status",
 					},
 					{
 						ID: "connection_error",
 					},
-				},
-			},
+				}),
 			snakeStates: map[string]SnakeState{
 				"bad_status": {
 					StatusCode: 504,
@@ -366,6 +356,8 @@ func TestBuildFrameEvent(t *testing.T) {
 							Error:      "0:Error communicating with server",
 						},
 					},
+					Food:    []rules.Point{},
+					Hazards: []rules.Point{},
 				},
 			},
 		},
@@ -384,11 +376,7 @@ func TestBuildFrameEvent(t *testing.T) {
 func TestGetMoveForSnake(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
 	s2 := rules.Snake{ID: "two", Body: []rules.Point{{X: 4, Y: 3}}}
-	boardState := &rules.BoardState{
-		Height: 11,
-		Width:  11,
-		Snakes: []rules.Snake{s1, s2},
-	}
+	boardState := rules.NewBoardState(11, 11).WithSnakes([]rules.Snake{s1, s2})
 
 	tests := []struct {
 		name            string
@@ -530,11 +518,7 @@ func TestGetMoveForSnake(t *testing.T) {
 
 func TestCreateNextBoardState(t *testing.T) {
 	s1 := rules.Snake{ID: "one", Body: []rules.Point{{X: 3, Y: 3}}}
-	boardState := &rules.BoardState{
-		Height: 11,
-		Width:  11,
-		Snakes: []rules.Snake{s1},
-	}
+	boardState := rules.NewBoardState(11, 11).WithSnakes([]rules.Snake{s1})
 	snakeState := SnakeState{
 		ID:  s1.ID,
 		URL: "http://example.com",
@@ -549,7 +533,9 @@ func TestCreateNextBoardState(t *testing.T) {
 			gameState.snakeStates = map[string]SnakeState{s1.ID: snakeState}
 			gameState.httpClient = stubHTTPClient{nil, 200, func(_ string) string { return `{"move": "right"}` }, 54 * time.Millisecond}
 
-			nextBoardState := gameState.createNextBoardState(boardState)
+			gameOver, nextBoardState, err := gameState.createNextBoardState(boardState)
+			require.NoError(t, err)
+			require.False(t, gameOver)
 			snakeState = gameState.snakeStates[s1.ID]
 
 			require.NotNil(t, nextBoardState)
@@ -593,16 +579,18 @@ func TestOutputFile(t *testing.T) {
 	outputFile := new(closableBuffer)
 	gameState.outputFile = outputFile
 
-	gameState.ruleset = StubRuleset{maxTurns: 1, settings: rules.Settings{
-		FoodSpawnChance:     1,
-		MinimumFood:         2,
-		HazardDamagePerTurn: 3,
-		RoyaleSettings: rules.RoyaleSettings{
-			ShrinkEveryNTurns: 4,
-		},
-	}}
+	gameState.ruleset = StubRuleset{
+		maxTurns: 1,
+		settings: rules.NewSettings(map[string]string{
+			rules.ParamFoodSpawnChance:     "1",
+			rules.ParamMinimumFood:         "2",
+			rules.ParamHazardDamagePerTurn: "3",
+			rules.ParamShrinkEveryNTurns:   "4",
+		}),
+	}
 
-	gameState.Run()
+	err = gameState.Run()
+	require.NoError(t, err)
 
 	lines := strings.Split(outputFile.String(), "\n")
 	require.Len(t, lines, 5)
@@ -626,14 +614,8 @@ type StubRuleset struct {
 
 func (ruleset StubRuleset) Name() string             { return "standard" }
 func (ruleset StubRuleset) Settings() rules.Settings { return ruleset.settings }
-func (ruleset StubRuleset) ModifyInitialBoardState(initialState *rules.BoardState) (*rules.BoardState, error) {
-	return initialState, nil
-}
-func (ruleset StubRuleset) CreateNextBoardState(prevState *rules.BoardState, moves []rules.SnakeMove) (*rules.BoardState, error) {
-	return prevState, nil
-}
-func (ruleset StubRuleset) IsGameOver(state *rules.BoardState) (bool, error) {
-	return state.Turn >= ruleset.maxTurns, nil
+func (ruleset StubRuleset) Execute(prevState *rules.BoardState, moves []rules.SnakeMove) (bool, *rules.BoardState, error) {
+	return prevState.Turn >= ruleset.maxTurns, prevState, nil
 }
 
 type stubHTTPClient struct {
