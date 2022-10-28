@@ -270,15 +270,15 @@ func (gameState *GameState) Run() error {
 			return fmt.Errorf("Error processing game: %w", err)
 		}
 
+		if gameOver {
+			// Stop processing here - because game over is detected at the start of the pipeline, nothing will have changed.
+			break
+		}
+
 		if gameState.ViewMap {
 			gameState.printMap(boardState)
 		} else {
 			gameState.printState(boardState)
-		}
-
-		if gameOver {
-			// Stop processing here - because game over is detected at the start of the pipeline, nothing will have changed.
-			break
 		}
 
 		if gameState.TurnDelay > 0 {
