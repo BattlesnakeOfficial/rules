@@ -46,7 +46,7 @@ func (m RoyaleHazardsMap) PostUpdateBoard(lastBoardState *rules.BoardState, sett
 	// Royale uses the current turn to generate hazards, not the previous turn that's in the board state
 	turn := lastBoardState.Turn + 1
 
-	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 0)
+	shrinkEveryNTurns := settings.Int(rules.ParamShrinkEveryNTurns, 20)
 	if shrinkEveryNTurns < 1 {
 		return errors.New("royale game can't shrink more frequently than every turn")
 	}
