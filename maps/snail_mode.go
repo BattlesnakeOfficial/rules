@@ -32,29 +32,8 @@ func (m SnailModeMap) Meta() Metadata {
 
 // SetupBoard here is pretty 'standard' and doesn't do any special setup for this game mode
 func (m SnailModeMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
-	rand := settings.GetRand(0)
-
-	if len(initialBoardState.Snakes) > int(m.Meta().MaxPlayers) {
-		return rules.ErrorTooManySnakes
-	}
-
-	snakeIDs := make([]string, 0, len(initialBoardState.Snakes))
-	for _, snake := range initialBoardState.Snakes {
-		snakeIDs = append(snakeIDs, snake.ID)
-	}
-
-	tempBoardState := rules.NewBoardState(initialBoardState.Width, initialBoardState.Height)
-	err := rules.PlaceSnakesAutomatically(rand, tempBoardState, snakeIDs)
-	if err != nil {
-		return err
-	}
-
-	// Copy snakes from temp board state
-	for _, snake := range tempBoardState.Snakes {
-		editor.PlaceSnake(snake.ID, snake.Body, snake.Health)
-	}
-
-	return nil
+	// Use StandardMap to populate snakes and food
+	return StandardMap{}.SetupBoard(initialBoardState, settings, editor)
 }
 
 // storeTailLocation returns an offboard point that corresponds to the given point.
