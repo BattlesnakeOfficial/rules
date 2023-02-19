@@ -13,11 +13,11 @@ import (
 )
 
 // When this is flipped to `true` TWO things happen
-// 1. More println style debugging is done
-// 2. We print out the current game board in between each room sub-division,
-//    and wait for the CLI User to hit enter to sub-divide the next room. This
-//    allows you to see the maze get generated in realtime, which was super useful
-//    while debugging issues in the maze generation
+//  1. More println style debugging is done
+//  2. We print out the current game board in between each room sub-division,
+//     and wait for the CLI User to hit enter to sub-divide the next room. This
+//     allows you to see the maze get generated in realtime, which was super useful
+//     while debugging issues in the maze generation
 const DEBUG_MAZE_GENERATION = false
 
 const INITIAL_MAZE_SIZE = 7
@@ -216,9 +216,9 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 
 	if DEBUG_MAZE_GENERATION {
 		log.Print("\n\n\n")
-		log.Print(fmt.Sprintf("Subdividing room from %v to %v", lowPoint, highPoint))
-		log.Print(fmt.Sprintf("disAllowedVertical %v", disAllowedVertical))
-		log.Print(fmt.Sprintf("disAllowedHorizontal %v", disAllowedHorizontal))
+		log.Printf("Subdividing room from %v to %v", lowPoint, highPoint)
+		log.Printf("disAllowedVertical %v", disAllowedVertical)
+		log.Printf("disAllowedHorizontal %v", disAllowedHorizontal)
 		printMap(tempBoardState)
 		fmt.Print("Press 'Enter' to continue...")
 		_, e := bufio.NewReader(os.Stdin).ReadBytes('\n')
@@ -245,7 +245,7 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 	if len(verticalChoices) > 0 {
 		verticalWallPosition = verticalChoices[rand.Intn(len(verticalChoices))]
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("drawing Vertical Wall at %v", verticalWallPosition))
+			log.Printf("drawing Vertical Wall at %v\n", verticalWallPosition)
 		}
 
 		for y := lowPoint.Y; y <= highPoint.Y; y++ {
@@ -265,7 +265,7 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 	if len(horizontalChoices) > 0 {
 		horizontalWallPosition = horizontalChoices[rand.Intn(len(horizontalChoices))]
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("drawing horizontal Wall at %v", horizontalWallPosition))
+			log.Printf("drawing horizontal Wall at %v\n", horizontalWallPosition)
 		}
 
 		for x := lowPoint.X; x <= highPoint.X; x++ {
@@ -289,7 +289,7 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 			disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
 		}
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("Vertical Cuts are at %v", verticalHoles))
+			log.Printf("Vertical Cuts are at %v\n", verticalHoles)
 		}
 
 		newNewHorizontalWall, horizontalHoles := cutHoleSingle(newHorizontalWall, intersectionPoint, rand)
@@ -298,7 +298,7 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 			disAllowedVertical = append(disAllowedVertical, hole.X)
 		}
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("Horizontal Cuts are at %v", horizontalHoles))
+			log.Printf("Horizontal Cuts are at %v\n", horizontalHoles)
 		}
 	} else if len(newVerticalWall) > 1 {
 		if DEBUG_MAZE_GENERATION {
@@ -310,7 +310,7 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 
 		disAllowedHorizontal = append(disAllowedHorizontal, hole.Y)
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+			log.Printf("Cuts are at %v from index %v", hole, segmentToRemove)
 		}
 	} else if len(newHorizontalWall) > 1 {
 		if DEBUG_MAZE_GENERATION {
@@ -322,16 +322,12 @@ func (m SoloMazeMap) SubdivideRoom(tempBoardState *rules.BoardState, rand rules.
 
 		disAllowedVertical = append(disAllowedVertical, hole.X)
 		if DEBUG_MAZE_GENERATION {
-			log.Print(fmt.Sprintf("Cuts are at %v from index %v", hole, segmentToRemove))
+			log.Printf("Cuts are at %v from index %v", hole, segmentToRemove)
 		}
 	}
 
-	for _, point := range newVerticalWall {
-		tempBoardState.Hazards = append(tempBoardState.Hazards, point)
-	}
-	for _, point := range newHorizontalWall {
-		tempBoardState.Hazards = append(tempBoardState.Hazards, point)
-	}
+	tempBoardState.Hazards = append(tempBoardState.Hazards, newVerticalWall...)
+	tempBoardState.Hazards = append(tempBoardState.Hazards, newHorizontalWall...)
 
 	/// We have both so need 4 sub-rooms
 	if verticalWallPosition != -1 && horizontalWallPosition != -1 {
@@ -359,7 +355,7 @@ func (m SoloMazeMap) AdjustPosition(mazePosition rules.Point, actualBoardSize in
 	yAdjust := int((boardHeight - actualBoardSize) / 2)
 
 	if DEBUG_MAZE_GENERATION {
-		fmt.Println(fmt.Sprintf("currentLevel: %v, boardHeight: %v, boardWidth: %v, xAdjust: %v, yAdjust: %v", actualBoardSize, boardHeight, boardWidth, xAdjust, yAdjust))
+		fmt.Printf("currentLevel: %v, boardHeight: %v, boardWidth: %v, xAdjust: %v, yAdjust: %v\n", actualBoardSize, boardHeight, boardWidth, xAdjust, yAdjust)
 	}
 
 	return rules.Point{X: mazePosition.X + xAdjust, Y: mazePosition.Y + yAdjust}
@@ -399,7 +395,7 @@ func (m SoloMazeMap) WriteBitState(boardState *rules.BoardState, state int64, ed
 	}
 }
 
-/// Return value is first the wall that has been cut, the second is the holes we cut out
+// Return value is first the wall that has been cut, the second is the holes we cut out
 func cutHoles(s []rules.Point, intersection rules.Point, rand rules.Rand) ([]rules.Point, []rules.Point) {
 	holes := make([]rules.Point, 0)
 
