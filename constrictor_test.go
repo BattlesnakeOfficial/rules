@@ -6,8 +6,8 @@ import (
 
 // Test that two equal snakes collide and both get eliminated
 // also checks:
-//	- food removed
-//  - health back to max
+//   - food removed
+//   - health back to max
 var constrictorMoveAndCollideMAD = gameTestCase{
 	"Constrictor Case Move and Collide",
 	&BoardState{

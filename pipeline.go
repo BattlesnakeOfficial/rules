@@ -133,7 +133,9 @@ func NewPipeline(stageNames ...string) Pipeline {
 // the stage names are provided.
 //
 // Example:
-// 	NewPipelineFromRegistry(r, s, "stage1", "stage2")
+//
+//	NewPipelineFromRegistry(r, s, "stage1", "stage2")
+//
 // ... will result in stage "stage1" running first, then stage "stage2" running after.
 //
 // An error will be returned if an unregistered stage name is used (a name that is not

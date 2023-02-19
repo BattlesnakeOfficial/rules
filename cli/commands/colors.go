@@ -1,6 +1,6 @@
 package commands
 
-//ANSI escape codes to be used in the color output of the board view
+// ANSI escape codes to be used in the color output of the board view
 const (
 	TERM_RESET = "\033[0m"
 
