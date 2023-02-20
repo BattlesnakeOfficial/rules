@@ -32,12 +32,7 @@ jobs:
         with:
           go-version: '${{ env.GO_VERSION }}'
           check-latest: true
-      - run: |
-          echo ---
-          echo make nonsense
-          make nonsense
-          echo ---
-          make test-lint
+      - run: make test-lint
 
   tests:
     name: Test (go test)

@@ -4,13 +4,6 @@ GOLANGCI_LINT_PATH		:= ${GOPATH}/bin/golangci-lint
 GOLANGCI_LINT_VERSION	:= 1.51.1
 
 
-nonsense:
-	which go
-	go version
-	go env GOPATH
-	echo "Installing golangci-lint to ${GOPATH} ${GOLANGCI_LINT_PATH} ${GOLANGCI_LINT_VERSION}"
-.PHONY: nonsense
-
 ${GOLANGCI_LINT_PATH}:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ${GOPATH}/bin v${GOLANGCI_LINT_VERSION}
 
