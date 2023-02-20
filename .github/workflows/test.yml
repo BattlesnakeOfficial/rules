@@ -36,6 +36,7 @@ jobs:
           echo ---
           echo ${GOPATH}
           go env GOPATH
+          make nonsense
           echo ---
           make test-lint
 
