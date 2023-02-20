@@ -34,8 +34,6 @@ jobs:
           check-latest: true
       - run: |
           echo ---
-          echo GOPATH ${GOPATH}
-          echo GOENVPATH $(go env GOPATH)
           make nonsense
           echo ---
           make test-lint
