@@ -1,6 +1,6 @@
-GOPATH := $(shell $$(go env GOPATH))
+GOPATH ?= $(shell $$(go env GOPATH))
 
-GOLANGCI_LINT_PATH		:= $(GOPATH)/bin/golangci-lint
+GOLANGCI_LINT_PATH		:= ${GOPATH}/bin/golangci-lint
 GOLANGCI_LINT_VERSION	:= 1.51.1
 
 
