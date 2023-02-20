@@ -1,14 +1,19 @@
-name: Release (goreleaser)
+name: Release
 
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [published]
+    branches: [main]
 
 env:
   GO_VERSION: '1.20'
 
 jobs:
+
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+
   goreleaser:
     runs-on: ubuntu-latest
     steps:
