@@ -34,6 +34,7 @@ jobs:
           check-latest: true
       - run: |
           echo ---
+          echo make nonsense
           make nonsense
           echo ---
           make test-lint
