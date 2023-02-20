@@ -5,6 +5,8 @@ GOLANGCI_LINT_VERSION	:= 1.51.1
 
 
 nonsense:
+	which go
+	go version
 	echo "Installing golangci-lint to ${GOPATH} ${GOLANGCI_LINT_PATH} ${GOLANGCI_LINT_VERSION}"
 .PHONY: nonsense
 
