@@ -32,7 +32,12 @@ jobs:
         with:
           go-version: '${{ env.GO_VERSION }}'
           check-latest: true
-      - run: make test-lint
+      - run: |
+          echo ---
+          echo ${GOPATH}
+          go env GOPATH
+          echo ---
+          make test-lint
 
   tests:
     name: Test (go test)
