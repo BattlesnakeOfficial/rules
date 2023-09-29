@@ -1,5 +1,5 @@
 {
-  "name": "board.battlesnake.local",
+  "name": "rules.battlesnake.local",
   "image": "mcr.microsoft.com/devcontainers/go:1.18",
   "postCreateCommand": "",
   "forwardPorts": [],
