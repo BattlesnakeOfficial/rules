@@ -5,8 +5,15 @@
   "forwardPorts": [],
   "customizations": {
     "vscode": {
-      "extensions": [],
+      "extensions": [
+        "golang.go"
+      ],
       "settings": {
+        "editor.formatOnSave": true,
+        "go.coverOnSave": true,
+        "go.coverageOptions": "showUncoveredCodeOnly",
+        "go.formatTool": "gofmt",
+        "go.lintTool": "golangci-lint"
       }
     }
   }
