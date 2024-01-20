@@ -8,3 +8,7 @@
 # Build and Output
 /battlesnake
 *.jsonl
+
+# Devcontainers
+.devcontainer
+!.devcontainer/devcontainer.json
