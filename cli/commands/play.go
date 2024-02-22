@@ -59,6 +59,7 @@ type GameState struct {
 	Seed                int64
 	TurnDelay           int
 	OutputPath          string
+	ReplayFilePath      string
 	ViewInBrowser       bool
 	BoardURL            string
 	FoodSpawnChance     int
@@ -74,6 +75,7 @@ type GameState struct {
 	ruleset     rules.Ruleset
 	gameMap     maps.GameMap
 	outputFile  io.WriteCloser
+	replayFile  *board.ReplayFile
 	idGenerator func(int) string
 }
 
@@ -108,6 +110,7 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().IntVarP(&gameState.TurnDelay, "delay", "d", 0, "Turn Delay in Milliseconds")
 	playCmd.Flags().IntVarP(&gameState.TurnDuration, "duration", "D", 0, "Minimum Turn Duration in Milliseconds")
 	playCmd.Flags().StringVarP(&gameState.OutputPath, "output", "o", "", "File path to output game state to. Existing files will be overwritten")
+	playCmd.Flags().StringVar(&gameState.ReplayFilePath, "replay", "", "File path to write game frames to for replaying later. Existing files will be overwritten")
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
 
@@ -168,6 +171,10 @@ func (gameState *GameState) Initialize() error {
 			return fmt.Errorf("Failed to open output file: %w", err)
 		}
 		gameState.outputFile = f
+	}
+
+	if gameState.ReplayFilePath != "" {
+		gameState.replayFile = board.NewReplayFile(gameState.ReplayFilePath);
 	}
 
 	return nil
@@ -235,6 +242,11 @@ func (gameState *GameState) Run() error {
 		boardServer.SendEvent(gameState.buildFrameEvent(boardState))
 	}
 
+	if gameState.replayFile != nil {
+		gameState.replayFile.WriteGameInfo(boardGame)
+		gameState.replayFile.WriteEvent(gameState.buildFrameEvent(boardState))
+	}
+
 	log.INFO.Printf("Ruleset: %v, Seed: %v", gameState.GameType, gameState.Seed)
 
 	if gameState.ViewMap {
@@ -293,6 +305,10 @@ func (gameState *GameState) Run() error {
 			boardServer.SendEvent(gameState.buildFrameEvent(boardState))
 		}
 
+		if gameState.replayFile != nil {
+			gameState.replayFile.WriteEvent(gameState.buildFrameEvent(boardState))
+		}
+
 		if exportGame {
 			for _, snakeState := range gameState.snakeStates {
 				snakeRequest := gameState.getRequestBodyForSnake(boardState, snakeState)
@@ -329,6 +345,13 @@ func (gameState *GameState) Run() error {
 
 	if gameState.ViewInBrowser {
 		boardServer.SendEvent(board.GameEvent{
+			EventType: board.EVENT_TYPE_GAME_END,
+			Data:      boardGame,
+		})
+	}
+
+	if gameState.replayFile != nil {
+		gameState.replayFile.WriteEvent(board.GameEvent{
 			EventType: board.EVENT_TYPE_GAME_END,
 			Data:      boardGame,
 		})
