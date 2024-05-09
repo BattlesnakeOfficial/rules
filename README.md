@@ -1,3 +1,12 @@
+# Running Under docker-compose
+
+As of now only the cli help will be ran on startup
+
+```sh
+docker compose build
+docker compose up
+```
+
 # BattlesnakeOfficial/rules
 
 [![codecov](https://codecov.io/gh/BattlesnakeOfficial/rules/branch/master/graph/badge.svg)](https://codecov.io/gh/BattlesnakeOfficial/rules)

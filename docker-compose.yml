@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  rules:
+    command: "/app/battlesnake play --help"
+    build: .
+    ports:
+      # What ports we are exposing
+      - "8000:8000"
+    networks:
+      net-10.9.0.0:
+        # what IP address this is exposed as
+        ipv4_address: 10.9.0.3
+
+  # snake1:
+  #   build: ./snake_directory
+  # depends_on: [rules]
+  # ports:
+  #   # What ports we are exposing
+  #   - "9000:8000"
+  # networks:
+  #   net-10.9.0.0:
+  #     # what IP address to expose this snake as
+  #     ipv4_address: 10.9.0.4
+
+networks:
+  net-10.9.0.0:
+    name: net-10.9.0.0
+    ipam:
+      config:
+        - subnet: 10.9.0.0/24
