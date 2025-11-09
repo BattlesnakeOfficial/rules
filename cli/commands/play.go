@@ -65,6 +65,7 @@ type GameState struct {
 	MinimumFood         int
 	HazardDamagePerTurn int
 	ShrinkEveryNTurns   int
+	ViewRadius          int
 
 	// Internal game state
 	settings    map[string]string
@@ -111,6 +112,8 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
 
+	playCmd.Flags().IntVarP(&gameState.ViewRadius, "viewRadius", "i", -1, "View Radius of Snake")
+
 	playCmd.Flags().IntVar(&gameState.FoodSpawnChance, "foodSpawnChance", 15, "Percentage chance of spawning a new food every round")
 	playCmd.Flags().IntVar(&gameState.MinimumFood, "minimumFood", 1, "Minimum food to keep on the board every turn")
 	playCmd.Flags().IntVar(&gameState.HazardDamagePerTurn, "hazardDamagePerTurn", 14, "Health damage a snake will take when ending its turn in a hazard")
@@ -137,6 +140,9 @@ func (gameState *GameState) Initialize() error {
 	}
 
 	// Load game map
+	if gameState.ViewRadius != -1 {
+		gameState.MapName = "limitInfo"
+	}
 	gameMap, err := maps.GetMap(gameState.MapName)
 	if err != nil {
 		return fmt.Errorf("Failed to load game map %#v: %v", gameState.MapName, err)
@@ -532,10 +538,16 @@ func (gameState *GameState) getRequestBodyForSnake(boardState *rules.BoardState,
 			break
 		}
 	}
+
+	filteredState := boardState
+	if gameState.ViewRadius >= 0 {
+		filteredState = FilterBoardStateForSnake(boardState, snakeState, gameState.ViewRadius)
+	}
+
 	request := client.SnakeRequest{
 		Game:  gameState.createClientGame(),
 		Turn:  boardState.Turn,
-		Board: convertStateToBoard(boardState, gameState.snakeStates),
+		Board: convertStateToBoard(filteredState, gameState.snakeStates),
 		You:   convertRulesSnake(youSnake, snakeState),
 	}
 	return request
