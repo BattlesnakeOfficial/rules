@@ -210,7 +210,6 @@ func (gameState *GameState) Run() error {
 		Ruleset: map[string]string{
 			rules.ParamGameType: gameState.GameType,
 		},
-		// HERE add limit info
 		RulesetName: gameState.GameType,
 		RulesStages: []string{},
 		Map:         gameState.MapName,
