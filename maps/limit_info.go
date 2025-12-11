@@ -20,7 +20,7 @@ func (m LimitInfoMap) ID() string {
 
 func (m LimitInfoMap) Meta() Metadata {
 	return Metadata{
-		Name:        "Standard with per snake view range",
+		Name:        "Standard with per snake view range of 5 cells",
 		Description: "Standard snake placement and food spawning but limited vision/information",
 		Author:      "Kien Nguyen & Yannik Mahlau",
 		Version:     1,
