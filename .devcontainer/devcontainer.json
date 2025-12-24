@@ -1,7 +1,7 @@
 {
   "name": "rules.battlesnake.local",
-  "image": "mcr.microsoft.com/devcontainers/go:1.21",
-  "postCreateCommand": "go mod download",
+  "image": "mcr.microsoft.com/devcontainers/go:1.23",
+  "postCreateCommand": "sh -c \"go mod download && git config --global --add safe.directory /workspaces/rules\"",
   "forwardPorts": [],
   "customizations": {
     "vscode": {

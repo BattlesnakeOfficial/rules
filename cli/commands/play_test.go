@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -629,7 +628,7 @@ func (client stubHTTPClient) request(url string) (*http.Response, time.Duration,
 	if client.err != nil {
 		return nil, client.latency, client.err
 	}
-	body := ioutil.NopCloser(bytes.NewBufferString(client.body(url)))
+	body := io.NopCloser(bytes.NewBufferString(client.body(url)))
 
 	response := &http.Response{
 		Header:     make(http.Header),

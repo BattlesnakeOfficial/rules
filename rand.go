@@ -1,6 +1,9 @@
 package rules
 
-import "math/rand"
+import (
+	"math/rand"
+	"sync"
+)
 
 type Rand interface {
 	Intn(n int) int
@@ -11,21 +14,45 @@ type Rand interface {
 	Shuffle(n int, swap func(i, j int))
 }
 
-// A Rand implementation that just uses the global math/rand generator.
-var GlobalRand globalRand
+// A Rand implementation that just uses a shared math/rand.Rand guarded by a lock.
+// This preserves the behaviour of the package-level math/rand global while allowing
+// deterministic seeding without rand.Seed.
+var GlobalRand Rand = globalRandInstance()
 
-type globalRand struct{}
-
-func (globalRand) Range(min, max int) int {
-	return rand.Intn(max-min+1) + min
+type lockedRand struct {
+	mu sync.Mutex
+	r  *rand.Rand
 }
 
-func (globalRand) Intn(n int) int {
-	return rand.Intn(n)
+func globalRandInstance() *lockedRand {
+	return &lockedRand{r: rand.New(rand.NewSource(1))}
 }
 
-func (globalRand) Shuffle(n int, swap func(i, j int)) {
-	rand.Shuffle(n, swap)
+func (g *lockedRand) Range(min, max int) int {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.r.Intn(max-min+1) + min
+}
+
+func (g *lockedRand) Intn(n int) int {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.r.Intn(n)
+}
+
+func (g *lockedRand) Shuffle(n int, swap func(i, j int)) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.r.Shuffle(n, swap)
+}
+
+// SetGlobalSeed seeds the shared global RNG using rand.New(rand.NewSource(seed)),
+// matching the previous rand.Seed semantics without triggering deprecation lints.
+func SetGlobalSeed(seed int64) {
+	gr := GlobalRand.(*lockedRand)
+	gr.mu.Lock()
+	gr.r = rand.New(rand.NewSource(seed))
+	gr.mu.Unlock()
 }
 
 type seedRand struct {

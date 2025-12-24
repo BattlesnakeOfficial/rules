@@ -51,9 +51,10 @@ func (m SinkholesMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings
 		spawnEveryNTurns = shrinkEveryNTurns
 	}
 	maxRings := 5
-	if lastBoardState.Width == 7 {
+	switch lastBoardState.Width {
+	case 7:
 		maxRings = 3
-	} else if lastBoardState.Width == 19 {
+	case 19:
 		maxRings = 7
 	}
 
@@ -79,13 +80,15 @@ func (m SinkholesMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings
 	if offset > 0 && offset <= maxRings {
 		for x := spawnLocation.X - offset; x <= spawnLocation.X+offset; x++ {
 			for y := spawnLocation.Y - offset; y <= spawnLocation.Y+offset; y++ {
+				isCorner := (x == spawnLocation.X-offset && y == spawnLocation.Y-offset) ||
+					(x == spawnLocation.X+offset && y == spawnLocation.Y-offset) ||
+					(x == spawnLocation.X-offset && y == spawnLocation.Y+offset) ||
+					(x == spawnLocation.X+offset && y == spawnLocation.Y+offset)
 				// don't draw in the corners of the square so we get a rounded effect
-				if !(x == spawnLocation.X-offset && y == spawnLocation.Y-offset) &&
-					!(x == spawnLocation.X+offset && y == spawnLocation.Y-offset) &&
-					!(x == spawnLocation.X-offset && y == spawnLocation.Y+offset) &&
-					!(x == spawnLocation.X+offset && y == spawnLocation.Y+offset) {
-					editor.AddHazard(rules.Point{X: x, Y: y})
+				if isCorner {
+					continue
 				}
+				editor.AddHazard(rules.Point{X: x, Y: y})
 			}
 		}
 	}

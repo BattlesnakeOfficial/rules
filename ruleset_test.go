@@ -129,11 +129,9 @@ func TestRulesetBuilderGameOver(t *testing.T) {
 }
 
 func TestStageFuncContract(t *testing.T) {
-	//nolint:gosimple
-	var stage rules.StageFunc
-	stage = func(bs *rules.BoardState, s rules.Settings, sm []rules.SnakeMove) (bool, error) {
+	stage := rules.StageFunc(func(bs *rules.BoardState, s rules.Settings, sm []rules.SnakeMove) (bool, error) {
 		return true, nil
-	}
+	})
 	ended, err := stage(nil, rules.NewRulesetBuilder().NamedRuleset("").Settings(), nil)
 	require.NoError(t, err)
 	require.True(t, ended)
@@ -141,7 +139,7 @@ func TestStageFuncContract(t *testing.T) {
 
 func TestRulesetBuilderGetRand(t *testing.T) {
 	var seed int64 = 12345
-	var turn int = 5
+	turn := 5
 	ruleset := rules.NewRulesetBuilder().WithSeed(seed).PipelineRuleset("example", rules.NewPipeline(rules.StageGameOverStandard))
 
 	rand1 := ruleset.Settings().GetRand(turn)

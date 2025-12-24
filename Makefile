@@ -1,7 +1,7 @@
 GOPATH := $(shell go env GOPATH)
 
 GOLANGCI_LINT_PATH		:= ${GOPATH}/bin/golangci-lint
-GOLANGCI_LINT_VERSION	:= 1.55.2
+GOLANGCI_LINT_VERSION	:= 2.2.1
 
 
 ${GOLANGCI_LINT_PATH}:
@@ -12,7 +12,7 @@ install-cli:
 .PHONY: install-cli
 
 test-format:
-	test -z $$(gofmt -l .) || (gofmt -l . && exit 1)
+	@files=$$(gofmt -l .); if [ -n "$$files" ]; then echo "$$files"; exit 1; fi
 .PHONY: test-format
 
 test-lint: ${GOLANGCI_LINT_PATH}

@@ -3,7 +3,6 @@ package rules
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -278,7 +277,8 @@ func TestEatingOnLastMove(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	// Seed with a value that will reliably not spawn food
+	SetGlobalSeed(0)
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		_, nextState, err := r.Execute(test.prevState, test.moves)
@@ -400,7 +400,7 @@ func TestHeadToHeadOnFood(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	SetGlobalSeed(0) // Seed with a value that will reliably not spawn food
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		_, nextState, err := r.Execute(test.prevState, test.moves)
@@ -477,7 +477,8 @@ func TestRegressionIssue19(t *testing.T) {
 		},
 	}
 
-	rand.Seed(0) // Seed with a value that will reliably not spawn food
+	// Seed with a value that will reliably not spawn food
+	SetGlobalSeed(0)
 	r := getStandardRuleset(Settings{})
 	for _, test := range tests {
 		_, nextState, err := r.Execute(test.prevState, test.moves)
@@ -1560,7 +1561,7 @@ func TestMaybeSpawnFoodHalfChance(t *testing.T) {
 			Food: test.Food,
 		}
 
-		rand.Seed(test.Seed)
+		SetGlobalSeed(test.Seed)
 		_, err := SpawnFoodStandard(b, r.Settings(), mockSnakeMoves())
 		require.NoError(t, err)
 		require.Equal(t, test.ExpectedFood, len(b.Food), "Seed %d", test.Seed)

@@ -49,21 +49,18 @@ func TestHazardPitsMap(t *testing.T) {
 		state.Turn = i
 		err = m.PostUpdateBoard(state, settings, editor)
 		require.NoError(t, err)
-		if i == 1 {
+		switch i {
+		case 1:
 			require.Len(t, state.Hazards, 21)
-		} else if i == 2 {
+		case 2:
 			require.Len(t, state.Hazards, 42)
-		} else if i == 3 {
+		case 3:
 			require.Len(t, state.Hazards, 63)
-		} else if i == 4 {
+		case 4, 5, 6:
 			require.Len(t, state.Hazards, 84)
-		} else if i == 5 {
-			require.Len(t, state.Hazards, 84)
-		} else if i == 6 {
-			require.Len(t, state.Hazards, 84)
-		} else if i == 7 {
+		case 7:
 			require.Len(t, state.Hazards, 0)
-		} else if i == 8 {
+		case 8:
 			require.Len(t, state.Hazards, 21)
 		}
 	}
