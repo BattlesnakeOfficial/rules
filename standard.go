@@ -1,9 +1,6 @@
 package rules
 
-import (
-	"math/rand"
-	"sort"
-)
+import "sort"
 
 var standardRulesetStages = []string{
 	StageGameOverStandard,
@@ -375,7 +372,7 @@ func SpawnFoodStandard(b *BoardState, settings Settings, moves []SnakeMove) (boo
 	if numCurrentFood < minimumFood {
 		return false, PlaceFoodRandomly(GlobalRand, b, minimumFood-numCurrentFood)
 	}
-	if foodSpawnChance > 0 && int(rand.Intn(100)) < foodSpawnChance {
+	if foodSpawnChance > 0 && GlobalRand.Intn(100) < foodSpawnChance {
 		return false, PlaceFoodRandomly(GlobalRand, b, 1)
 	}
 	return false, nil

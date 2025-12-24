@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,13 +25,13 @@ func RequireJSONMatchesFixture(t *testing.T, filename string, actual string) {
 		var indented bytes.Buffer
 		err := json.Indent(&indented, []byte(actual), "", "  ")
 		require.NoError(t, err, "Failed to indent JSON")
-		err = ioutil.WriteFile(filename, indented.Bytes(), 0644)
+		err = os.WriteFile(filename, indented.Bytes(), 0644)
 		require.NoError(t, err, "Failed to update fixture", filename)
 
 		log.Printf("Updating fixture file %#v", filename)
 	}
 
-	expectedData, err := ioutil.ReadFile(filename)
+	expectedData, err := os.ReadFile(filename)
 	require.NoError(t, err, "Failed to read fixture", filename)
 
 	require.JSONEq(t, string(expectedData), actual)

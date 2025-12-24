@@ -299,8 +299,8 @@ func TestPlaceSnakesDefault(t *testing.T) {
 					}
 
 					// All snakes are expected to be placed on an even square - this is true even of fixed positions for known board sizes
-					var snakePlacedOnEvenSquare bool = ((test.BoardState.Snakes[i].Body[0].X + test.BoardState.Snakes[i].Body[0].Y) % 2) == 0
-					require.Equal(t, true, snakePlacedOnEvenSquare)
+					snakePlacedOnEvenSquare := ((test.BoardState.Snakes[i].Body[0].X + test.BoardState.Snakes[i].Body[0].Y) % 2) == 0
+					require.True(t, snakePlacedOnEvenSquare)
 				}
 			}
 		})

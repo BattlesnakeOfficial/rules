@@ -388,7 +388,8 @@ func (m DirectionalExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardS
 
 		addHazards := i == maxTurns-1
 
-		if growthDirection == "left" {
+		switch growthDirection {
+		case "left":
 			x := topLeft.X - 1
 			if addHazards {
 				for y := bottomRight.Y; y < topLeft.Y+1; y++ {
@@ -396,7 +397,7 @@ func (m DirectionalExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardS
 				}
 			}
 			topLeft.X = x
-		} else if growthDirection == "right" {
+		case "right":
 			x := bottomRight.X + 1
 			if addHazards {
 				for y := bottomRight.Y; y < topLeft.Y+1; y++ {
@@ -404,7 +405,7 @@ func (m DirectionalExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardS
 				}
 			}
 			bottomRight.X = x
-		} else if growthDirection == "up" {
+		case "up":
 			y := topLeft.Y + 1
 			if addHazards {
 				for x := topLeft.X; x < bottomRight.X+1; x++ {
@@ -412,7 +413,7 @@ func (m DirectionalExpandingBoxMap) PostUpdateBoard(lastBoardState *rules.BoardS
 				}
 			}
 			topLeft.Y = y
-		} else if growthDirection == "down" {
+		case "down":
 			y := bottomRight.Y - 1
 			if addHazards {
 				for x := topLeft.X; x < bottomRight.X+1; x++ {

@@ -3,7 +3,6 @@ package rules
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -207,7 +206,7 @@ func TestRoyaleCreateNextBoardState(t *testing.T) {
 		ParamShrinkEveryNTurns:   "1",
 	}).WithSeed(1234)
 	for _, gc := range cases {
-		rand.Seed(1234)
+		SetGlobalSeed(1234)
 		// test a RulesBuilder constructed instance
 		gc.requireValidNextState(t, rb.NamedRuleset(GameTypeRoyale))
 		// also test a pipeline with the same settings

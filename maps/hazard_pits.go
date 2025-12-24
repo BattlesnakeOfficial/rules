@@ -63,6 +63,7 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 
 	tempBoardState := rules.NewBoardState(initialBoardState.Width, initialBoardState.Height)
 	tempBoardState.Snakes = make([]rules.Snake, len(snakeIDs))
+	tempEditor := NewBoardStateEditor(tempBoardState)
 
 	for i := 0; i < len(snakeIDs); i++ {
 		tempBoardState.Snakes[i] = rules.Snake{
@@ -79,7 +80,7 @@ func (m HazardPitsMap) SetupBoard(initialBoardState *rules.BoardState, settings 
 		}
 	}
 
-	err := rules.PlaceFoodFixed(rand, tempBoardState)
+	err := PlaceFoodFixed(rand, tempBoardState, tempEditor)
 	if err != nil {
 		return err
 	}

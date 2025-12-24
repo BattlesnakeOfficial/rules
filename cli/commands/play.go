@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -139,7 +137,7 @@ func (gameState *GameState) Initialize() error {
 	// Load game map
 	gameMap, err := maps.GetMap(gameState.MapName)
 	if err != nil {
-		return fmt.Errorf("Failed to load game map %#v: %v", gameState.MapName, err)
+		return fmt.Errorf("failed to load game map %#v: %v", gameState.MapName, err)
 	}
 	gameState.gameMap = gameMap
 
@@ -165,7 +163,7 @@ func (gameState *GameState) Initialize() error {
 	if gameState.OutputPath != "" {
 		f, err := os.OpenFile(gameState.OutputPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			return fmt.Errorf("Failed to open output file: %w", err)
+			return fmt.Errorf("failed to open output file: %w", err)
 		}
 		gameState.outputFile = f
 	}
@@ -181,14 +179,14 @@ func (gameState *GameState) Run() error {
 	// Setup local state for snakes
 	gameState.snakeStates, err = gameState.buildSnakesFromOptions()
 	if err != nil {
-		return fmt.Errorf("Error getting snake metadata: %w", err)
+		return fmt.Errorf("error getting snake metadata: %w", err)
 	}
 
-	rand.Seed(gameState.Seed)
+	rules.SetGlobalSeed(gameState.Seed)
 
 	gameOver, boardState, err := gameState.initializeBoardFromArgs()
 	if err != nil {
-		return fmt.Errorf("Error initializing board: %w", err)
+		return fmt.Errorf("error initializing board: %w", err)
 	}
 
 	gameExporter := GameExporter{
@@ -199,7 +197,11 @@ func (gameState *GameState) Run() error {
 	}
 	exportGame := gameState.outputFile != nil
 	if exportGame {
-		defer gameState.outputFile.Close()
+		defer func() {
+			if err := gameState.outputFile.Close(); err != nil {
+				log.WARN.Printf("error closing output file: %v", err)
+			}
+		}()
 	}
 
 	boardGame := board.Game{
@@ -219,7 +221,7 @@ func (gameState *GameState) Run() error {
 	if gameState.ViewInBrowser {
 		serverURL, err := boardServer.Listen()
 		if err != nil {
-			return fmt.Errorf("Error starting HTTP server: %w", err)
+			return fmt.Errorf("error starting HTTP server: %w", err)
 		}
 		defer boardServer.Shutdown()
 		log.INFO.Printf("Board server listening on %s", serverURL)
@@ -267,7 +269,7 @@ func (gameState *GameState) Run() error {
 
 		gameOver, boardState, err = gameState.createNextBoardState(boardState)
 		if err != nil {
-			return fmt.Errorf("Error processing game: %w", err)
+			return fmt.Errorf("error processing game: %w", err)
 		}
 
 		if gameOver {
@@ -337,7 +339,7 @@ func (gameState *GameState) Run() error {
 	if exportGame {
 		lines, err := gameExporter.FlushToFile(gameState.outputFile)
 		if err != nil {
-			return fmt.Errorf("Unable to export game: %w", err)
+			return fmt.Errorf("unable to export game: %w", err)
 		}
 		log.INFO.Printf("Wrote %d lines to output file: %s", lines, gameState.OutputPath)
 	}
@@ -352,11 +354,11 @@ func (gameState *GameState) initializeBoardFromArgs() (bool, *rules.BoardState, 
 	}
 	boardState, err := maps.SetupBoard(gameState.gameMap.ID(), gameState.ruleset.Settings(), gameState.Width, gameState.Height, snakeIds)
 	if err != nil {
-		return false, nil, fmt.Errorf("Error initializing BoardState with map: %w", err)
+		return false, nil, fmt.Errorf("error initializing BoardState with map: %w", err)
 	}
 	gameOver, boardState, err := gameState.ruleset.Execute(boardState, nil)
 	if err != nil {
-		return false, nil, fmt.Errorf("Error initializing BoardState with ruleset: %w", err)
+		return false, nil, fmt.Errorf("error initializing BoardState with ruleset: %w", err)
 	}
 
 	for _, snakeState := range gameState.snakeStates {
@@ -377,7 +379,7 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (
 	// apply PreUpdateBoard before making requests to snakes
 	boardState, err := maps.PreUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
 	if err != nil {
-		return false, boardState, fmt.Errorf("Error pre-updating board with game map: %w", err)
+		return false, boardState, fmt.Errorf("error pre-updating board with game map: %w", err)
 	}
 
 	// get moves from snakes
@@ -420,13 +422,13 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (
 
 	gameOver, boardState, err := gameState.ruleset.Execute(boardState, moves)
 	if err != nil {
-		return false, boardState, fmt.Errorf("Error updating board state from ruleset: %w", err)
+		return false, boardState, fmt.Errorf("error updating board state from ruleset: %w", err)
 	}
 
 	// apply PostUpdateBoard after ruleset operates on snake moves
 	boardState, err = maps.PostUpdateBoard(gameState.gameMap, boardState, gameState.ruleset.Settings())
 	if err != nil {
-		return false, boardState, fmt.Errorf("Error post-updating board with game map: %w", err)
+		return false, boardState, fmt.Errorf("error post-updating board with game map: %w", err)
 	}
 
 	boardState.Turn += 1
@@ -470,8 +472,12 @@ func (gameState *GameState) getSnakeUpdate(boardState *rules.BoardState, snakeSt
 				"\tError: body is empty", u.String())
 		return snakeState
 	}
-	defer res.Body.Close()
-	body, readErr := ioutil.ReadAll(res.Body)
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.WARN.Printf("error closing response body from %v: %v", u.String(), err)
+		}
+	}()
+	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.WARN.Printf(
 			"Failed to read response body from %v\n"+
@@ -586,11 +592,11 @@ func (gameState *GameState) buildSnakesFromOptions() (map[string]SnakeState, err
 		if i < numURLs {
 			u, err := url.ParseRequestURI(gameState.URLs[i])
 			if err != nil {
-				return nil, fmt.Errorf("URL %v is not valid: %w", gameState.URLs[i], err)
+				return nil, fmt.Errorf("invalid URL: %v: %w", gameState.URLs[i], err)
 			}
 			snakeURL = u.String()
 		} else {
-			return nil, fmt.Errorf("URL for name %v is missing", gameState.Names[i])
+			return nil, fmt.Errorf("missing URL for name: %v", gameState.Names[i])
 		}
 
 		snakeState := SnakeState{
@@ -599,25 +605,29 @@ func (gameState *GameState) buildSnakesFromOptions() (map[string]SnakeState, err
 		var snakeErr error
 		res, _, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
-			return nil, fmt.Errorf("Snake metadata request to %v failed: %w", snakeURL, err)
+			return nil, fmt.Errorf("snake metadata request to %v failed: %w", snakeURL, err)
 		}
 
 		snakeState.StatusCode = res.StatusCode
 
 		if res.Body == nil {
-			return nil, fmt.Errorf("Empty response body from snake metadata URL: %v", snakeURL)
+			return nil, fmt.Errorf("empty response body from snake metadata URL: %v", snakeURL)
 		}
 
-		defer res.Body.Close()
-		body, readErr := ioutil.ReadAll(res.Body)
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				log.WARN.Printf("error closing snake metadata response from %v: %v", snakeURL, err)
+			}
+		}()
+		body, readErr := io.ReadAll(res.Body)
 		if readErr != nil {
-			return nil, fmt.Errorf("Error reading from snake metadata URL %v: %w", snakeURL, readErr)
+			return nil, fmt.Errorf("error reading from snake metadata URL %v: %w", snakeURL, readErr)
 		}
 
 		pingResponse := client.SnakeMetadataResponse{}
 		jsonErr := json.Unmarshal(body, &pingResponse)
 		if jsonErr != nil {
-			return nil, fmt.Errorf("Failed to parse response from %v: %w", snakeURL, jsonErr)
+			return nil, fmt.Errorf("failed to parse response from %v: %w", snakeURL, jsonErr)
 		}
 
 		snakeState.Head = pingResponse.Head
