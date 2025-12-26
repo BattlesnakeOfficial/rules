@@ -532,10 +532,16 @@ func (gameState *GameState) getRequestBodyForSnake(boardState *rules.BoardState,
 			break
 		}
 	}
+
+	filteredState := boardState
+	if gameState.gameMap.ID() == "limitInfo" {
+		filteredState = FilterBoardStateForSnake(boardState, snakeState, 5) // static view radius of 5
+	}
+
 	request := client.SnakeRequest{
 		Game:  gameState.createClientGame(),
 		Turn:  boardState.Turn,
-		Board: convertStateToBoard(boardState, gameState.snakeStates),
+		Board: convertStateToBoard(filteredState, gameState.snakeStates),
 		You:   convertRulesSnake(youSnake, snakeState),
 	}
 	return request
